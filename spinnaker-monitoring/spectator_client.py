@@ -32,7 +32,7 @@ import urlparse
 import yaml
 
 
-CONFIG_DIR = '/opt/monitor_spinnaker/config'
+CONFIG_DIR = '/opt/spinnaker-monitoring/conf'
 
 # pylint: disable=invalid-name
 _cached_source_catalog = None

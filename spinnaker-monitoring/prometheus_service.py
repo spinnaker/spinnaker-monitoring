@@ -70,7 +70,7 @@ class PrometheusMetricsService(object):
         options, os.path.join(options['config_dir'], 'prometheus.conf'))
 
     self.__spectator = spectator_client.SpectatorClient(options)
-    self.__add_metalabels = config.get('prometheus_add_source_metalabels', True)
+    self.__add_metalabels = options.get('prometheus_add_source_metalabels', True)
     REGISTRY.register(self)
 
   def __collect_instance_info(

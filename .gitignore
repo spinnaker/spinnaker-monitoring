@@ -1,0 +1,13 @@
+# Distribution / packaging
+env/
+build/
+dist/
+eggs/
+.eggs/
+parts/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+*.pyc
+*~

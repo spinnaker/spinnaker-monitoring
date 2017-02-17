@@ -5,5 +5,5 @@ datadog
 # google-api-python-client
 # oauth2client
 pyyaml
-# prometheus_client
+prometheus_client
 mock

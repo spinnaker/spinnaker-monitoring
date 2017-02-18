@@ -130,13 +130,19 @@ def make_datadog_service(options):
     logging.warning('Could not read config from "%s": %s',
                     config_path, traceback.format_exc())
 
-  api_key = api_key or os.environ.get('DATADOG_API_KEY')
+  api_key = api_key or os.environ.get('DATADOG_API_KEY',
+                                      options.get('datadog', {}).get('api_key'))
   if api_key is None:
     raise ValueError('DATADOG_API_KEY is not defined')
 
-  app_key = app_key or os.environ.get('DATADOG_APP_KEY')
-  host = host or socket.getfqdn(options['datadog_host'] or '')
-
+  # This can be None
+  app_key = app_key or os.environ.get('DATADOG_APP_KEY',
+                                      options.get('datadog', {}).get('app_key'))
+  host = (host
+          or socket.getfqdn(
+              options.get('datadog_host',
+                          options.get('datadog', {}).get('host', '')))
+          or '')
   return DatadogMetricsService(api_key=api_key, app_key=app_key, host=host)
 
 
@@ -159,11 +165,12 @@ class DatadogServiceFactory(object):
   """For plugging Datadog into the monitoring server."""
   def enabled(self, options):
     """Implements server_handlers.MonitorCommandHandler interface."""
-    return options.get('datadog', False)
+    return 'datadog' in options.get('monitor', {}).get('metric_store', [])
 
   def add_argparser(self, parser):
     """Implements server_handlers.MonitorCommandHandler interface."""
     parser.add_argument('--datadog', default=False, action='store_true',
+                        dest='monitor_datadog',
                         help='Publish metrics to Datadog.')
 
     add_standard_parser_arguments(parser)

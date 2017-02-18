@@ -127,8 +127,8 @@ class TestableSpectatorClient(spectator_client.SpectatorClient):
 
 
 class SpectatorClientTest(unittest.TestCase):
-  DEV_CONF_DIR = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), '..', 'conf.dev'))
+  DEV_CONFIG_DIR = os.path.abspath(
+      os.path.join(os.path.dirname(__file__), '..', 'config.dev'))
 
   def setUp(self):
     options = {'prototype_path': None, 'host': TEST_HOST}
@@ -140,7 +140,7 @@ class SpectatorClientTest(unittest.TestCase):
   @patch('os.path.getmtime')
   def test_get_source_catalog(self, mock_getmtime, mock_glob):
     mock_getmtime.return_value = 1234
-    mock_glob.return_value = ['one.conf', 'two.conf']
+    mock_glob.return_value = ['one.yml', 'two.yml']
     mo = mock.mock_open(read_data='metrics_url: http://testhost:1122')
     mo.side_effect = (
         mo.return_value,
@@ -152,7 +152,7 @@ class SpectatorClientTest(unittest.TestCase):
                       'two': {'metrics_url': ['http://testhost:3344']}},
                      catalog)
     mock_getmtime.assert_called_with('TestConfig/sources')
-    mock_glob.assert_called_with('TestConfig/sources/*.conf')
+    mock_glob.assert_called_with('TestConfig/sources/*.yml')
     self.assertEquals(1, mock_getmtime.call_count)
 
     # Verify that we dont rescan content if timestamp hasnt changed.
@@ -163,7 +163,7 @@ class SpectatorClientTest(unittest.TestCase):
 
     # Verify that we query again if timestamp changes
     mock_getmtime.return_value = 1235
-    mock_glob.return_value = ['three.conf']
+    mock_glob.return_value = ['three.yml']
     mo = mock.mock_open(read_data='metrics_url: http://testhost:3333')
     with patch('spectator_client.open', mo, create=True):
       retry = spectator_client.get_source_catalog('TestConfig')
@@ -173,7 +173,7 @@ class SpectatorClientTest(unittest.TestCase):
   def test_default_dev_endpoints(self):
     got_urls = {name: config['metrics_url']
                 for name, config in spectator_client.get_source_catalog(
-                    config_dir=self.DEV_CONF_DIR).items()}
+                    config_dir=self.DEV_CONFIG_DIR).items()}
 
     def localhost_urls(port):
       return ['http://localhost:{port}/spectator/metrics'.format(port=port)]
@@ -527,7 +527,4 @@ class SpectatorClientTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  # pylint: disable=invalid-name
-  loader = unittest.TestLoader()
-  suite = loader.loadTestsFromTestCase(SpectatorClientTest)
-  unittest.TextTestRunner(verbosity=2).run(suite)
+  unittest.main()

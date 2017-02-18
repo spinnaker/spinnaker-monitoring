@@ -104,11 +104,11 @@ class StackdriverMetricsService(object):
     if self.__monitored_resource is None:
       self.__add_source_tag = True
       self.__monitored_resource = {
-        'type': 'global',
-        'project_id': self.__project
+          'type': 'global',
+          'project_id': self.__project
       }
 
-    logging.info('Monitoring {0}'.format(self.__monitored_resource))
+    logging.info('Monitoring %s', self.__monitored_resource)
     return self.__monitored_resource
 
   def __ec2_monitored_resource_or_none(self):
@@ -117,10 +117,10 @@ class StackdriverMetricsService(object):
       doc = get_aws_identity_document()
 
       return {
-        'instance_id': doc['instanceId'],
-        'region': doc['region'],
-        'aws_account': doc['accountId'],
-        'project_id': self.__project
+          'instance_id': doc['instanceId'],
+          'region': doc['region'],
+          'aws_account': doc['accountId'],
+          'project_id': self.__project
        }
     except (IOError, ValueError, KeyError):
       return None
@@ -128,8 +128,8 @@ class StackdriverMetricsService(object):
   def __google_monitored_resource_or_none(self):
     """If deployed on GCE, return the monitored resource, else None."""
     project = self.__project
-    zone = self.__options.get('zone')
-    instance_id = self.__options.get('instance_id')
+    zone = self.__stackdriver_options.get('zone')
+    instance_id = self.__stackdriver_options.get('instance_id')
 
     try:
       if not project:
@@ -140,11 +140,11 @@ class StackdriverMetricsService(object):
         instance_id = int(get_google_metadata('instance/id'))
 
       return {
-        'type': 'gce_instance',
-        'labels': {
-            'zone': zone,
-            'instance_id': str(instance_id)
-        }
+          'type': 'gce_instance',
+          'labels': {
+              'zone': zone,
+              'instance_id': str(instance_id)
+          }
       }
     except IOError:
       return None
@@ -159,12 +159,11 @@ class StackdriverMetricsService(object):
     """
     self.logger = logging.getLogger(__name__)
 
-    self.__options = util.merge_options_and_yaml_from_path(
-        options, os.path.join(options['config_dir'], 'stackdriver.conf'))
-
+    self.__stackdriver_options = options.get('stackdriver', {})
     self.__stub_factory = stub_factory
     self.__stub = None
-    self.__project = self.__options.get('project')
+    self.__project = options.get('project',
+                                 self.__stackdriver_options.get('project'))
     if not self.__project:
       # Set default to our instance if we are on GCE.
       # Otherwise ignore since we might not actually need the project.
@@ -185,7 +184,7 @@ class StackdriverMetricsService(object):
     parser.add_argument('--project', default='')
     parser.add_argument('--zone', default='')
     parser.add_argument('--instance_id', default=0, type=int)
-    parser.add_argument('--credentials_path', default='')
+    parser.add_argument('--credentials_path', default=None)
 
   def project_to_resource(self, project):
     if not project:
@@ -269,7 +268,7 @@ class StackdriverMetricsService(object):
   def add_label_and_retry(self, label, metric_type, ts_request):
     if self.add_label_to_metric(label, metric_type):
       # Try again to write time series data.
-      logging.info('Retrying create timeseries {0}'.format(ts_request))
+      logging.info('Retrying create timeseries %s', ts_request)
       (self.stub.projects().timeSeries().create(
           name=self.project_to_resource(self.__project),
                body={'timeSeries': ts_request})
@@ -323,7 +322,7 @@ class StackdriverMetricsService(object):
       return False
 
   def handle_time_series_http_error(self, error, batch):
-    logging.error('Caught {0}'.format(error))
+    logging.error('Caught %s', error)
     if error.resp.status == 400:
       problems = self.find_problematic_elements(error, batch)
       logging.info('PROBLEMS {0!r}'.format(problems))
@@ -351,8 +350,8 @@ class StackdriverMetricsService(object):
       return
 
     metric = {
-      'type': self.metric_type(service, name),
-      'labels': {tag['key']: tag['value'] for tag in tags}
+        'type': self.metric_type(service, name),
+        'labels': {tag['key']: tag['value'] for tag in tags}
     }
     if self.__add_source_tag:
       metric['labels']['InstanceSrc'] = '{host}:{port}'.format(
@@ -384,21 +383,25 @@ class StackdriverMetricsService(object):
 
 def make_stub(options):
   """Helper function for making a stub to talk to service."""
-
+  stackdriver_config = options.get('stackdriver', {})
   credentials_path = options.get('credentials_path', None)
+  if credentials_path is None:
+    credentials_path = stackdriver_config.get('credentials_path')
+
   http = httplib2.Http()
   http = apiclient.http.set_user_agent(
       http, 'SpinnakerStackdriverAgent/0.001')
   if credentials_path:
     logging.info('Using Stackdriver Credentials from "%s"', credentials_path)
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-          credentials_path, scopes=StackdriverMetricsService.WRITE_SCOPE)
+        credentials_path, scopes=StackdriverMetricsService.WRITE_SCOPE)
   else:
     logging.info('Using Stackdriver Credentials from application default.')
     credentials = GoogleCredentials.get_application_default()
 
   http = credentials.authorize(http)
-  developer_key = os.environ.get('STACKDRIVER_API_KEY')
+  developer_key = os.environ.get('STACKDRIVER_API_KEY',
+                                 options.get('stackdriver', {}).get('api_key'))
   if developer_key:
     url = 'https://monitoring.googleapis.com/$discovery/rest?labels=DASHBOARD_TRUSTED_TESTER&key=' + developer_key
     return apiclient.discovery.build(
@@ -415,12 +418,13 @@ def make_service(options):
 class StackdriverServiceFactory(object):
   def enabled(self, options):
     """Implements server_handlers.MonitorCommandHandler interface."""
-    return options.get('stackdriver', False)
+    return 'stackdriver' in options.get('monitor', {}).get('metric_store', [])
 
   def add_argparser(self, parser):
     """Implements server_handlers.MonitorCommandHandler interface."""
     StackdriverMetricsService.add_parser_arguments(parser)
     parser.add_argument('--stackdriver', default=False, action='store_true',
+                        dest='monitor_stackdriver',
                         help='Publish metrics to Stackdriver.')
 
     parser.add_argument(
@@ -441,4 +445,3 @@ class StackdriverServiceFactory(object):
   def __call__(self, options, command_handlers):
     """Create a datadog service instance for interacting with Datadog."""
     return make_service(options)
-

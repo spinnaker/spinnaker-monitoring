@@ -79,17 +79,17 @@ class GetArtifactHandler(BaseDatadogCommandHandler):
     parser = super(GetArtifactHandler, self).add_argparser(subparsers)
     parser.add_argument(
         '--name', required=True,
-      help='The name of the {0} to get.'.format(self.__type_name))
+        help='The name of the {0} to get.'.format(self.__type_name))
     return parser
 
   def __unpack_dashboard(self, dashboard_obj):
     """Unpack a timeboard response to comply with a creation payload."""
     dash = dashboard_obj['dash']
     return {
-      'description': dash.get('description', ''),
-      'read_only': dash.get('read_only', False),
-      'title': dash.get('title', 'Dashboard'),
-      'graphs': dash.get('graphs', {})
+        'description': dash.get('description', ''),
+        'read_only': dash.get('read_only', False),
+        'title': dash.get('title', 'Dashboard'),
+        'graphs': dash.get('graphs', {})
     }
 
   def process_commandline_request(self, options):

@@ -30,6 +30,7 @@ declare -a PASSED
 declare -a FAILED
 
 for test in "$(dirname $0)"/*_test.py; do
+  echo "Running $test"
   if python "$test"; then
       PASSED=("${PASSED[@]}" "$test")
   else

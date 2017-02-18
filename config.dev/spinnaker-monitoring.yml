@@ -1,0 +1,28 @@
+monitor:
+  period: 30
+
+  metric_store:
+    - datadog
+    - prometheus
+    - stackdriver
+
+
+prometheus:
+  add_source_metalabels: True
+
+
+stackdriver:
+  # A path to the credentials file to use with Stackdriver.
+  # If left blank, this will use the application default credentials.
+  credentials_path:
+
+  # The project to report these metrics for.
+  project:
+
+  # If this instance is on GCP, this is the zone to report the instance for.
+  # If left blank, and on GCP, this will be the zone we are running in.
+  zone:
+
+  # The instance id (is a number)
+  # If left blank, and on GCP, this will populate from the metadata server.
+  instance_id:

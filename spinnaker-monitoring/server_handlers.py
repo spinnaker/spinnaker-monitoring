@@ -120,6 +120,7 @@ class MonitorCommandHandler(WebserverCommandHandler):
     """Create the metric services we'll use to publish metrics to a backend.
     """
     service_list = []
+    print 'OPTIONS {0}'.format(options)
     for factory in MonitorCommandHandler._service_factories:
       if factory.enabled(options):
         service_list.append(factory(options, self.command_handlers))

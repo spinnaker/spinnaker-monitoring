@@ -28,4 +28,4 @@ for dashboard in *Dashboard.json; do
       upload_stackdriver_dashboard --dashboard ${dashboard} \
       "$@"
 done
---credentials_path=$HOME/.spinnaker/google-credentials.json --dashboard xyz --update
+

@@ -26,12 +26,79 @@ buildscript {
 }
 
 apply plugin: 'spinnaker.project'
+apply plugin: 'nebula.ospackage'
 
 group = "com.netflix.spinnaker.monitoring"
+
+String toVers(String v) {
+  int idx = v.indexOf('-')
+  if (idx != -1) {
+    return v.substring(0, idx)
+  }
+  return v
+}
+
+task daemonDeb(type: Deb) {
+
+  // common installation paths 
+  def spinnakerMonitoringHome = "/opt/" + project.name
+
+  // global package requirements
+  packageName = project.name + '-daemon'
+  version = toVers(project.version.toString())
+  release = '3'
+
+  requires('python-pip')
+
+  // installer scripts
+  postInstall = file('pkg_scripts/postInstall.sh')
+  preInstall = file('pkg_scripts/preInstall.sh')
+
+  // source code in subdirectory
+  from(project.name) {
+    into spinnakerMonitoringHome + '/' + project.name
+  }
+
+  from(file('requirements.txt')) {
+    into('/opt/spinnaker-monitoring')
+  }
+
+  from('bin') {
+    into spinnakerMonitoringHome + '/bin'
+    fileMode  0755
+  }  
+
+  from('config.dev') {
+    into spinnakerMonitoringHome + '/config.example'
+    fileMode  0600
+  }  
+
+  from(file('etc/init/spinnaker-monitoring.conf')) {
+    into('/etc/init')
+    user  'root'
+    permissionGroup  'root'
+    fileType  CONFIG | NOREPLACE
+  }
+}
+
+task thirdPartyDeb(type: Deb) {
+  def spinnakerMonitoringHome = "/opt/" + project.name
+
+  packageName = project.name + '-third-party'
+  version = toVers(project.version.toString())
+  release = 3
+
+  from('third_party') {
+    into spinnakerMonitoringHome + '/third_party'
+  }
+}
 
 task test(type: Exec) {
   workingDir "$projectDir"
   commandLine './tests/run_tests.sh'
 }
+
+tasks.thirdPartyDeb.dependsOn('daemonDeb')
+tasks.buildDeb.dependsOn('thirdPartyDeb')
 
 defaultTasks ':test'

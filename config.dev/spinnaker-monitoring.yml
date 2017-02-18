@@ -1,11 +1,15 @@
 monitor:
   period: 30
 
+  # Enable the one you are interested in using by uncommenting it.
   metric_store:
-    - datadog
-    - prometheus
-    - stackdriver
+#    - datadog
+#    - prometheus
+#    - stackdriver
 
+
+datadog:
+  api_key:
 
 prometheus:
   add_source_metalabels: True

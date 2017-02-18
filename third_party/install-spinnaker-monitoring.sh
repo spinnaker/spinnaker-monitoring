@@ -107,10 +107,10 @@ function install_dependencies() {
 
 function install_metric_services() {
   if [[ "$USE_DATADOG" == "true" ]]; then
-      $SOURCE_DIR/install/datadog/install.sh
+      $SOURCE_DIR/third_party/datadog/install.sh
   fi
   if [[ "$USE_PROMETHEUS" == "true" ]]; then
-      $SOURCE_DIR/install/prometheus/install.sh
+      $SOURCE_DIR/third_party/prometheus/install.sh
   fi
   if [[ "$USE_STACKDRIVER" == "true" ]]; then
       local credentials=""
@@ -119,7 +119,7 @@ function install_metric_services() {
               credentials=$arg
           fi
       done
-      $SOURCE_DIR/install/stackdriver/install.sh $credentials
+      $SOURCE_DIR/third_party/stackdriver/install.sh $credentials
   fi
 }
 
@@ -188,9 +188,3 @@ Be sure that your spinnaker-local.yml has services.spectator.webEndpoint.enabled
 For more information, see:
     http://www.spinnaker.io/docs/monitoring-a-spinnaker-deployment
 EOF
-
-
-
-
-
-

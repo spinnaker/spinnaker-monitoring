@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import socket
+import traceback
 import datadog
 
 import spectator_client
@@ -27,6 +28,13 @@ import spectator_client
 
 class DatadogMetricsService(object):
   """A metrics service for interacting with Datadog."""
+
+  # 20170218(ewiseblatt)
+  # I dont know the actual limit.
+  # This is a guess while I wait to hear back from datadog support.
+  # Large deployments for clouddriver are seeing 413, but nothing else.
+  # I've sent batches larger than this that have been fine.
+  MAX_BATCH = 2000
 
   @property
   def api(self):
@@ -82,13 +90,15 @@ class DatadogMetricsService(object):
     spectator_client.foreach_metric_in_service_map(
         service_metrics, self.__append_timeseries_point, points)
 
-    try:
-      if points:
-        self.api.Metric.send(points)
-    except IOError as ioerr:
-      logging.error('Error sending to datadog: %s', ioerr)
-      raise
-
+    offset = 0
+    while offset < len(points):
+      last = min(offset + self.MAX_BATCH, len(points))
+      chunk = points[offset:last]
+      try:
+        self.api.Metric.send(chunk)
+      except IOError as ioerr:
+        logging.error('Error sending to datadog: %s', ioerr)
+      offset = last
     return len(points)
 
 
@@ -99,8 +109,8 @@ def make_datadog_service(options):
                       config_text, re.MULTILINE)
     if not match:
       return None
-
     return match.group(1).strip()
+
 
   app_key = None
   api_key = None
@@ -117,7 +127,8 @@ def make_datadog_service(options):
 
   # pylint: disable=bare-except
   except:
-    logging.warning('Could not read config from "%s"', config_path)
+    logging.warning('Could not read config from "%s": %s',
+                    config_path, traceback.format_exc())
 
   api_key = api_key or os.environ.get('DATADOG_API_KEY')
   if api_key is None:

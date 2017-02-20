@@ -66,16 +66,15 @@ class PrometheusMetricsService(object):
 
   def __init__(self, options):
     self.__catalog = spectator_client.get_source_catalog(options['config_dir'])
-    options = util.merge_options_and_yaml_from_path(
-        options, os.path.join(options['config_dir'], 'prometheus.conf'))
-
     self.__spectator = spectator_client.SpectatorClient(options)
-    self.__add_metalabels = options.get('prometheus_add_source_metalabels', True)
+    self.__add_metalabels = options.get(
+        'prometheus_add_source_metalabels',
+        options.get('prometheus', {}).get('add_source_metalabels', True))
     REGISTRY.register(self)
 
   def __collect_instance_info(
-        self, service, name,
-        instance, metric_metadata, service_metadata, service_to_name_to_info):
+      self, service, name,
+      instance, metric_metadata, service_metadata, service_to_name_to_info):
     """Creates an InstanceRecord for the given metric sample instance.
 
        This record is an internal structure that will be used to feed the
@@ -193,11 +192,12 @@ class ScrapeHandler(command_processor.CommandHandler):
 class PrometheusServiceFactory(object):
   def enabled(self, options):
     """Implements server_handlers.MonitorCommandHandler interface."""
-    return options.get('prometheus', False)
+    return 'prometheus' in options.get('monitor', {}).get('metric_store', [])
 
   def add_argparser(self, parser):
     """Implements server_handlers.MonitorCommandHandler interface."""
-    parser.add_argument('--prometheus', default=False, action='store_true',
+    parser.add_argument('--prometheus', default=False,
+                        dest='monitor_prometheus', action='store_true',
                         help='Enable endpoint for Prometheus to poll for metrics.')
 
     # Client library has its own http server. Not sure what we need to

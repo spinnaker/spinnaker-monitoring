@@ -59,8 +59,4 @@ class CommandProcessorTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  # pylint: disable=invalid-name
-  loader = unittest.TestLoader()
-  suite = loader.loadTestsFromTestCase(CommandProcessorTest)
-  unittest.TextTestRunner(verbosity=2).run(suite)
-
+  unittest.main()

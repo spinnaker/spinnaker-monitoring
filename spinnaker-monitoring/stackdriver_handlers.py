@@ -115,6 +115,16 @@ class BatchProcessor(object):
 class BaseStackdriverCommandHandler(CommandHandler):
   """Base CommandHandler for Stackdriver commands."""
 
+  @property
+  def enabled(self):
+    """Determine if stackdriver is enabled so commands are visible.
+
+    This is only applicable to web commands. Commandline commands are always
+    available.
+    """
+    return 'stackdriver' in (get_global_options()
+                             .get('monitor', {}).get('metric_store', []))
+
   def add_argparser(self, subparsers):
     """Implements CommandHandler."""
     parser = super(BaseStackdriverCommandHandler, self).add_argparser(

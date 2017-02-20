@@ -166,8 +166,4 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(0, self.mockTimeSeries.create.call_count)
 
 if __name__ == '__main__':
-  # pylint: disable=invalid-name
-  loader = unittest.TestLoader()
-  suite = loader.loadTestsFromTestCase(StackdriverMetricsServiceTest)
-  unittest.TextTestRunner(verbosity=2).run(suite)
-
+  unittest.main()

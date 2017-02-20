@@ -34,7 +34,7 @@ import stackdriver_handlers
 import util
 
 
-CONFIG_DIR = '/opt/spinnaker-monitoring/conf'
+CONFIG_DIR = '/opt/spinnaker-monitoring/config'
 
 
 def init_logging(options):
@@ -83,8 +83,8 @@ def add_global_args(parser):
                       help='Path to base configuration directory.')
 
 
-def main():
-  """The main program sets up the commands then delegates to one of them."""
+def prepare_commands():
+  """Returns a list of commands and command-line parser for options."""
   all_command_handlers = []
   parser = argparse.ArgumentParser(
       description='Helper tool to interact with Spinnaker deployment metrics.')
@@ -104,14 +104,34 @@ def main():
       stackdriver_service.StackdriverServiceFactory())
   server_handlers.add_handlers(all_command_handlers, subparsers)
 
+  return all_command_handlers, parser
+
+
+def main():
+  """The main program sets up the commands then delegates to one of them."""
+
+  all_command_handlers, parser = prepare_commands()
   opts = parser.parse_args()
   options = vars(opts)
   init_logging(options)
   options = util.merge_options_and_yaml_from_path(
-      options, os.path.join(opts.config_dir, 'spinnaker-monitoring.conf'))
+      options, os.path.join(opts.config_dir, 'spinnaker-monitoring.yml'))
 
+  # TODO(ewiseblatt): decouple this so we dont need to know about this here.
+  # Take the union of stores enabled on the command line or in the config file.
+  if options.get('monitor') is None:
+    options['monitor'] = {}
+  stores = options['monitor'].get('metric_store', [])
+  if not isinstance(stores, list):
+    stores = list(stores)
+  stores.extend([store for store in ['datadog', 'prometheus', 'stackdriver']
+                 if options.get('monitor_' + store)])
+  options['monitor']['metric_store'] = set(stores)
+
+  command_processor.set_global_options(options)
   command_processor.process_command(
       options['command'], options, all_command_handlers)
+
 
 if __name__ == '__main__':
   abs_path = os.path.abspath(os.path.dirname(__file__))

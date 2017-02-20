@@ -40,11 +40,10 @@ def get_global_options():
 
 
 CommandDefinition = collections.namedtuple(
-  'CommandDefinition',
-  ['handler', 'url_path', 'command_name', 'command_request', 'description'])
+    'CommandDefinition',
+    ['handler', 'url_path', 'command_name', 'command_request', 'description'])
 
 
-# pylint: disable=abstract-class-not-used
 class CommandHandler(object):
   """The base class for command handlers.
 
@@ -57,6 +56,12 @@ class CommandHandler(object):
 
   @staticmethod
   def accepts_content_type(request, content_type):
+    """Determine if the request is satisifed by a given content_type.
+
+    Args:
+      request: [BaseHTTPRequestHandler.request]
+      content_type: [string] The desired content type.
+    """
     if not hasattr(request, 'headers'):
       return False
     accept = request.headers.get('accept', None)
@@ -65,9 +70,14 @@ class CommandHandler(object):
     return content_type in accept.split(',')
 
   @property
+  def enabled(self):
+    """Decide whether the command is enabled or not in the web API."""
+    return True
+
+  @property
   def url_path(self):
     """The url_path that invokes the command in the HTTP server."""
-    return self.__url_path
+    return self.__url_path if self.enabled else None
 
   @property
   def command_name(self):

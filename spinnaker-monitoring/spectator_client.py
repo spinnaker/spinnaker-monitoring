@@ -32,7 +32,7 @@ import urlparse
 import yaml
 
 
-CONFIG_DIR = '/opt/spinnaker-monitoring/conf'
+CONFIG_DIR = '/opt/spinnaker-monitoring/config'
 
 # pylint: disable=invalid-name
 _cached_source_catalog = None
@@ -66,7 +66,7 @@ def get_source_catalog(config_dir=None):
 
   logging.info('Updating catalog from %s at %ld', source_dir, timestamp)
   catalog = {}
-  for source in glob.glob(os.path.join(source_dir, '*.conf')):
+  for source in glob.glob(os.path.join(source_dir, '*.yml')):
     name = os.path.splitext(os.path.basename(source))[0]
     logging.info('loading %s', source)
     with open(source) as stream:

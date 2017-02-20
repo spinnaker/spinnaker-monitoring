@@ -81,8 +81,6 @@ class WebserverCommandHandler(command_processor.CommandHandler):
 
     This starts the server and will run forever.
     """
-    command_processor.set_global_options(options)
-
     port = options['port']
     logging.info('Starting HTTP server on port %d', port)
     url_path_to_handler = {handler.url_path: handler.process_web_request

@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-rootProject.name="spinnaker-monitor"
+rootProject.name="spinnaker-monitoring"

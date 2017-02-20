@@ -72,9 +72,9 @@ for dashboard in ${CONFIG_DIR}/*Dashboard.json; do
           -e "s/\${DS_SPINNAKER\}/Spinnaker/g" < "$dashboard")
   temp_file=$(mktemp)
   echo "{ \"dashboard\": $x }" > $temp_file
-  curl -u admin:admin http://localhost:${GRAFANA_PORT}/api/dashboards/import \
+  curl -s -u admin:admin http://localhost:${GRAFANA_PORT}/api/dashboards/import \
        -H "Content-Type: application/json" \
        -X POST \
-       -d @${temp_file}
+       -d @${temp_file} > /dev/null
   rm -f $temp_file
 done

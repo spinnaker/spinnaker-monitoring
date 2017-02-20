@@ -123,7 +123,7 @@ def main():
     options['monitor'] = {}
   stores = options['monitor'].get('metric_store', [])
   if not isinstance(stores, list):
-    stores = list(stores)
+    stores = [stores]
   stores.extend([store for store in ['datadog', 'prometheus', 'stackdriver']
                  if options.get('monitor_' + store)])
   options['monitor']['metric_store'] = set(stores)
@@ -139,5 +139,5 @@ if __name__ == '__main__':
   if (   (path_basename == 'spinnaker-monitoring')
       and(os.path.basename(os.path.dirname(abs_path)) == path_basename)):
     CONFIG_DIR = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..', 'conf.dev'))
+        os.path.join(os.path.dirname(__file__), '..', 'config.dev'))
   main()

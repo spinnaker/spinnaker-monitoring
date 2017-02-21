@@ -14,6 +14,13 @@ datadog:
 prometheus:
   add_source_metalabels: True
 
+  # If the push_gateway is defined, then metrics will be pushed to the given url.
+  # This could be something like "host:9091" or "http://host:9091".
+  # If the gateway is empty then data will not be pushed and the server will
+  # expect that prometheus will poll the daemon directly from
+  # the URL path "/prometheus_metrics".
+  push_gateway:
+
 
 stackdriver:
   # A path to the credentials file to use with Stackdriver.

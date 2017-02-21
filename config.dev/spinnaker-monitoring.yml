@@ -14,7 +14,7 @@ monitor:
 
 
 datadog:
-  api_key:
+  api_key: # Your datadog API key
 
 prometheus:
   add_source_metalabels: True

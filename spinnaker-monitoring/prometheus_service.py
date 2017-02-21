@@ -33,10 +33,21 @@ The 'honor_labels: true' uses the job and service labels injected from
 this service (which will be the spinnaker microservices the metrics came from)
 rather than the job and instance labels of this service which is
 what prometheus is scraping to collect the metrics.
+
+
+This server also supports the PrometheusPushGateway
+https://prometheus.io/download/#pushgateway
+Using the push gateway, configure the daemon to publish metrics
+to the push gateway by setting the prometheus.push_gateway attribute
+in /opt/spinnaker-monitoring/conf/spinnaker-monitoring.yml to the URL of
+the push gateway, and configure prometheus to poll the pushgateway instead
+of this monitoring daemon. Note that you will have to download and install
+the gateway debian package. See prometheus.io.
 """
 
 import collections
 import os
+import time
 
 import command_processor
 import spectator_client
@@ -51,6 +62,7 @@ from prometheus_client.core import (
     CounterMetricFamily,
     REGISTRY)
 
+from prometheus_client.exposition import push_to_gateway
 
 InstanceRecord = collections.namedtuple(
     'InstanceRecord', ['service', 'netloc', 'tags', 'data'])
@@ -70,7 +82,29 @@ class PrometheusMetricsService(object):
     self.__add_metalabels = options.get(
         'prometheus_add_source_metalabels',
         options.get('prometheus', {}).get('add_source_metalabels', True))
-    REGISTRY.register(self)
+
+    self.__push_gateway = options.get('prometheus', {}).get('push_gateway')
+    if self.__push_gateway:
+      self.publish_metrics = self.__publish_to_gateway
+    self.__last_collect_time = 0
+    self.__last_collect_metric_map = {}
+    REGISTRY.register(self)  # Register this so it will call our collect()
+
+  def __publish_to_gateway(self, metric_map):
+    """Helper function to publish polled metrics to the gateway."""
+
+    # When we push to the gateway, prometheus will collect the metrics.
+    # It doesnt have a way to inject the metrics. We've already collected
+    # them so dont want to do that again. Here we will cache the metrics that
+    # were injected along with our timestamp. Later in the collect method,
+    # we'll check the cache time to see if it is recent before we poll for
+    # the metrics (as in the non-gateway use case).
+    self.__last_collect_metric_map = metric_map
+    self.__last_collect_time = time.time()
+
+    all_metrics = self.collect_with_metrics(metric_map)
+    push_to_gateway(self.__push_gateway, "SpinnakerMonitoringDaemon", REGISTRY)
+    return len(all_metrics)
 
   def __collect_instance_info(
       self, service, name,
@@ -120,12 +154,27 @@ class PrometheusMetricsService(object):
     info.records.append(record)
     info.tags.update(tag_names)
 
-
   def collect(self):
     """Implements Prometheus Client interface."""
-    service_to_name_to_info = {}
 
-    service_metric_map = self.__spectator.scan_by_service(self.__catalog)
+    # We will conditionally perform our polling depending on how old
+    # the metrics we have are. Under normal circumstances this should be
+    # our last collection. However when we are using the push gateway,
+    # we are called right after we already performed a polling so do not
+    # want to poll again.
+    now = time.time()
+    if now - self.__last_collect_time > 1:
+      self.__last_collect_metric_map = (
+          self.__spectator.scan_by_service(self.__catalog))
+      self.__last_collect_time = now
+
+    all_members = self.collect_with_metrics(self.__last_collect_metric_map)
+    for metric in all_members:
+      yield metric
+
+  def collect_with_metrics(self, service_metric_map):
+    """Puts Spectator metrics into Prometheus client library REGISTRY."""
+    service_to_name_to_info = {}
     spectator_client.foreach_metric_in_service_map(
         service_metric_map, self.__collect_instance_info,
         service_to_name_to_info)
@@ -167,8 +216,7 @@ class PrometheusMetricsService(object):
           # so multiple values would be meaningless anyway.
           member.add_metric(labels=labels, value=instance['values'][0]['v'])
 
-    for metric in all_members:
-      yield metric
+    return all_members
 
 
 class ScrapeHandler(command_processor.CommandHandler):

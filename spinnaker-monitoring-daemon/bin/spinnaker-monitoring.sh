@@ -15,6 +15,6 @@
 # limitations under the License.
 
 PYTHONWARNINGS=once \
-python ../spinnaker-monitoring \
+python $(dirname $0)/../spinnaker-monitoring \
   --log_dir /var/log/spinnaker/monitoring \
   "$@"

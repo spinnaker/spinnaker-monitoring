@@ -1,9 +1,12 @@
 language: python
 python:
 - 2.7
+
 dist: trusty
-install: pip install -r requirements.txt
-script: bash tests/run_tests.sh
+
+install: pip install -r spinnaker-monitoring-daemon/requirements.txt
+script: gradle/buildViaTravis.sh
+
 env:
   global:
   - secure: U2gIuvZT+iWnJw4ju8mGdx0yFjq8w2IJE2yWZECuqDdq0x01AVWTQJXTE8UndQsFGFPWvo3fOTgyJ6J6tvwhO29Cp6gPyw0+FsTa9QKpT6n52zuT/hoK9On53+FEmbanP1l1B2Mjn0T6h9DMOcFb5ixA7xhAWfZlOOmhYdb74DjkmT+fFm+tt+Ii48gKtV6y0PI1LTpcgucsUYUwhVN/Uoag9NDzbqVDhO/G/AUkxrAUfDcyCApM+d/3bjm+RrydiVdHq83G+GuTLebOd9Z1Lmm3t0MzwJTF18MKrIo9QHwbZMtJIlpArMMLYKwrpGLSwrQS87WRQohCopWFyfeVaGFeJ4989ig/aK6Uhd5kkovs9i7accm6aSD2rVWYhZQlMLh9uJWaZ2zNcUJbvmPoV0+EB4nW87Wf7ynkSbUivsTJwPagHw8b3esiZuUS9/Lh7bacCFPKc2cz5cvPhPhDCtsmONxjqnKAfkFwrBIaMNrOqrJi7xXpoKIaw1rhg2YIBNsxGgc3yZ17G2BN8QIEtMrwMGKINgReOCKMpuqRR9UhR1MfFqT6ahhtoMe3tirJYakIeeBkzrJVQNJm5BzsIVYDJySm6F7cT4PQo7DfJKAZppyMuTfQkDHsSozl0iZ6Lhc0Ii7j27Nkg7seDf3OawsXdHhEOJlrOLkKsHGe5vA=

@@ -41,7 +41,7 @@ function process_args() {
 
 function install_server() {
   curl -sSO https://repo.stackdriver.com/stack-install.sh
-  if [[ ! sudo bash stack-install.sh --write-gcm ]]; then
+  if ! sudo bash stack-install.sh --write-gcm; then
     echo "See https://cloud.google.com/monitoring/agent/install-agent"
     echo "The agent is optional (and only available on GCP and AWS)"
   fi
@@ -71,7 +71,7 @@ function install_dashboards() {
     exit -1
   fi
 
-  for dashboard in *Dashboard.json; do
+  for dashboard in '$DIRNAME"/*Dashboard.json; do
     "$DIRNAME/../../bin/spinnaker-monitoring.sh" \
         upload_stackdriver_dashboard --dashboard ${dashboard} \
         "$@"

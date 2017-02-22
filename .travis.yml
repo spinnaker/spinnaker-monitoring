@@ -1,6 +1,6 @@
 language: python
 python:
   - 2.7
-
+dist: trusty
 install: pip install -r requirements.txt
 script: bash tests/run_tests.sh

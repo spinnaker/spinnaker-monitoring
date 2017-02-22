@@ -78,7 +78,7 @@ class DatadogServiceTest(unittest.TestCase):
 
   @patch('datadog_service.spectator_client.foreach_metric_in_service_map')
   @patch('datadog_service.datadog.initialize')
-  def test_initialize_from_dd_agent_config(self, mock_initialize, mock_xform):
+  def test_publish_metrics(self, mock_initialize, mock_xform):
     options = {'dd_agent_config': 'testCONFIG', 'datadog_host': 'testHost'}
     with patch('datadog_service.open',
                mock.mock_open(read_data='api_key: FOUND_KEY\n')):

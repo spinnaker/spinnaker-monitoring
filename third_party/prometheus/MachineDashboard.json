@@ -68,10 +68,6 @@
           "renderer": "flot",
           "seriesOverrides": [
             {
-              "alias": "cpu0",
-              "yaxis": 1
-            },
-            {
               "alias": "All",
               "yaxis": 2
             }
@@ -87,7 +83,7 @@
               "legendFormat": "All",
               "metric": "",
               "refId": "A",
-              "step": 30
+              "step": 10
             },
             {
               "expr": "sum(rate(node_cpu{mode!=\"idle\"}[$SamplePeriod])) by (cpu)",
@@ -96,7 +92,7 @@
               "legendFormat": "{{cpu}}",
               "metric": "node_cpu",
               "refId": "B",
-              "step": 30
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -135,7 +131,11 @@
           ]
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "Available": "#E0F9D7",
+            "Free": "#7EB26D",
+            "Total": "#BF1B00"
+          },
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
@@ -174,16 +174,16 @@
               "legendFormat": "Free",
               "metric": "",
               "refId": "B",
-              "step": 30
+              "step": 10
             },
             {
-              "expr": "(node_memory_MemTotal - node_memory_Committed_AS) ",
+              "expr": "node_memory_Committed_AS",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Uncommitted",
-              "metric": "node_memory_Committed_AS",
+              "legendFormat": "Committed",
+              "metric": "",
               "refId": "G",
-              "step": 30
+              "step": 10
             },
             {
               "expr": "node_memory_Dirty",
@@ -192,13 +192,31 @@
               "legendFormat": "Dirty",
               "metric": "",
               "refId": "F",
-              "step": 30
+              "step": 10
+            },
+            {
+              "expr": "node_memory_MemTotal",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Total",
+              "metric": "",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "expr": "node_memory_MemAvailable",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Available",
+              "metric": "node_memory_MemAvailable",
+              "refId": "C",
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "System Memory Available",
+          "title": "System Memory",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -240,7 +258,7 @@
     },
     {
       "collapse": false,
-      "height": 255,
+      "height": 283,
       "panels": [
         {
           "aliasColors": {},
@@ -251,6 +269,8 @@
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
             "show": true,
@@ -265,39 +285,34 @@
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "seriesOverrides": [
-            {
-              "alias": "cpu0",
-              "yaxis": 1
-            }
-          ],
-          "span": 4,
+          "seriesOverrides": [],
+          "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(node_netstat_Ip_InReceives[$SamplePeriod]) ",
+              "expr": "rate(node_network_receive_bytes{device!=\"lo\"}[$SamplePeriod])",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "In Packets",
+              "legendFormat": "{{device}}/In",
               "metric": "",
               "refId": "A",
-              "step": 120
+              "step": 10
             },
             {
-              "expr": "rate(node_netstat_Ip_OutRequests[$SamplePeriod])",
+              "expr": "rate(node_network_transmit_bytes{device!=\"lo\"}[$SamplePeriod])",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Out Packets",
+              "legendFormat": "{{device}}/Out",
               "metric": "",
               "refId": "B",
-              "step": 120
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Networking",
+          "title": "External Networking",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -312,7 +327,7 @@
           },
           "yaxes": [
             {
-              "format": "short",
+              "format": "Bps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -320,7 +335,7 @@
               "show": true
             },
             {
-              "format": "short",
+              "format": "Bps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -329,6 +344,102 @@
             }
           ]
         },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 6,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "rate(node_network_receive_bytes{device=\"lo\"}[$SamplePeriod])",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}/In",
+              "metric": "",
+              "refId": "A",
+              "step": 10
+            },
+            {
+              "expr": "rate(node_network_transmit_bytes{device=\"lo\"}[$SamplePeriod])",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}/Out",
+              "metric": "",
+              "refId": "B",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Local Networking",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
         {
           "aliasColors": {},
           "bars": false,
@@ -354,29 +465,29 @@
           "renderer": "flot",
           "seriesOverrides": [
             {
-              "alias": "READ",
+              "alias": "/.*READ/",
               "yaxis": 2
             }
           ],
-          "span": 4,
+          "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "delta(node_disk_bytes_written[$SamplePeriod])",
+              "expr": "rate(node_disk_bytes_written[$SamplePeriod])",
               "intervalFactor": 2,
-              "legendFormat": "WRITE",
+              "legendFormat": "{{device}}/WRITE",
               "metric": "node_disk_bytes_written",
               "refId": "A",
-              "step": 60
+              "step": 10
             },
             {
-              "expr": "delta(node_disk_bytes_read[$SamplePeriod])",
+              "expr": "rate(node_disk_bytes_read[$SamplePeriod])",
               "intervalFactor": 2,
-              "legendFormat": "READ",
+              "legendFormat": "{{device}}/READ",
               "metric": "node_disk_bytes_read",
               "refId": "B",
-              "step": 60
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -397,7 +508,7 @@
           },
           "yaxes": [
             {
-              "format": "decbytes",
+              "format": "Bps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -405,7 +516,7 @@
               "show": true
             },
             {
-              "format": "decbytes",
+              "format": "Bps",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -423,6 +534,8 @@
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
             "show": true,
@@ -439,11 +552,11 @@
           "renderer": "flot",
           "seriesOverrides": [
             {
-              "alias": "READ",
+              "alias": "/.*\\/Avail/",
               "yaxis": 2
             }
           ],
-          "span": 4,
+          "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -451,10 +564,10 @@
               "expr": "node_filesystem_free{mountpoint!~\"/run.*\"}",
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{mountpoint}}",
+              "legendFormat": "{{device}}({{mountpoint}})",
               "metric": "",
               "refId": "B",
-              "step": 60
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -483,7 +596,7 @@
               "show": true
             },
             {
-              "format": "decbytes",
+              "format": "percentunit",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -581,5 +694,5 @@
   },
   "timezone": "browser",
   "title": "Machine Stats",
-  "version": 1
+  "version": 2
 }

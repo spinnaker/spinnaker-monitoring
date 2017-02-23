@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 ENV PYTHONWARNINGS "once"
 
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]
-CMD ["--config", "/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml", "--registry", "/opt/spinnaker-monitoring/registry", "monitor"]
+CMD ["--config", "/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml", "monitor"]

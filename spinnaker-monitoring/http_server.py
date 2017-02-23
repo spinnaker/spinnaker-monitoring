@@ -15,6 +15,7 @@
 """Implements HTTP Server."""
 
 import BaseHTTPServer
+import logging
 import traceback
 
 
@@ -69,7 +70,7 @@ class DelegatingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       key, ignore, value = part.partition('=')
       parameters[key] = value
 
-    return path, parameters, fragment
+    return path, parameters, fragment or None
 
   def do_HEAD(self):
     """Implements BaseHTTPRequestHandler."""
@@ -106,7 +107,16 @@ class HttpServer(BaseHTTPServer.HTTPServer):
 
   PATH_HANDLERS = {}
 
-  def __init__(self, port, handlers=None):
+  def __init__(self, options, handlers=None):
+    server_options = options.get('server', {'port': 8008, 'host': 'localhost'})
+    def get_option(name):
+      """Return command-line option override or configuration value"""
+      value = options.get(name)
+      return value if value is not None else server_options[name]
+    port = get_option('port')
+    host = get_option('host')
+
+    logging.info('Starting HTTP server on host=%s, port=%d', host, port)
     BaseHTTPServer.HTTPServer.__init__(
-        self, ('localhost', port), DelegatingRequestHandler)
+        self, (host, port), DelegatingRequestHandler)
     HttpServer.PATH_HANDLERS.update(handlers or {})

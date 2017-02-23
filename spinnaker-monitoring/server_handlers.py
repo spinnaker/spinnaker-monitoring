@@ -81,18 +81,23 @@ class WebserverCommandHandler(command_processor.CommandHandler):
 
     This starts the server and will run forever.
     """
-    port = options['port']
-    logging.info('Starting HTTP server on port %d', port)
     url_path_to_handler = {handler.url_path: handler.process_web_request
                            for handler in self.__handler_list}
 
-    httpd = http_server.HttpServer(port, url_path_to_handler)
+    httpd = http_server.HttpServer(options, url_path_to_handler)
     httpd.serve_forever()
 
   def add_argparser(self, subparsers):
     """Implements CommandHandler."""
     parser = super(WebserverCommandHandler, self).add_argparser(subparsers)
-    parser.add_argument('--port', default=8008, type=int)
+    parser.add_argument(
+        '--port', default=None, type=int,
+        help='Override the port for the embedded webserver to listen on.')
+    parser.add_argument(
+        '--host', default=None,
+        help='Override the network interface IP address for the embedded server'
+        ' to listen on. The default is localhost for security.'
+        ' An empty value can be used for all available interfaces.')
     spectator_client.SpectatorClient.add_standard_parser_arguments(parser)
     return parser
 

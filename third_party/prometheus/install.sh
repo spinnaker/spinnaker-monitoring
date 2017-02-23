@@ -17,7 +17,7 @@
 PROMETHEUS_VERSION=prometheus-1.5.0.linux-amd64
 PROMETHEUS_PORT=9090
 GRAFANA_PORT=3000
-CONFIG_DIR=$(readlink -f `dirname $0`)
+SOURCE_DIR=$(readlink -f `dirname $0`)
 GATEWAY_URL=
 SERVER=true
 CLIENT=true
@@ -53,7 +53,7 @@ function install_prometheus() {
      https://github.com/prometheus/prometheus/releases/download/v1.5.0/prometheus-1.5.0.linux-amd64.tar.gz
   sudo tar xzf /tmp/prometheus.gz -C /opt
   rm /tmp/prometheus.gz
-  sudo cp $CONFIG_DIR/prometheus.conf /etc/init/prometheus.conf
+  sudo cp $SOURCE_DIR/prometheus.conf /etc/init/prometheus.conf
   if [[ ! -z $GATEWAY_URL ]]; then
       sed "s/spinnaker-prometheus\.yml/gateway-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
@@ -68,7 +68,7 @@ function install_node_exporter() {
   sudo ln -s /opt/prometheus-1.5.0.linux-amd64/node_exporter-0.13.0.linux-amd64/node_exporter \
       /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
-  sudo cp $CONFIG_DIR/node_exporter.conf /etc/init/node_exporter.conf
+  sudo cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
   sudo service node_exporter start
 }
 
@@ -79,7 +79,7 @@ function install_push_gateway() {
   sudo ln -s /opt/prometheus-1.5.0.linux-amd64/pushgateway-0.3.1.linux-amd64/pushgateway \
       /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
-  sudo cp $CONFIG_DIR/pushgateway.conf /etc/init/pushgateway.conf
+  sudo cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
   sudo service pushgateway start
 }
 
@@ -101,7 +101,7 @@ function add_userdata() {
        -X POST \
        -d "${PAYLOAD//\'/\"}"
 
-  for dashboard in ${CONFIG_DIR}/*Dashboard.json; do
+  for dashboard in ${SOURCE_DIR}/*Dashboard.json; do
     echo "Installing $(basename $dashboard)"
     x=$(sed -e "/\"__inputs\"/,/],/d" \
             -e "/\"__requires\"/,/],/d" \
@@ -122,10 +122,10 @@ process_args "$@"
 if $SERVER; then
   mkdir -p  /opt/prometheus-1.5.0.linux-amd64
   if [[ -z $GATEWAY_URL ]]; then
-    sudo cp $CONFIG_DIR/spinnaker-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
+    sudo cp $SOURCE_DIR/spinnaker-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
     install_node_exporter
   else
-    sudo cp $CONFIG_DIR/pushgateway-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
+    sudo cp $SOURCE_DIR/pushgateway-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
     install_push_gateway
   fi
   install_prometheus
@@ -143,19 +143,19 @@ if $DASHBOARDS; then
 fi
 
 if $CLIENT; then
-  if [[ -f /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml ]]; then
+  if [[ -f /opt/spinnaker-monitoring/spinnaker-monitoring.yml ]]; then
     echo "Enabling prometheus in spinnaker-monitoring.yml"
-    chmod 600 /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml
+    chmod 600 /opt/spinnaker-monitoring/spinnaker-monitoring.yml
     sed -e "s/^\( *\)#\( *- prometheus$\)/\1\2/" \
-        -i /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml
+        -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
     if [[ $GATEWAY_URL != "" ]]; then
       escaped_url=${GATEWAY_URL//\//\\\/}
       sed -e "s/^\( *push_gateway:\)/\1 $escaped_url/" \
-          -i /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml
+          -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
     fi
   else
     echo ""
-    echo "You will need to edit /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml"
+    echo "You will need to edit /opt/spinnaker-monitoring/spinnaker-monitoring.yml"
     echo "  and add prometheus as a monitor_store before running spinnaker-monitoring"
     if [[ $GATEWAY_URL != "" ]]; then
         echo "  and also set prometheus to $GATEWAY_URL"

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # pylint: disable=missing-docstring
-# pylint: disable=star-args
 # pylint: disable=global-statement
 
 import base64
@@ -32,41 +31,40 @@ import urlparse
 import yaml
 
 
-CONFIG_DIR = '/opt/spinnaker-monitoring/config'
+DEFAULT_REGISTRY_DIR = '/opt/spinnaker-monitoring/registry'
 
 # pylint: disable=invalid-name
-_cached_source_catalog = None
-_cached_source_timestamp = None
+_cached_registry_catalog = None
+_cached_registry_timestamp = None
 
 
-def get_source_catalog(config_dir=None):
-  """Returns a dictionary of source name to source configuration document.
+def get_source_catalog(options):
+  """Returns a dictionary of metric source name to configuration document.
 
   Args:
-    config_dir: [string] The base config directory to load from.
-        The source configurations are expected to be in a 'sources' subdir.
+    options: [dict] Specifies where the catalog is.
+       If 'registry_dir' is specified use that.
+       Otherwise default to the DEFAULT_REGISTRY_DIR
 
   Returns:
-    Dictionary keyed by the root name of the config file in <config_dir>
-       whose value is the dictionary of the YAML file content.
+    Dictionary keyed by the root name of the config file in the registry
+       directory whose value is the dictionary of the YAML file content.
   """
-  config_dir = config_dir or CONFIG_DIR
-  source_dir = os.path.join(config_dir, 'sources')
-
-  global _cached_source_catalog
-  global _cached_source_timestamp
+  registry_dir = options.get('registry_dir', DEFAULT_REGISTRY_DIR)
+  global _cached_registry_catalog
+  global _cached_registry_timestamp
   try:
-    timestamp = os.path.getmtime(source_dir)
+    timestamp = os.path.getmtime(registry_dir)
   except OSError as err:
     logging.error(err)
-    return _cached_source_catalog or {}
+    return _cached_registry_catalog or {}
 
-  if _cached_source_timestamp == timestamp:
-    return _cached_source_catalog
+  if _cached_registry_timestamp == timestamp:
+    return _cached_registry_catalog
 
-  logging.info('Updating catalog from %s at %ld', source_dir, timestamp)
+  logging.info('Updating catalog from %s at %ld', registry_dir, timestamp)
   catalog = {}
-  for source in glob.glob(os.path.join(source_dir, '*.yml')):
+  for source in glob.glob(os.path.join(registry_dir, '*.yml')):
     name = os.path.splitext(os.path.basename(source))[0]
     logging.info('loading %s', source)
     with open(source) as stream:
@@ -78,8 +76,8 @@ def get_source_catalog(config_dir=None):
       doc['metrics_url'] = url if isinstance(url, list) else [url]
       catalog[name] = doc
 
-  _cached_source_catalog = catalog
-  _cached_source_timestamp = timestamp
+  _cached_registry_catalog = catalog
+  _cached_registry_timestamp = timestamp
   return catalog
 
 
@@ -133,7 +131,9 @@ class SpectatorClient(object):
              ' and show the differences with the current metric/bindings.'
              ' This is to show a change in what metrics are available, not'
              ' the values of the metrics themselves.')
-
+    parser.add_argument('--registry_dir', default=None,
+                        help='The directory containing the *.yml files specifying'
+                              ' each of the URLs to collect metrics from.')
 
   def __init__(self, options):
     self.__prototype = None

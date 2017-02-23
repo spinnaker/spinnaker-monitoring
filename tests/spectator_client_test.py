@@ -127,8 +127,10 @@ class TestableSpectatorClient(spectator_client.SpectatorClient):
 
 
 class SpectatorClientTest(unittest.TestCase):
-  DEV_CONFIG_DIR = os.path.abspath(
-      os.path.join(os.path.dirname(__file__), '..', 'config.dev'))
+  @classmethod
+  def setUpClass(cls):
+      spectator_client.DEFAULT_REGISTRY_DIR = os.path.abspath(
+          os.path.join(os.path.dirname(__file__), '..', 'registry.dev'))
 
   def setUp(self):
     options = {'prototype_path': None, 'host': TEST_HOST}
@@ -146,17 +148,18 @@ class SpectatorClientTest(unittest.TestCase):
         mo.return_value,
         mock.mock_open(
             read_data='metrics_url: http://testhost:3344').return_value)
+    options = {'registry_dir': '/my/registry/path'}
     with patch('spectator_client.open', mo, create=True):
-      catalog = spectator_client.get_source_catalog(config_dir='TestConfig')
+      catalog = spectator_client.get_source_catalog(options)
     self.assertEqual({'one': {'metrics_url': ['http://testhost:1122']},
                       'two': {'metrics_url': ['http://testhost:3344']}},
                      catalog)
-    mock_getmtime.assert_called_with('TestConfig/sources')
-    mock_glob.assert_called_with('TestConfig/sources/*.yml')
+    mock_getmtime.assert_called_with('/my/registry/path')
+    mock_glob.assert_called_with('/my/registry/path/*.yml')
     self.assertEquals(1, mock_getmtime.call_count)
 
     # Verify that we dont rescan content if timestamp hasnt changed.
-    again = spectator_client.get_source_catalog('TestConfig')
+    again = spectator_client.get_source_catalog(options)
     self.assertEquals(catalog, again)
     self.assertEquals(2, mock_getmtime.call_count)
     self.assertEquals(1, mock_glob.call_count)
@@ -166,14 +169,14 @@ class SpectatorClientTest(unittest.TestCase):
     mock_glob.return_value = ['three.yml']
     mo = mock.mock_open(read_data='metrics_url: http://testhost:3333')
     with patch('spectator_client.open', mo, create=True):
-      retry = spectator_client.get_source_catalog('TestConfig')
+      retry = spectator_client.get_source_catalog(options)
     self.assertEqual({'three': {'metrics_url': ['http://testhost:3333']}},
                      retry)
 
   def test_default_dev_endpoints(self):
     got_urls = {name: config['metrics_url']
-                for name, config in spectator_client.get_source_catalog(
-                    config_dir=self.DEV_CONFIG_DIR).items()}
+                for name, config
+                in spectator_client.get_source_catalog({}).items()}
 
     def localhost_urls(port):
       return ['http://localhost:{port}/spectator/metrics'.format(port=port)]

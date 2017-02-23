@@ -80,16 +80,16 @@ function install_dashboards() {
 }
 
 function install_client() {
-  if [[ -f /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml ]]; then
+  if [[ -f /opt/spinnaker-monitoring/spinnaker-monitoring.yml ]]; then
     echo "Injecting Datadog API key into spinnaker-monitoring.yml"
     echo "   and enabling Datadog in spinnaker-monitoring.yml"
-    chmod 600 /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml
+    chmod 600 /opt/spinnaker-monitoring/spinnaker-monitoring.yml
     sed -e "s/\(^ *api_key:\).*/\1 $DATADOG_API_KEY/" \
         -e "s/^\( *\)#\( *- datadog$\)/\1\2/" \
-        -i /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml
+        -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
   else
     echo ""
-    echo "You will need to edit /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml to add your DATADOG_API_KEY and to add datadog as a monitor_store before running spinnaker-monitoring."
+    echo "You will need to edit /opt/spinnaker-monitoring/spinnaker-monitoring.yml to add your DATADOG_API_KEY and to add datadog as a monitor_store before running spinnaker-monitoring."
   fi
 }
 

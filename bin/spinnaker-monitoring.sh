@@ -16,6 +16,5 @@
 
 PYTHONWARNINGS=once \
 python /opt/spinnaker-monitoring/spinnaker-monitoring \
-  --config_dir /opt/spinnaker-monitoring/config \
   --log_dir /var/log/spinnaker/monitoring \
   "$@"

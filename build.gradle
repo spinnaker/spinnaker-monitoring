@@ -68,8 +68,12 @@ task daemonDeb(type: Deb) {
     fileMode  0755
   }  
 
-  from('config.dev') {
-    into spinnakerMonitoringHome + '/config.example'
+  from(file('spinnaker-monitoring.yml')) {
+    into('/opt/spinnaker-monitoring')
+  }
+
+  from('registry.dev') {
+    into spinnakerMonitoringHome + '/registry.example'
     fileMode  0600
   }  
 

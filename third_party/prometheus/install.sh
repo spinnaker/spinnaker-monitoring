@@ -120,6 +120,7 @@ process_args "$@"
 
 
 if $SERVER; then
+  mkdir -p  /opt/prometheus-1.5.0.linux-amd64
   if [[ -z $GATEWAY_URL ]]; then
     sudo cp $CONFIG_DIR/spinnaker-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
     install_node_exporter

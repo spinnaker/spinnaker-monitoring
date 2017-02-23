@@ -33,6 +33,7 @@ import yaml
 
 
 CONFIG_DIR = '/opt/spinnaker-monitoring/config'
+SOURCES_DIR = '/opt/spinnaker-monitoring/sources'
 
 # pylint: disable=invalid-name
 _cached_source_catalog = None
@@ -51,7 +52,7 @@ def get_source_catalog(config_dir=None):
        whose value is the dictionary of the YAML file content.
   """
   config_dir = config_dir or CONFIG_DIR
-  source_dir = os.path.join(config_dir, 'sources')
+  source_dir = SOURCES_DIR # os.path.join(config_dir, 'sources')
 
   global _cached_source_catalog
   global _cached_source_timestamp

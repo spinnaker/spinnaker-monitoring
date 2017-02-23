@@ -108,5 +108,5 @@ class HttpServer(BaseHTTPServer.HTTPServer):
 
   def __init__(self, port, handlers=None):
     BaseHTTPServer.HTTPServer.__init__(
-        self, ('localhost', port), DelegatingRequestHandler)
+        self, ('', port), DelegatingRequestHandler)
     HttpServer.PATH_HANDLERS.update(handlers or {})

@@ -77,7 +77,7 @@ class PrometheusMetricsService(object):
   """
 
   def __init__(self, options):
-    self.__catalog = spectator_client.get_source_catalog(options['config_dir'])
+    self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
     self.__add_metalabels = options.get(
         'prometheus_add_source_metalabels',

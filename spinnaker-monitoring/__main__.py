@@ -34,7 +34,7 @@ import stackdriver_handlers
 import util
 
 
-CONFIG_DIR = '/opt/spinnaker-monitoring/config'
+DEFAULT_CONFIG_PATH = '/opt/spinnaker-monitoring/spinnaker-monitoring.yml'
 
 
 def init_logging(options):
@@ -79,7 +79,7 @@ def add_global_args(parser):
   """Add global parser options that are independent of the command."""
   parser.add_argument('--log_basename', default='spinnaker-monitoring')
   parser.add_argument('--log_dir', default='.')
-  parser.add_argument('--config_dir', default=CONFIG_DIR,
+  parser.add_argument('--config', default=DEFAULT_CONFIG_PATH,
                       help='Path to base configuration directory.')
 
 
@@ -89,8 +89,6 @@ def prepare_commands():
   parser = argparse.ArgumentParser(
       description='Helper tool to interact with Spinnaker deployment metrics.')
   add_global_args(parser)
-
-  spectator_client.CONFIG_DIR = os.path.join(CONFIG_DIR)
 
   subparsers = parser.add_subparsers(title='commands', dest='command')
   spectator_handlers.add_handlers(all_command_handlers, subparsers)
@@ -114,8 +112,7 @@ def main():
   opts = parser.parse_args()
   options = vars(opts)
   init_logging(options)
-  options = util.merge_options_and_yaml_from_path(
-      options, os.path.join(opts.config_dir, 'spinnaker-monitoring.yml'))
+  options = util.merge_options_and_yaml_from_path(options, opts.config)
 
   # TODO(ewiseblatt): decouple this so we dont need to know about this here.
   # Take the union of stores enabled on the command line or in the config file.
@@ -133,11 +130,22 @@ def main():
       options['command'], options, all_command_handlers)
 
 
+def set_default_paths():
+  abs_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+  registry_path = os.path.join(abs_path, 'registry')
+  dev_path = os.path.join(abs_path, 'registry.dev')
+  yml_path = os.path.join(abs_path, 'spinnaker-monitoring.yml')
+
+  if os.path.exists(registry_path):
+    spectator_client.DEFAULT_REGISTRY_DIR = registry_path
+  elif os.path.exists(dev_path):
+    spectator_client.DEFAULT_REGISTRY_DIR = dev_path
+
+  if os.path.exists(yml_path):
+    global DEFAULT_CONFIG_PATH
+    DEFAULT_CONFIG_PATH = yml_path
+
+
 if __name__ == '__main__':
-  abs_path = os.path.abspath(os.path.dirname(__file__))
-  path_basename = os.path.basename(abs_path)
-  if (   (path_basename == 'spinnaker-monitoring')
-      and(os.path.basename(os.path.dirname(abs_path)) == path_basename)):
-    CONFIG_DIR = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), '..', 'config.dev'))
+  set_default_paths()
   main()

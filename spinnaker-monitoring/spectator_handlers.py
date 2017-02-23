@@ -66,8 +66,7 @@ class BaseSpectatorCommandHandler(command_processor.CommandHandler):
 
 class DumpMetricsHandler(BaseSpectatorCommandHandler):
   def process_commandline_request(self, options):
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     data_map = self._get_data_map(catalog, options)
     json_text = json.JSONEncoder(indent=2).encode(data_map)
     self.output(options, json_text)
@@ -75,8 +74,7 @@ class DumpMetricsHandler(BaseSpectatorCommandHandler):
   def process_web_request(self, request, path, params, fragment):
     options = dict(command_processor.get_global_options())
     options.update(params)
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     param_services = params.get('services', 'all').split(',')
     if param_services == ['all']:
       restricted_catalog = catalog
@@ -100,8 +98,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     return type_map, service_tag_map, active_services
 
   def process_commandline_request(self, options):
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     type_map, service_tag_map, active_services = (
         self.__get_type_and_tag_map_and_active_services(
             catalog, options))
@@ -115,8 +112,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
   def process_web_request(self, request, path, params, fragment):
     options = dict(command_processor.get_global_options())
     options.update(params)
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
 
     type_map, service_tag_map, active_services = (
         self.__get_type_and_tag_map_and_active_services(catalog, options))
@@ -247,8 +243,7 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
   """Show all the current metric values."""
 
   def process_commandline_request(self, options):
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     data_map = self._get_data_map(catalog, options)
     by = options.get('by', 'service')
     if by == 'service':
@@ -260,8 +255,7 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
   def process_web_request(self, request, path, params, fragment):
     options = dict(command_processor.get_global_options())
     options.update(params)
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     data_map = self._get_data_map(catalog, options)
 
     if self.accepts_content_type(request, 'text/html'):

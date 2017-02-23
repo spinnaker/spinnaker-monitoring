@@ -172,8 +172,7 @@ class MonitorCommandHandler(WebserverCommandHandler):
     The main thread will be the standard WebServer.
     """
     period = options['period']
-    catalog = spectator_client.get_source_catalog(
-        config_dir=options['config_dir'])
+    catalog = spectator_client.get_source_catalog(options)
     spectator = spectator_client.SpectatorClient(options)
 
     publishing_services = [service

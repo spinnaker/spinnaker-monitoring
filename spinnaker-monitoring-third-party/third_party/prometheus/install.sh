@@ -25,26 +25,29 @@ DASHBOARDS=true
 
 function process_args() {
   while [[ $# > 0 ]]; do
-      local key="$1"
-      shift
-      case $key in
-          --gateway)
-              GATEWAY_URL="$1"
-              shift
-              ;;
-          --server_only)
-              CLIENT=false
-              DASHBOARDS=false
-              ;;
-          --client_only)
-              SERVER=false
-              DASHBOARDS=false
-              ;;
-          --dashboards_only)
-              SERVER=false
-              CLIENT=false
-              ;;
-      esac
+    local key="$1"
+    shift
+    case $key in
+        --gateway)
+            GATEWAY_URL="$1"
+            shift
+            ;;
+        --server_only)
+            CLIENT=false
+            DASHBOARDS=false
+            ;;
+        --client_only)
+            SERVER=false
+            DASHBOARDS=false
+            ;;
+        --dashboards_only)
+            SERVER=false
+            CLIENT=false
+            ;;
+        *)
+            echo "Unrecognized argument '$key'."
+            exit -1
+    esac
   done
 }
 

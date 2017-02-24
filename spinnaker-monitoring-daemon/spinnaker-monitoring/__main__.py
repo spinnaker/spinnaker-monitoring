@@ -29,6 +29,7 @@ import prometheus_service
 import server_handlers
 import spectator_client
 import spectator_handlers
+import ssl
 import stackdriver_service
 import stackdriver_handlers
 import util
@@ -112,9 +113,21 @@ def prepare_commands():
 
   return all_command_handlers, parser
 
+def disable_ssl_verification():
+  """"We must disable SSL verification when using self-signed certificates."""
+  try:
+    _create_unverified_https_context = ssl._create_unverified_context
+  except AttributeError:
+    # Legacy Python that doesn't verify HTTPS certificates by default
+    pass
+  else:
+    # Handle target environment that doesn't support HTTPS verification
+    ssl._create_default_https_context = _create_unverified_https_context
 
 def main():
   """The main program sets up the commands then delegates to one of them."""
+
+  disable_ssl_verification()
 
   all_command_handlers, parser = prepare_commands()
   opts = parser.parse_args()

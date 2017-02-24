@@ -50,10 +50,11 @@ def get_source_catalog(options):
     Dictionary keyed by the root name of the config file in the registry
        directory whose value is the dictionary of the YAML file content.
   """
-  registry_dir = options.get('registry_dir', DEFAULT_REGISTRY_DIR)
+  registry_dir = options.get('registry_dir') or DEFAULT_REGISTRY_DIR
   global _cached_registry_catalog
   global _cached_registry_timestamp
   try:
+    
     timestamp = os.path.getmtime(registry_dir)
   except OSError as err:
     logging.error(err)

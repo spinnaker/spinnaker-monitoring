@@ -2,7 +2,9 @@
 # Each yaml file contains a "metrics_url:" value with either a URL string
 # or a list of URL strings to collect from using the base filename as
 # the identifier for the service the metrics came from.
-registry_dir: /opt/spinnaker-monitoring/registry
+# If not specified the default will be the first of:
+#    ../registry, ../registry.dev, /opt/spinnaker-monitoring/registry
+registry_dir:
 
 server:
   # This host and port to bind the embedded HTTP server on.

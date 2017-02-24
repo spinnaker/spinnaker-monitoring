@@ -23,19 +23,22 @@ function process_args() {
     local key="$1"
     shift
     case $key in
-      --server_only)
-          CLIENT=false
-          DASHBOARDS=false
-          ;;
-      --client_only)
-          SERVER=false
-          DASHBOARDS=false
-          ;;
-      --dashboards_only)
-          SERVER=false
-          CLIENT=false
-          ;;
-      esac
+        --server_only)
+            CLIENT=false
+            DASHBOARDS=false
+            ;;
+        --client_only)
+            SERVER=false
+            DASHBOARDS=false
+            ;;
+        --dashboards_only)
+            SERVER=false
+            CLIENT=false
+            ;;
+        *)
+            echo "Unrecognized argument '$key'."
+            exit -1
+    esac
   done
 }
 
@@ -71,7 +74,7 @@ function install_dashboards() {
     exit -1
   fi
 
-  for dashboard in '$DIRNAME"/*Dashboard.json; do
+  for dashboard in "$DIRNAME"/*Dashboard.json; do
     "$DIRNAME/../../bin/spinnaker-monitoring.sh" \
         upload_stackdriver_dashboard --dashboard ${dashboard} \
         "$@"

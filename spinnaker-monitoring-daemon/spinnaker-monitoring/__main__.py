@@ -53,32 +53,40 @@ def init_logging(options):
     },
     'handlers':{
       'console':{
-        'level':'WARNING',
+        'level': options['log_level'],
         'class':'logging.StreamHandler',
         'formatter':'timestamped'
-      },
-      'file':{
-        'level':'DEBUG',
-        'class':'logging.FileHandler',
-        'formatter':'timestamped',
-        'filename': os.path.join(log_dir, log_file),
-        'mode':'w'
       },
     },
     'loggers':{
        '': {
          'level':'DEBUG',
-         'handlers':['console', 'file']
+         'handlers':['console']
        },
     }
   }
+  if log_dir:
+    log_config['handlers']['file'] = {
+      'level':'DEBUG',
+      'class':'logging.FileHandler',
+      'formatter':'timestamped',
+      'filename': os.path.join(log_dir, log_file),
+      'mode':'w'
+    }
+    log_config['loggers']['']['handlers'].append('file')
+
   logging.config.dictConfig(log_config)
 
 
 def add_global_args(parser):
   """Add global parser options that are independent of the command."""
-  parser.add_argument('--log_basename', default='spinnaker-monitoring')
-  parser.add_argument('--log_dir', default='.')
+  parser.add_argument(
+      '--log_basename', default='spinnaker-monitoring',
+      help='When writing a logfile, use this as the basename (before .log extension)')
+  parser.add_argument(
+      '--log_dir', default=None,
+      help='If specified, log to a --log_basename in this directory instead of console.')
+  parser.add_argument('--log_level', default='INFO', help='log level to console')
   parser.add_argument('--config', default=DEFAULT_CONFIG_PATH,
                       help='Path to base configuration directory.')
 

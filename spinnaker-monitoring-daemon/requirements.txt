@@ -1,9 +1,21 @@
 # sudo apt-get install python-dev
 --index-url https://pypi.python.org/simple/
 
-datadog
-google-api-python-client
-oauth2client
+# 20170226
+# Moved datadog to the datadog cleint install in third-party
+# because it seems to be corrupting gce image baking.
+# datadog
+
+# Moved google to the stackdriver client install in third-party
+# google-api-python-client
+# oauth2client
+
+# Moved prometheus to the prometheus client install in third-party
+# prometheus_client
+
+
+httplib2
 pyyaml
-prometheus_client
+
+# mock is only needed for tests
 mock

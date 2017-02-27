@@ -4,7 +4,12 @@ python:
 
 dist: trusty
 
-install: pip install -r spinnaker-monitoring-daemon/requirements.txt
+install:
+  - pip install -r spinnaker-monitoring-daemon/requirements.txt
+  - pip install -r spinnaker-monitoring-third-party/third_party/datadog/requirements.txt
+  - pip install -r spinnaker-monitoring-third-party/third_party/prometheus/requirements.txt
+  - pip install -r spinnaker-monitoring-third-party/third_party/stackdriver/requirements.txt
+
 script: gradle/buildViaTravis.sh
 
 env:

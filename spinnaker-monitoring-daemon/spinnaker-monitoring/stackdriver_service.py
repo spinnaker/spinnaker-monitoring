@@ -23,13 +23,18 @@ import re
 import traceback
 import urllib2
 
-import apiclient
-from googleapiclient.errors import HttpError
-from oauth2client.client import GoogleCredentials
-from oauth2client.service_account import ServiceAccountCredentials
-
 import spectator_client
 import util
+
+
+try:
+  import apiclient
+  from googleapiclient.errors import HttpError
+  from oauth2client.client import GoogleCredentials
+  from oauth2client.service_account import ServiceAccountCredentials
+  stackdriver_available = True
+except ImportError:
+  stackdriver_available = False
 
 
 # This doesnt belong here, but this library insists on logging
@@ -383,6 +388,10 @@ class StackdriverMetricsService(object):
 
 def make_stub(options):
   """Helper function for making a stub to talk to service."""
+  if not stackdriver_available:
+      raise ImportError(
+           'You must "pip install google-api-python-client oauth2client" to get the stackdriver client library.')
+    
   stackdriver_config = options.get('stackdriver', {})
   credentials_path = options.get('credentials_path', None)
   if credentials_path is None:

@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+
+source `dirname "$0"`/../install_helper_functions.sh
 
 PROMETHEUS_VERSION=prometheus-1.5.0.linux-amd64
 PROMETHEUS_PORT=9090
@@ -45,61 +48,61 @@ function process_args() {
             CLIENT=false
             ;;
         *)
-            echo "Unrecognized argument '$key'."
+            >&2 echo "Unrecognized argument '$key'."
             exit -1
     esac
   done
 }
 
 function install_prometheus() {
-  curl -s -L -o /tmp/prometheus.gz \
+  curl -s -S -L -o /tmp/prometheus.gz \
      https://github.com/prometheus/prometheus/releases/download/v1.5.0/prometheus-1.5.0.linux-amd64.tar.gz
-  sudo tar xzf /tmp/prometheus.gz -C /opt
+  tar xzf /tmp/prometheus.gz -C /opt
   rm /tmp/prometheus.gz
-  sudo cp $SOURCE_DIR/prometheus.conf /etc/init/prometheus.conf
+  cp $SOURCE_DIR/prometheus.conf /etc/init/prometheus.conf
   if [[ ! -z $GATEWAY_URL ]]; then
       sed "s/spinnaker-prometheus\.yml/gateway-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
   fi
-  sudo service prometheus start
+  service prometheus start
 }
 
 function install_node_exporter() {
-  curl -s -L -o /tmp/node_exporter.gz \
+  curl -s -S -L -o /tmp/node_exporter.gz \
      https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz
-  sudo tar xzf /tmp/node_exporter.gz -C /opt/prometheus-1.5.0.linux-amd64
-  sudo ln -s /opt/prometheus-1.5.0.linux-amd64/node_exporter-0.13.0.linux-amd64/node_exporter \
-      /usr/bin/node_exporter
+  tar xzf /tmp/node_exporter.gz -C /opt/$PROMETHEUS_VERSION
+  ln -fs /opt/$PROMETHEUS_VERSION/node_exporter-0.13.0.linux-amd64/node_exporter \
+         /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
-  sudo cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
-  sudo service node_exporter start
+  cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
+  service node_exporter restart
 }
 
 function install_push_gateway() {
-  curl -s -L -o /tmp/pushgateway.gz \
+  curl -s -S -L -o /tmp/pushgateway.gz \
      https://github.com/prometheus/pushgateway/releases/download/v0.3.1/pushgateway-0.3.1.linux-amd64.tar.gz
-  sudo tar xzf /tmp/pushgateway.gz -C /opt/prometheus-1.5.0.linux-amd64
-  sudo ln -s /opt/prometheus-1.5.0.linux-amd64/pushgateway-0.3.1.linux-amd64/pushgateway \
-      /usr/bin/pushgateway
+  tar xzf /tmp/pushgateway.gz -C /opt/$PROMETHEUS_VERSION
+  ln -fs /opt/$PROMETHEUS_VERSION/pushgateway-0.3.1.linux-amd64/pushgateway \
+         /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
-  sudo cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
-  sudo service pushgateway start
+  cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
+  service pushgateway restart
 }
 
 function install_grafana() {
-  curl -s -L -o /tmp/grafana.deb \
+  curl -s -S -L -o /tmp/grafana.deb \
       https://grafanarel.s3.amazonaws.com/builds/grafana_4.1.1-1484211277_amd64.deb
-  sudo apt-get install -y adduser libfontconfig
-  sudo dpkg -i /tmp/grafana.deb
-  sudo update-rc.d grafana-server defaults
+  apt-get install -y adduser libfontconfig
+  dpkg -i /tmp/grafana.deb
+  update-rc.d grafana-server defaults
   rm /tmp/grafana.deb
-  sudo service grafana-server start
+  service grafana-server restart
 }
 
 function add_userdata() {
   echo "Adding datasource"
   PAYLOAD="{'name':'Spinnaker','type':'prometheus','url':'http://localhost:${PROMETHEUS_PORT}','access':'direct','isDefault':true}"
-  curl -s -u admin:admin http://localhost:${GRAFANA_PORT}/api/datasources \
+  curl -s -S -u admin:admin http://localhost:${GRAFANA_PORT}/api/datasources \
        -H "Content-Type: application/json" \
        -X POST \
        -d "${PAYLOAD//\'/\"}"
@@ -111,24 +114,32 @@ function add_userdata() {
             -e "s/\${DS_SPINNAKER\}/Spinnaker/g" < "$dashboard")
     temp_file=$(mktemp)
     echo "{ \"dashboard\": $x }" > $temp_file
-    curl -s -u admin:admin http://localhost:${GRAFANA_PORT}/api/dashboards/import \
+    curl -s -S -u admin:admin http://localhost:${GRAFANA_PORT}/api/dashboards/import \
          -H "Content-Type: application/json" \
          -X POST \
-         -d @${temp_file} > /dev/null
+         -d @${temp_file}
     rm -f $temp_file
   done
 }
 
+
 process_args "$@"
+
+if $CLIENT || $SERVER; then
+  if [[ $(id -u) -ne 0 ]]; then
+    >&2 echo "This command must be run as root. Try again with sudo."
+    exit -1
+  fi
+fi
 
 
 if $SERVER; then
-  mkdir -p  /opt/prometheus-1.5.0.linux-amd64
+  mkdir -p  /opt/$PROMETHEUS_VERSION
   if [[ -z $GATEWAY_URL ]]; then
-    sudo cp $SOURCE_DIR/spinnaker-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
+    cp $SOURCE_DIR/spinnaker-prometheus.yml /opt/$PROMETHEUS_VERSION
     install_node_exporter
   else
-    sudo cp $SOURCE_DIR/pushgateway-prometheus.yml /opt/prometheus-1.5.0.linux-amd64
+    cp $SOURCE_DIR/pushgateway-prometheus.yml /opt/$PROMETHEUS_VERSION
     install_push_gateway
   fi
   install_prometheus
@@ -146,19 +157,22 @@ if $DASHBOARDS; then
 fi
 
 if $CLIENT; then
-  if [[ -f /opt/spinnaker-monitoring/spinnaker-monitoring.yml ]]; then
-    echo "Enabling prometheus in spinnaker-monitoring.yml"
-    chmod 600 /opt/spinnaker-monitoring/spinnaker-monitoring.yml
-    sed -e "s/^\( *\)#\( *- prometheus$\)/\1\2/" \
-        -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+  # 20170226
+  # Moved this from the daemon requirements for consistency with datadog.
+  pip install -r "$SOURCE_DIR/requirements.txt"
+
+  config_path=$(find_config_path)
+  if [[ -f "$config_path" ]]; then
+    echo "Enabling prometheus in $config_path"
+    chmod 600 "$config_path"
+    sed -e "s/^\( *\)#\( *- prometheus$\)/\1\2/" -i "$config_path"
     if [[ $GATEWAY_URL != "" ]]; then
       escaped_url=${GATEWAY_URL//\//\\\/}
-      sed -e "s/^\( *push_gateway:\)/\1 $escaped_url/" \
-          -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+      sed -e "s/^\( *push_gateway:\)/\1 $escaped_url/" -i "$config_path"
     fi
   else
     echo ""
-    echo "You will need to edit /opt/spinnaker-monitoring/spinnaker-monitoring.yml"
+    echo "You will need to edit $config_path"
     echo "  and add prometheus as a monitor_store before running spinnaker-monitoring"
     if [[ $GATEWAY_URL != "" ]]; then
         echo "  and also set prometheus to $GATEWAY_URL"

@@ -31,7 +31,7 @@ sudo DEFAULT_CONFIG_YML_DIR="$DEFAULT_CONFIG_YML_DIR" \
      $@
 
 echo "Installing python requirements"
-if [[ ! pip install -r spinnaker-monitoring-daemon/requirements.txt ]]
+if ! pip install -r spinnaker-monitoring-daemon/requirements.txt; then
     >&2 echo "Could not install spinnaker-monitoring-daemon/requirements.txt"
     >&2 echo "You might need to sudo it yourself, use virtualenv or install python-pip."
 fi

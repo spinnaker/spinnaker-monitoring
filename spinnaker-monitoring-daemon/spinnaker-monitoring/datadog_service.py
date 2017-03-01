@@ -21,7 +21,13 @@ import os
 import re
 import socket
 import traceback
-import datadog
+
+try:
+  import datadog
+  datadog_available = True
+except ImportError:
+  datadog_available = False
+  
 
 import spectator_client
 
@@ -48,6 +54,8 @@ class DatadogMetricsService(object):
 
   def __init__(self, api_key, app_key, host=None):
     """Constructs the object."""
+    if not datadog_available:
+      raise ImportError('You must "pip install datadog" to get the datadog client library.')
     self.__api = None
     self.__host = host
     self.__api_key = api_key

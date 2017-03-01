@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+source `dirname "$0"`/../install_helper_functions.sh
+
 DIRNAME=`dirname $0`
 SERVER=true
 CLIENT=true
@@ -36,7 +39,7 @@ function process_args() {
             CLIENT=false
             ;;
         *)
-            echo "Unrecognized argument '$key'."
+            >&2 echo "Unrecognized argument '$key'."
             exit -1
     esac
   done
@@ -44,21 +47,26 @@ function process_args() {
 
 function install_server() {
   curl -sSO https://repo.stackdriver.com/stack-install.sh
-  if ! sudo bash stack-install.sh --write-gcm; then
+  if ! bash stack-install.sh --write-gcm; then
     echo "See https://cloud.google.com/monitoring/agent/install-agent"
     echo "The agent is optional (and only available on GCP and AWS)"
   fi
 }
 
-function configure_client() {
-  if [[ -f /opt/spinnaker-monitoring/spinnaker-monitoring.yml ]]; then
-    echo "Enabling stackdriver in spinnaker-monitoring.yml"
-    chmod 600 /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+function install_client() {
+  # 20170226
+  # Moved this from the daemon requirements for consistency with datadog.
+  pip install -r "$SOURCE_DIR/requirements.txt"
+
+  config_path=$(find_config_path)
+  if [[ -f "$config_path" ]]; then
+    echo "Enabling stackdriver in "$config_path"
+    chmod 600 "$config_path"
     sed -e "s/^\( *\)#\( *- stackdriver$\)/\1\2/" \
-        -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+        -i "$config_path"
   else
     echo ""
-    echo "You will need to edit /opt/spinnaker-monitoring/spinnaker-monitoring.yml"
+    echo "You will need to edit '$config_path'"
     echo "  and add stackdriver as a monitor_store before running spinnaker-monitoring"
   fi
 }
@@ -66,11 +74,11 @@ function configure_client() {
 function install_dashboards() {
   if [[ -z $STACKDRIVER_API_KEY ]]; then
     # Remove this once API is no longer whitelisted.
-    echo "You need a STACKDRIVER_API_KEY to use this installer."
+    >&2 echo "You need a STACKDRIVER_API_KEY to use this installer."
     exit -1
   fi
   if [[ ! -f "$DIRNAME/../../bin/spinnaker-monitoring.sh" ]]; then
-    echo "You need spinnaker-monitoring installed into /opt/spinnaker-monitoring to use this installer."
+    >&2 echo "You need spinnaker-monitoring installed into /opt/spinnaker-monitoring to use this installer."
     exit -1
   fi
 
@@ -84,6 +92,14 @@ function install_dashboards() {
 
 process_args "$@"
 
+if $CLIENT || $SERVER; then
+  if [[ $(id -u) -ne 0 ]]; then
+    >&2 echo "This command must be run as root. Try again with sudo."
+    exit -1
+  fi
+fi
+
+
 if $SERVER; then
   install_server
 fi
@@ -93,6 +109,6 @@ if $DASHBOARDS; then
 fi
 
 if $CLIENT; then
-  configure_client
+  install_client
 fi
 

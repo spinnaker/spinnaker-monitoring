@@ -53,16 +53,21 @@ import command_processor
 import spectator_client
 import util
 
-from prometheus_client import (
-    CONTENT_TYPE_LATEST,
-    generate_latest)
+try:
+  from prometheus_client import (
+      CONTENT_TYPE_LATEST,
+      generate_latest)
 
-from prometheus_client.core import (
-    GaugeMetricFamily,
-    CounterMetricFamily,
-    REGISTRY)
+  from prometheus_client.core import (
+      GaugeMetricFamily,
+      CounterMetricFamily,
+      REGISTRY)
 
-from prometheus_client.exposition import push_to_gateway
+  from prometheus_client.exposition import push_to_gateway
+  prometheus_available = True
+except ImportError:
+  prometheus_available = False
+
 
 InstanceRecord = collections.namedtuple(
     'InstanceRecord', ['service', 'netloc', 'tags', 'data'])
@@ -77,6 +82,10 @@ class PrometheusMetricsService(object):
   """
 
   def __init__(self, options):
+    if not prometheus_available:
+      raise ImportError(
+           'You must "pip install prometheus-client" to get the prometheus client library.')
+    
     self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
     self.__add_metalabels = options.get(

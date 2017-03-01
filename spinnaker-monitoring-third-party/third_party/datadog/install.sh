@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -e
+source `dirname "$0"`/../install_helper_functions.sh
 
 SOURCE_DIR=$(dirname $0)
 SERVER=true
@@ -38,7 +40,7 @@ function process_args() {
             CLIENT=false
             ;;
         *)
-            echo "Unrecognized argument '$key'."
+            >&2 echo "Unrecognized argument '$key'."
             exit -1
     esac
   done
@@ -66,37 +68,52 @@ function prompt_if_unset() {
 function install_server() {
   echo "Installing Datadog Agent"
   prompt_if_unset DATADOG_API_KEY
-  DD_API_KEY=$DATADOG_API_KEY bash -c "$(curl -L https://raw.githubusercontent.com/DataDog/dd-agent/master/packaging/datadog-agent/source/install_agent.sh)"
+  DD_API_KEY=$DATADOG_API_KEY bash -c "$(curl -s -S -L https://raw.githubusercontent.com/DataDog/dd-agent/master/packaging/datadog-agent/source/install_agent.sh)"
 }
 
 function install_dashboards() {
+  # Can be run as any user.
   prompt_if_unset DATADOG_API_KEY
   prompt_if_unset DATADOG_APP_KEY
 
   for dashboard in ${SOURCE_DIR}/*Timeboard.json; do
     echo "Installing $(basename $dashboard)"
-    curl -s -X POST -H "Content-type: application/json" \
+    curl -s -S -X POST -H "Content-type: application/json" \
          -d "@${dashboard}" \
-        "https://app.datadoghq.com/api/v1/dash?api_key=${DATADOG_API_KEY}&application_key=${DATADOG_APP_KEY}" > /dev/null
+        "https://app.datadoghq.com/api/v1/dash?api_key=${DATADOG_API_KEY}&application_key=${DATADOG_APP_KEY}"
   done
 
 }
 
 function install_client() {
-  if [[ -f /opt/spinnaker-monitoring/spinnaker-monitoring.yml ]]; then
-    echo "Injecting Datadog API key into spinnaker-monitoring.yml"
-    echo "   and enabling Datadog in spinnaker-monitoring.yml"
-    chmod 600 /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+  # 20170226
+  # Moved this from the daemon requirements because it seems to be corrupting
+  # baked gce images.
+  pip install -r "$SOURCE_DIR/requirements.txt"
+
+  config_path=$(find_config_path)
+  if [[ -f "$config_path" ]]; then
+    echo "Injecting Datadog API key into $config_path"
+    echo "   and enabling Datadog in $config_path"
+    chmod 600 "$config_path"
     sed -e "s/\(^ *api_key:\).*/\1 $DATADOG_API_KEY/" \
         -e "s/^\( *\)#\( *- datadog$\)/\1\2/" \
-        -i /opt/spinnaker-monitoring/spinnaker-monitoring.yml
+        -i "$config_path"
   else
     echo ""
-    echo "You will need to edit /opt/spinnaker-monitoring/spinnaker-monitoring.yml to add your DATADOG_API_KEY and to add datadog as a monitor_store before running spinnaker-monitoring."
+    echo "You will need to edit '$config_path' to add your DATADOG_API_KEY and to add datadog as a monitor_store before running spinnaker-monitoring."
   fi
 }
 
+
 process_args "$@"
+
+if $CLIENT || $SERVER; then
+  if [[ $(id -u) -ne 0 ]]; then
+    >&2 echo "This command must be run as root. Try again with sudo."
+    exit -1
+  fi
+fi
 
 
 if $SERVER; then

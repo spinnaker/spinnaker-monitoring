@@ -162,8 +162,13 @@ def set_default_paths():
   elif os.path.exists(dev_path):
     spectator_client.DEFAULT_REGISTRY_DIR = dev_path
 
-  if os.path.exists(yml_path):
-    global DEFAULT_CONFIG_PATH
+  home_yml_path = os.path.join(
+      os.environ.get('HOME', ''), '.spinnaker', 'spinnaker-monitoring.yml')
+
+  global DEFAULT_CONFIG_PATH
+  if os.path.exists(home_yml_path):
+    DEFAULT_CONFIG_PATH = home_yml_path
+  elif os.path.exists(yml_path):
     DEFAULT_CONFIG_PATH = yml_path
 
 

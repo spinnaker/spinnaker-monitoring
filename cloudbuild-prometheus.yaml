@@ -1,0 +1,11 @@
+steps:
+- name: 'debian:jessie'
+  dir: spinnaker-monitoring-daemon
+  entrypoint: "bash"
+  args: ["-c", "echo 'prometheus-client' >> requirements.txt"]
+- name: 'gcr.io/cloud-builders/docker'
+  dir: spinnaker-monitoring-daemon
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA", "-t", "gcr.io/$PROJECT_ID/$REPO_NAME:latest", "-f", "Dockerfile", "."]
+images:
+- 'gcr.io/$PROJECT_ID/$REPO_NAME:$COMMIT_SHA'
+- 'gcr.io/$PROJECT_ID/$REPO_NAME:latest'

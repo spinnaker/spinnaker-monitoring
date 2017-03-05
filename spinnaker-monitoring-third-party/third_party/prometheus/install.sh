@@ -16,62 +16,334 @@
 set -e
 
 source `dirname "$0"`/../install_helper_functions.sh
-
-PROMETHEUS_VERSION=prometheus-1.5.0.linux-amd64
-PROMETHEUS_PORT=9090
-GRAFANA_PORT=3000
 SOURCE_DIR=$(readlink -f `dirname $0`)
-GATEWAY_URL=
+
+# Feature flags
 SERVER=true
 CLIENT=true
 DASHBOARDS=true
+
+# Variables for Server Configuration
+PROMETHEUS_VERSION=prometheus-1.5.0.linux-amd64
+OPT_DIR=/opt/$PROMETHEUS_VERSION
+PROMETHEUS_PORT=9090
+GRAFANA_PORT=3000
+GCE_CONFIG=false
+
+# Variables for Client Configuration
+CLIENT_HOST="not specified"
+
+# Variables for Client and Server configuration
+GATEWAY_URL=
+
+
+function show_usage() {
+    cat <<EOF
+
+Usage:
+
+$0 [<CONTROL_OPTIONS>] [<CONFIG_OPTIONS>]
+
+Installation scripts specific to Prometheus monitoring support for Spinnaker.
+Currently this also requires installing the spinnaker-monitoring-daemon package,
+usually on each machine running a Spinnaker microservice. The daemon can be
+installed by running apt-get install spinnaker-monitoring-daemon. See the
+--client_only option for more information.
+
+
+<CONTROL_OPTIONS> specify which installations to perform.
+    By default it will install client, server, and dashboards.
+    When configuring a client, this script will make changes into the
+    spinnaker-monitoring daemon's spinnaker-monitoring.yml configuration file
+    and may install local components (such as prometheus node_extractor)
+
+    When configuring a server, this script will install various prometheus
+    infrastructure (prometheus, grafana, optiona gateway server) as well as
+    start these services and configure upstart to restart them on a reboot.
+
+    When configuring dashboards, this will install various canned dashboards
+    into Grafana as well as the prometheus datasource being used. This requires
+    access to port 3000, which will be present if you are installing server too.
+
+
+    --no_client       Dont install the client-side components for spinnaker.
+    --client_only     Only install the server-side components for spinnaker.
+
+    --no_server       Dont install the server-side components.
+    --server_only     Only install the server-side components.
+
+    --no_dashboards   Dont install the dashboard (and datasource) data.
+    --dashboards_only Only install the dashboard (and datasource) data.
+                      These require connectivity to grafana (port 3000)
+
+
+<CONFIG_OPTIONS> are:
+    --gateway=URL     Configure prometheus to use the pushgateway.
+    or --gateway URL  If using the gateway, both client and server need this.
+                      Generally, the gateway is a last-resort config option.
+
+    --gce             Configure prometheus to discovery monitoring daemons
+                      in GCE VMs within this project and region.
+                      This is a server configuration only, though clients
+                      should use --client_host to expose the port externally.
+
+    --client_host IP    Configure the spinnaker-monitoring daemon to use
+    or --client_host=IP the designated NIC. Clients are configured to use
+                        localhost by default. Specifying "" will enable all
+                        NICs.
+
+                        WARNING: Depending on your network and its firewall
+                        rules, this may make the daemon visible to any external
+                        host.
+
+
+Example usage:
+   $0
+   Installs everything on the local machine. This is suitable when
+   you are running a single-instance all-in-one spinnaker deployment with
+   everything on it.
+
+   $0 --no_client --gce
+   Installs prometheus (and grafana) on the local machine, with canned
+   dashboards, and configure prometheus to scan this project, in this
+   region, for VMs that are running the spinnaker-monitoring daemon
+   (and/or node_exporter) and monitor those. This assumes that you have
+   run the client-side install where the daemon is.
+
+   $0 --client_only
+   Installs and configures the client side components. You should already
+   have installed the spinnaker-monitoring-daemon package so that it can
+   configure the spinnaker-monitoring.yml file. If not, then you will have
+   to edit it manually later, or re-run this install with --client_only.
+EOF
+}
+
+# We are going to use this file as a template for the prometheus.yml
+# file we give to configure Prometheus.
+# We will add additional scrape_configs for Spinnaker itself depending
+# on which deployment strategy we take.
+PROMETHEUS_YML_TEMPLATE=$(cat<<EOF
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+  external_labels:
+     monitor: "spinnaker-monitor"
+
+rule_files:
+   # - "first.rules"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+EOF
+)
+
+
+# This is the scrape_config for the spinnaker-daemon.
+# it is incomplete because it lacks the protocol and endpoint to use
+# that will vary depending on how we configure it later.
+SPINNAKER_YML_CONFIG=$(cat<<EOF
+  - job_name: 'spinnaker'
+    metrics_path: '/prometheus_metrics'
+    honor_labels: true
+EOF
+)
+
+# This is the scrape_config for the prometheus node_extractor.
+# it is incomplete because it lacks the protocol and endpoint to use
+# that will vary depending on how we configure it later.
+NODE_EXTRACTOR_YML_CONFIG=$(cat<<EOF
+  - job_name: 'node'
+EOF
+)
+
 
 function process_args() {
   while [[ $# > 0 ]]; do
     local key="$1"
     shift
     case $key in
+        --help)
+            show_usage
+            exit 0
+            ;;
+        --gateway=*)
+            GATEWAY_URL="${key#*=}"  # See --gateway
+            ;;
         --gateway)
-            GATEWAY_URL="$1"
+            GATEWAY_URL="$1"  # Used  both client and server side
+            shift
+            ;;
+        --gce)
+            GCE_CONFIG=true  # Only used when installing the server side
+            ;;
+        --client_host=*)
+            CLIENT_HOST="${key#*=}"  # See --client_host
+            ;;
+        --client_host)
+            CLIENT_HOST="$1"  # host in client side spinnaker-monitoring.yml
             shift
             ;;
         --server_only)
             CLIENT=false
             DASHBOARDS=false
             ;;
+        --no_server)
+            SERVER=false
+            ;;
         --client_only)
             SERVER=false
             DASHBOARDS=false
+            ;;
+        --no_client)
+            CLIENT=false
             ;;
         --dashboards_only)
             SERVER=false
             CLIENT=false
             ;;
+        --no_dashboards)
+            DASHBOARDS=false
+            ;;
         *)
+            show_usage
             >&2 echo "Unrecognized argument '$key'."
             exit -1
     esac
   done
 }
 
+
+function configure_gce_prometheus() {
+  local path="$1"
+  local project=$(gce_project_or_empty)
+  local zone_list=$(gce_zone_list_or_empty)
+  if [[ -z $project ]]; then
+      >&2 echo "You are not on GCE so must manually configure $path"
+      return
+  fi
+
+  #
+  # We are going to configure both spinnaker and node_extractor
+  # such that there is an entry for every zone.
+  # We'll build both these lists in one loop
+  # for each zone in our region (and project).
+  #
+  spinnaker_zone_configs="    gce_sd_configs:"
+  node_zone_configs="    gce_sd_configs:"
+  for zone in $zone_list
+  do
+      # Note that the indent of the data block is intentional
+      local spinnaker_entry=$(cat<<EOF
+      - project: '$project'
+        zone: '$zone'
+        port: 8008
+EOF
+)
+      # Note that the indent of the data block is intentional
+      local node_entry=$(cat<<EOF
+      - project: '$project'
+        zone: '$zone'
+        port: 9100
+EOF
+)
+      spinnaker_zone_configs="$spinnaker_zone_configs
+$spinnaker_entry"
+      node_zone_configs="$node_zone_configs
+$node_entry"
+  done
+
+  #
+  # Now put it all together to generate the file.
+  #
+  cat <<EOF > $path
+$PROMETHEUS_YML_TEMPLATE
+$SPINNAKER_YML_CONFIG
+$spinnaker_zone_configs
+
+$NODE_EXTRACTOR_YML_CONFIG
+$node_zone_configs
+EOF
+  chown spinnaker:spinnaker $path >& /dev/null || true
+  chmod 644 $path
+}
+
+
+function configure_gateway_prometheus() {
+  local path="$1"
+  gateway_configs=$(cat<<EOF
+  - job_name: 'pushgateway'
+    honor_labels: true
+    static_configs:
+      - targets: ['localhost:9091']
+EOF
+)
+
+  echo "$PROMETHEUS_YML_TEMPLATE
+$gateway_configs" > $path
+  chown spinnaker:spinnaker $path >& /dev/null || true
+  chmod 644 $path
+}
+
+
+function configure_local_prometheus() {
+  local path="$1"
+  local spinnaker_target=$(cat<<EOF
+    static_configs:
+      - targets: ['localhost:8008']
+EOF
+)
+
+  local node_target=$(cat<<EOF
+    static_configs:
+      - targets: ['localhost:9100']
+EOF
+)
+
+  cat <<EOF > "$path"
+$PROMETHEUS_YML_TEMPLATE
+$SPINNAKER_YML_CONFIG
+$spinnaker_target
+
+$NODE_EXTRACTOR_YML_CONFIG
+$node_target
+EOF
+
+  chown spinnaker:spinnaker $path >& /dev/null || true
+  chmod 644 $path
+}
+
+
 function install_prometheus() {
   curl -s -S -L -o /tmp/prometheus.gz \
      https://github.com/prometheus/prometheus/releases/download/v1.5.0/prometheus-1.5.0.linux-amd64.tar.gz
-  tar xzf /tmp/prometheus.gz -C /opt
+  tar xzf /tmp/prometheus.gz -C $(dirname $OPT_DIR)
   rm /tmp/prometheus.gz
-  cp $SOURCE_DIR/prometheus.conf /etc/init/prometheus.conf
-  if [[ ! -z $GATEWAY_URL ]]; then
-      sed "s/spinnaker-prometheus\.yml/gateway-prometheus\.yml/" \
+  cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
+  if [[ "$GCE_CONFIG" == "true" ]]; then
+      sed "s/spinnaker-prometheus\.yml/gce-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
+      configure_gce_prometheus "$OPT_DIR/gce-prometheus.yml"
+  elif [[ ! -z $GATEWAY_URL ]]; then
+      sed "s/spinnaker-prometheus\.yml/pushgateway-prometheus\.yml/" \
+          -i /etc/init/prometheus.conf
+      configure_gateway_prometheus "$OPT_DIR/pushgateway-prometheus.yml"
+  else
+      sed "s/spinnaker-prometheus\.yml/local-prometheus\.yml/" \
+          -i /etc/init/prometheus.conf
+      configure_local_prometheus "$OPT_DIR/local-prometheus.yml"
   fi
-  service prometheus start
+  service prometheus restart
 }
 
 function install_node_exporter() {
   curl -s -S -L -o /tmp/node_exporter.gz \
      https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz
-  tar xzf /tmp/node_exporter.gz -C /opt/$PROMETHEUS_VERSION
-  ln -fs /opt/$PROMETHEUS_VERSION/node_exporter-0.13.0.linux-amd64/node_exporter \
+  tar xzf /tmp/node_exporter.gz -C $OPT_DIR
+  ln -fs $OPT_DIR/node_exporter-0.13.0.linux-amd64/node_exporter \
          /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
   cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
@@ -81,8 +353,8 @@ function install_node_exporter() {
 function install_push_gateway() {
   curl -s -S -L -o /tmp/pushgateway.gz \
      https://github.com/prometheus/pushgateway/releases/download/v0.3.1/pushgateway-0.3.1.linux-amd64.tar.gz
-  tar xzf /tmp/pushgateway.gz -C /opt/$PROMETHEUS_VERSION
-  ln -fs /opt/$PROMETHEUS_VERSION/pushgateway-0.3.1.linux-amd64/pushgateway \
+  tar xzf /tmp/pushgateway.gz -C $OPT_DIR
+  ln -fs $OPT_DIR/pushgateway-0.3.1.linux-amd64/pushgateway \
          /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
   cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
@@ -99,7 +371,7 @@ function install_grafana() {
   service grafana-server restart
 }
 
-function add_userdata() {
+function add_grafana_userdata() {
   echo "Adding datasource"
   PAYLOAD="{'name':'Spinnaker','type':'prometheus','url':'http://localhost:${PROMETHEUS_PORT}','access':'direct','isDefault':true}"
   curl -s -S -u admin:admin http://localhost:${GRAFANA_PORT}/api/datasources \
@@ -122,6 +394,30 @@ function add_userdata() {
   done
 }
 
+function enable_spinnaker_monitoring_config() {
+  local config_path=$(find_config_path)
+  if [[ -f "$config_path" ]]; then
+    echo "Enabling prometheus in $config_path"
+    chmod 600 "$config_path"
+    sed -e "s/^\( *\)#\( *- prometheus$\)/\1\2/" -i "$config_path"
+
+    if [[ "$CLIENT_HOST" != "not specified" ]]; then
+      sed -e "s/\(^ *host:\).*/\1 $CLIENT_HOST/" -i "$config_path"
+    fi
+    if [[ $GATEWAY_URL != "" ]]; then
+      escaped_url=${GATEWAY_URL//\//\\\/}
+      sed -e "s/^\( *push_gateway:\)/\1 $escaped_url/" -i "$config_path"
+    fi
+  else
+    echo ""
+    echo "You will need to edit $config_path"
+    echo "  and add prometheus as a monitor_store before running spinnaker-monitoring"
+    if [[ $GATEWAY_URL != "" ]]; then
+        echo "  and also set prometheus to $GATEWAY_URL"
+    fi
+  fi
+}
+
 
 process_args "$@"
 
@@ -134,12 +430,10 @@ fi
 
 
 if $SERVER; then
-  mkdir -p  /opt/$PROMETHEUS_VERSION
+  mkdir -p  $OPT_DIR
   if [[ -z $GATEWAY_URL ]]; then
-    cp $SOURCE_DIR/spinnaker-prometheus.yml /opt/$PROMETHEUS_VERSION
     install_node_exporter
   else
-    cp $SOURCE_DIR/pushgateway-prometheus.yml /opt/$PROMETHEUS_VERSION
     install_push_gateway
   fi
   install_prometheus
@@ -153,7 +447,7 @@ if $DASHBOARDS; then
     let TRIES+=1
   done
 
-  add_userdata
+  add_grafana_userdata
 fi
 
 if $CLIENT; then
@@ -161,21 +455,5 @@ if $CLIENT; then
   # Moved this from the daemon requirements for consistency with datadog.
   pip install -r "$SOURCE_DIR/requirements.txt"
 
-  config_path=$(find_config_path)
-  if [[ -f "$config_path" ]]; then
-    echo "Enabling prometheus in $config_path"
-    chmod 600 "$config_path"
-    sed -e "s/^\( *\)#\( *- prometheus$\)/\1\2/" -i "$config_path"
-    if [[ $GATEWAY_URL != "" ]]; then
-      escaped_url=${GATEWAY_URL//\//\\\/}
-      sed -e "s/^\( *push_gateway:\)/\1 $escaped_url/" -i "$config_path"
-    fi
-  else
-    echo ""
-    echo "You will need to edit $config_path"
-    echo "  and add prometheus as a monitor_store before running spinnaker-monitoring"
-    if [[ $GATEWAY_URL != "" ]]; then
-        echo "  and also set prometheus to $GATEWAY_URL"
-    fi
-  fi
+  enable_spinnaker_monitoring_config
 fi

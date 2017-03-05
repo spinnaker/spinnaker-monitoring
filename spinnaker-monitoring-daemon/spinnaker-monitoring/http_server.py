@@ -113,8 +113,8 @@ class HttpServer(BaseHTTPServer.HTTPServer):
       """Return command-line option override or configuration value"""
       value = options.get(name)
       return value if value is not None else server_options[name]
-    port = get_option('port')
-    host = get_option('host')
+    port = get_option('port') or 8008
+    host = get_option('host') or '0.0.0.0'
 
     logging.info('Starting HTTP server on host=%s, port=%d', host, port)
     BaseHTTPServer.HTTPServer.__init__(

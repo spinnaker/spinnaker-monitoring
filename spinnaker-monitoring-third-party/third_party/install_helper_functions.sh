@@ -1,4 +1,6 @@
-DEFAULT_CONFIG_YML_DIR=${DEFAULT_CONFIG_YML_DIR:-$(dirname $0)/../../spinnaker-monitoring/daemon}
+DEFAULT_CONFIG_YML_DIR=\
+${DEFAULT_CONFIG_YML_DIR:-$(dirname $0)/../../spinnaker-monitoring/daemon}
+
 function find_config_path() {
   local dirs_to_search=(\
        /opt/spinnaker-monitoring \
@@ -14,3 +16,31 @@ function find_config_path() {
   return
 }
 
+GOOGLE_METADATA_URL="http://metadata.google.internal/computeMetadata/v1"
+function get_google_metadata_value() {
+  local path="$1"
+  local value=$(curl -L -s -f -H "Metadata-Flavor: Google" \
+                     $GOOGLE_METADATA_URL/$path)
+
+  if [[ $? -eq 0 ]]; then
+    echo "$value"
+  else
+    echo ""
+  fi
+}
+
+function gce_project_or_empty() {
+    echo $(get_google_metadata_value "project/project-id")
+}
+
+function gce_zone_list_or_empty() {
+  local qualified_zone=$(get_google_metadata_value "instance/zone")
+  local zone=$(basename $qualified_zone)
+  local region=${zone%-*}
+  local zones_in_region
+  read zones_in_region<<<$(gcloud compute zones list \
+                           | grep $region \
+                           | sed "s/^\([a-z0-9-]*\) .*/\1/" \
+                           | tr '\n' ' ')
+  echo "$zones_in_region"
+}

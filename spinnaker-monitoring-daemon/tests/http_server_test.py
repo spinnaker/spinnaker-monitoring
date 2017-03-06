@@ -31,7 +31,7 @@ class HttpServerTest(unittest.TestCase):
     options = {'port': 1234, 'host': '',
                'server': {'port': 666, 'host': 'wrong'}}
     server = http_server.HttpServer(options)
-    mock_http.assert_called_with(server, ('', 1234), mock.ANY)
+    mock_http.assert_called_with(server, ('0.0.0.0', 1234), mock.ANY)
 
   @patch('http_server.BaseHTTPServer.HTTPServer.__init__')
   def test_init_from_hardcoded_defaults(self, mock_http):

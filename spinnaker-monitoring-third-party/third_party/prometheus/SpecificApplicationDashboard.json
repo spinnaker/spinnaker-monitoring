@@ -925,7 +925,9 @@
   ],
   "schemaVersion": 14,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "spinnaker"
+  ],
   "templating": {
     "list": [
       {

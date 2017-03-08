@@ -38,7 +38,7 @@
   "hideControls": false,
   "id": null,
   "links": [],
-  "refresh": false,
+  "refresh": "30s",
   "rows": [
     {
       "collapse": false,
@@ -80,7 +80,7 @@
               "legendFormat": "front50/{{metricGroup}}({{metricType}})",
               "metric": "",
               "refId": "A",
-              "step": 20
+              "step": 4
             },
             {
               "expr": "sum(gate:hystrix:countShortCircuited) by (metricGroup, metricType)",
@@ -88,7 +88,7 @@
               "legendFormat": "gate/{{metricGroup}}({{metricType}})",
               "metric": "",
               "refId": "B",
-              "step": 20
+              "step": 4
             },
             {
               "expr": "sum(igor:hystrix:countShortCircuited) by (metricGroup, metricType)",
@@ -96,7 +96,7 @@
               "legendFormat": "igor/{{metricGroup}}({{metricType}})",
               "metric": "",
               "refId": "C",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -170,7 +170,7 @@
               "legendFormat": "front50/{{metricType}}({{metricGroup}})",
               "metric": "front50:hystrix:countExceptionsThrown",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
               "expr": "sum(idelta(gate:hystrix:countExceptionsThrown[$SamplePeriod])) by (metricType, metricGroup)",
@@ -178,7 +178,7 @@
               "legendFormat": "gate/{{metricType}}({{metricGroup}})",
               "metric": "gate:hystrix:countExceptionsThrown",
               "refId": "B",
-              "step": 10
+              "step": 4
             },
             {
               "expr": "sum(idelta(igor:hystrix:countExceptionsThrown[$SamplePeriod])) by (metricType, metricGroup)",
@@ -186,7 +186,7 @@
               "legendFormat": "igor/{{metricType}}({{metricGroup}})",
               "metric": "igor:hystrix:countExceptionsThrown",
               "refId": "C",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -325,562 +325,7 @@
     },
     {
       "collapse": false,
-      "height": 282,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 1,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "rightSide": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(idelta(clouddriver:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Clouddriver Controller Invocations",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 22,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(clouddriver:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Clouddriver Controller Invocation Latency",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Clouddriver",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 39,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(idelta(clouddriver:operations__count{success=\"true\"}[$SamplePeriod])) by (OperationType), \"OperationType\", \"$1\", \"OperationType\", \"(.*)AtomicOperation\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{OperationType}}",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Successful Operations (clouddriver)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 40,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(label_replace(sum(idelta(clouddriver:operations__count{success=\"false\"}[$SamplePeriod])) by (OperationType, cause), \"OperationType\", \"$1\", \"OperationType\", \"(.*)AtomicOperation\"), \"cause\", \"$1\", \"cause\", \"(.*)Exception\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{OperationType}}/{{cause}}",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Failed Operations (clouddriver)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Clouddriver Operations",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 276,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 4,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(echo:controller:invocations__count[$SamplePeriod])) by (controller, method)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "C",
-              "step": 20
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Echo Controller Invocations",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 23,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(rate(echo:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(echo:controller:invocations__count[$SamplePeriod])) by (controller, method)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "C",
-              "step": 20
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Echo Controller Invocation Latency",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 38,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(echo:pipelines:triggered[$SamplePeriod])) by (name)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{name}}",
-              "metric": "echo:pipelines:triggered",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Pipelines Triggered (echo)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Echo",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
+      "height": 255,
       "panels": [
         {
           "aliasColors": {},
@@ -913,17 +358,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(gate:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(idelta(gate:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Gate Controller Invocations",
+          "title": "Gate Controller Invocations (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -974,6 +419,7 @@
           },
           "lines": true,
           "linewidth": 1,
+          "links": [],
           "nullPointMode": "null",
           "percentage": false,
           "pointradius": 5,
@@ -985,17 +431,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(gate:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(gate:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Gate Controller Invocation Latency",
+          "title": "Gate Controller Invocation Latency (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1010,7 +456,7 @@
           },
           "yaxes": [
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1018,7 +464,7 @@
               "show": true
             },
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1032,19 +478,19 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Gate",
+      "title": "Gate 2xx",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 279,
+      "height": 250,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 8,
+          "id": 65,
           "legend": {
             "avg": false,
             "current": false,
@@ -1070,17 +516,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(igor:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(idelta(gate:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Igor Controller Invocations",
+          "title": "Gate Controller Invocations (failure)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1117,7 +563,7 @@
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 25,
+          "id": 66,
           "legend": {
             "avg": false,
             "current": false,
@@ -1131,6 +577,7 @@
           },
           "lines": true,
           "linewidth": 1,
+          "links": [],
           "nullPointMode": "null",
           "percentage": false,
           "pointradius": 5,
@@ -1142,17 +589,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(igor:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(gate:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Igor Controller Invocation Latency",
+          "title": "Gate Controller Invocation Latency (failure)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1167,7 +614,7 @@
           },
           "yaxes": [
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1175,7 +622,7 @@
               "show": true
             },
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1189,12 +636,12 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Igor",
+      "title": "Gate NOT 2xx",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 235,
+      "height": 284,
       "panels": [
         {
           "aliasColors": {},
@@ -1222,22 +669,22 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 4,
+          "span": 5,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(orca:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(idelta(orca:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Orca Controller Invocations",
+          "title": "Orca Controller Invocations (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1286,6 +733,7 @@
           },
           "lines": true,
           "linewidth": 1,
+          "links": [],
           "nullPointMode": "null",
           "percentage": false,
           "pointradius": 5,
@@ -1297,17 +745,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(orca:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(orca:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Orca Controller Invocation Latency",
+          "title": "Orca Controller Invocation Latency (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1322,7 +770,7 @@
           },
           "yaxes": [
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1330,7 +778,7 @@
               "show": true
             },
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1363,7 +811,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 3,
+          "span": 2,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -1373,7 +821,7 @@
               "legendFormat": "{{id}}",
               "metric": "orca:threadpool:activeCount",
               "refId": "A",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1416,7 +864,235 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Orca",
+      "title": "Orca 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 239,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 63,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 5,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(orca:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Orca Controller Invocations  (failures)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 64,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 5,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(orca:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Orca Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 62,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 2,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(orca:threadpool:blockingQueueSize[$SamplePeriod])) by (id)",
+              "intervalFactor": 2,
+              "legendFormat": "{{id}}",
+              "metric": "orca:threadpool:blockingQueueSize",
+              "refId": "A",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Blocked Threads (orca)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Orca NOT 2xx",
       "titleSize": "h6"
     },
     {
@@ -1460,7 +1136,7 @@
               "legendFormat": "{{taskName}}",
               "metric": "",
               "refId": "B",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1535,7 +1211,7 @@
               "legendFormat": "{{taskName}}",
               "metric": "orca:task:invocations",
               "refId": "C",
-              "step": 20
+              "step": 10
             },
             {
               "expr": "-1 * sum(idelta(orca:task:invocations{executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
@@ -1545,7 +1221,7 @@
               "legendFormat": "ERR {{taskName}}",
               "metric": "orca:task:invocations",
               "refId": "D",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1620,7 +1296,7 @@
               "legendFormat": "{{taskName}}",
               "metric": "",
               "refId": "B",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1695,7 +1371,7 @@
               "legendFormat": "{{taskName}}",
               "metric": "orca:task:invocations",
               "refId": "C",
-              "step": 20
+              "step": 10
             },
             {
               "expr": "-1 * sum(idelta(orca:task:invocations{executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
@@ -1705,7 +1381,7 @@
               "legendFormat": "ERR {{taskName}}",
               "metric": "orca:task:invocations",
               "refId": "D",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1753,167 +1429,14 @@
     },
     {
       "collapse": false,
-      "height": 221,
+      "height": 365,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 7,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(idelta(rosco:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Rosco Controller Invocations",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 27,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(rosco:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(rosco:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Rosco Controller Invocation Latency",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ms",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Rosco",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 14,
+          "id": 1,
           "legend": {
             "avg": false,
             "current": false,
@@ -1921,81 +1444,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": true,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(rate(rosco:bakesCompleted__totalTime[$SamplePeriod]) / 1000000000) by (region) / sum(rate(rosco:bakesCompleted__count[$SamplePeriod])) by (region)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{region}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Bakes Completed (rosco)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "s",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "s",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 41,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
+            "rightSide": false,
             "show": true,
             "total": false,
             "values": false
@@ -2009,42 +1458,23 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rosco:bakesActive)",
+              "expr": "label_replace(sum(idelta(clouddriver:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Active",
-              "metric": "rosco:bakesActive",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "expr": "sum(idelta(rosco:bakesRequested[$SamplePeriod])) by (flavor)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "Request({{flavor}})",
-              "metric": "rosco:bakes",
-              "refId": "B",
-              "step": 10
-            },
-            {
-              "expr": "-1 * sum(idelta(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "Failed {{region}}",
-              "metric": "bakesC",
+              "legendFormat": "{{controller}}({{method}})",
               "refId": "C",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Bake Requests and Failures  (rosco)",
+          "title": "Clouddriver Controller Invocations (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -2063,7 +1493,7 @@
               "label": null,
               "logBase": 1,
               "max": null,
-              "min": null,
+              "min": "0",
               "show": true
             },
             {
@@ -2071,7 +1501,155 @@
               "label": null,
               "logBase": 1,
               "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 22,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(clouddriver:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Clouddriver Controller Invocation Latency (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
               "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 39,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(clouddriver:operations__count{success=\"true\"}[$SamplePeriod])) by (OperationType), \"OperationType\", \"$1\", \"OperationType\", \"(.*)AtomicOperation\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{OperationType}}",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Successful Operations (clouddriver)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
               "show": true
             }
           ]
@@ -2081,12 +1659,246 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Bakes",
+      "title": "Clouddriver 2xx",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 299,
+      "height": 255,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 67,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(clouddriver:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Clouddriver Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 68,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(clouddriver:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Clouddriver Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 40,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(label_replace(sum(idelta(clouddriver:operations__count{success=\"false\"}[$SamplePeriod])) by (OperationType, cause), \"OperationType\", \"$1\", \"OperationType\", \"(.*)AtomicOperation\"), \"cause\", \"$1\", \"cause\", \"(.*)Exception\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{OperationType}}/{{cause}}",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Failed Operations (clouddriver)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Clouddriver NOT 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 291,
       "panels": [
         {
           "aliasColors": {},
@@ -2119,17 +1931,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(front50:controller:invocations__count[$SamplePeriod])) by (controller, method)",
+              "expr": "sum(idelta(front50:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Front50 Controller Invocations",
+          "title": "Front50 Controller Invocations (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -2180,6 +1992,7 @@
           },
           "lines": true,
           "linewidth": 1,
+          "links": [],
           "nullPointMode": "null",
           "percentage": false,
           "pointradius": 5,
@@ -2191,17 +2004,17 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime[$SamplePeriod])) by (controller, method) / 1000000 / sum(rate(front50:controller:invocations__count[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}})",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Front50 Controller Invocation Latency",
+          "title": "Front50 Controller Invocation Latency (success)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -2216,7 +2029,7 @@
           },
           "yaxes": [
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -2224,7 +2037,7 @@
               "show": true
             },
             {
-              "format": "ms",
+              "format": "ns",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -2238,7 +2051,165 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Front50",
+      "title": "Front50 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 69,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(front50:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Front50 Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 70,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(front50:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Front50 Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Front50 NOT 2xx",
       "titleSize": "h6"
     },
     {
@@ -2282,7 +2253,7 @@
               "legendFormat": "{{objectType}}",
               "metric": "front50:storageServiceSupport:cacheSize",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -2365,14 +2336,14 @@
               "legendFormat": "add {{objectType}}",
               "metric": "front50:storageServiceSupport:numAdded",
               "refId": "A",
-              "step": 20
+              "step": 10
             },
             {
               "expr": "-1 * sum(idelta(front50:storageServiceSupport:numRemoved[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "del {{objectType}}",
               "refId": "B",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -2448,7 +2419,7 @@
               "legendFormat": "{{objectType}}",
               "metric": "front50:storageServiceSupport:numUpdated",
               "refId": "A",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -2533,7 +2504,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -2582,7 +2553,7 @@
             "SNAPSHOT": "#BA43A9",
             "STRATEGY": "#705DA0"
           },
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 17,
@@ -2597,7 +2568,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -2607,7 +2578,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "span": 6,
-          "stack": false,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
@@ -2617,7 +2588,7 @@
               "legendFormat": "force/{{objectType}}",
               "metric": "front50:storageServiceSupport:autoRefreshTime__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
               "expr": "-1 * (sum(idelta(front50:storageServiceSupport:scheduledRefreshTime__count[$SamplePeriod])) by (objectType))",
@@ -2625,7 +2596,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -2710,7 +2681,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -2782,7 +2753,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -2830,6 +2801,1521 @@
     },
     {
       "collapse": false,
+      "height": 253,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 60,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(fiat:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fiat Controller Invocations (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 61,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(fiat:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(fiat:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fiat Controller Invocation Latency (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Fiat 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 71,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(fiat:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fiat Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 72,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(fiat:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(fiat:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Fiat Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Fiat NOT 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 276,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 4,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 5,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(echo:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Echo Controller Invocations (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 23,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(echo:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(echo:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Echo Controller Invocation Latency (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 38,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(echo:pipelines:triggered[$SamplePeriod])) by (name)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{name}}",
+              "metric": "echo:pipelines:triggered",
+              "refId": "A",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Pipelines Triggered (echo)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Echo 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 73,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(echo:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Echo Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 74,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(echo:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(echo:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Echo Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Echo NOT 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 333,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(igor:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Igor Controller Invocations (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 25,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(igor:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Igor Controller Invocation Latency (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Igor 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 75,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(igor:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Igor Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 76,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(igor:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Igor Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Igor NOT 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 247,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 7,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(rosco:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Rosco Controller Invocations (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 27,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(rosco:controller:invocations__totalTime{status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(rosco:controller:invocations__count{status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Rosco Controller Invocation Latency (success)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Rosco 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 77,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(rosco:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Rosco Controller Invocations (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 78,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(rosco:controller:invocations__totalTime{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(rosco:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Rosco Controller Invocation Latency (failure)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Rosco NOT 2xx",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 238,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 14,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": true,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(rosco:bakesCompleted__totalTime[$SamplePeriod]) / 1000000000) by (region) / sum(rate(rosco:bakesCompleted__count[$SamplePeriod])) by (region)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{region}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Bakes Completed (rosco)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 41,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rosco:bakesActive)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Active",
+              "metric": "rosco:bakesActive",
+              "refId": "A",
+              "step": 4
+            },
+            {
+              "expr": "sum(idelta(rosco:bakesRequested[$SamplePeriod])) by (flavor)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Request({{flavor}})",
+              "metric": "rosco:bakes",
+              "refId": "B",
+              "step": 4
+            },
+            {
+              "expr": "-1 * sum(idelta(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Failed {{region}}",
+              "metric": "bakesC",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Bake Requests and Failures  (rosco)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Bakes",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
       "height": 291,
       "panels": [
         {
@@ -2866,7 +4352,7 @@
               "legendFormat": "Clouddriver({{id}}/{{memtype}})",
               "metric": "clouddriver:jvm:memory:used",
               "refId": "A",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(echo:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2874,7 +4360,7 @@
               "legendFormat": "Echo({{id}}/{{memtype}})",
               "metric": "echo:jvm:memory:used",
               "refId": "B",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(fiat:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2882,7 +4368,7 @@
               "legendFormat": "Fiat({{id}}/{{memtype}})",
               "metric": "fiat:jvm:memory:used",
               "refId": "C",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(front50:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2890,7 +4376,7 @@
               "legendFormat": "Front50({{id}}/{{memtype}})",
               "metric": "front50:jvm:memory:used",
               "refId": "D",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(gate:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2898,7 +4384,7 @@
               "legendFormat": "Gate({{id}}/{{memtype}})",
               "metric": "gate:jvm:memory:used",
               "refId": "E",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(igor:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2906,7 +4392,7 @@
               "legendFormat": "Igor({{id}}/{{memtype}})",
               "metric": "igor:jvm:memory:used",
               "refId": "F",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(orca:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2914,7 +4400,7 @@
               "legendFormat": "Orca({{id}}/{{memtype}})",
               "metric": "orca:jvm:memory:used",
               "refId": "G",
-              "step": 4
+              "step": 2
             },
             {
               "expr": "sum(rosco:jvm:memory:used{memtype=\"HEAP\"}) by (id, memtype)",
@@ -2922,7 +4408,7 @@
               "legendFormat": "Rosco({{id}}/{{memtype}})",
               "metric": "rosco:jvm:memory:used",
               "refId": "H",
-              "step": 4
+              "step": 2
             }
           ],
           "thresholds": [],
@@ -3006,7 +4492,7 @@
               "legendFormat": "{{requestType}}",
               "metric": "clouddriver:AWS_delay",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3046,7 +4532,7 @@
         },
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 34,
@@ -3061,7 +4547,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -3071,16 +4557,16 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "span": 6,
-          "stack": false,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\")",
+              "expr": "label_replace(label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\"), \"serviceName\",  \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/{{requestType}}({{serviceName}})->{{AWSErrorCode}}",
+              "legendFormat": "{{statusCode}}/{{serviceName}}.{{requestType}}->{{AWSErrorCode}}",
               "metric": "clouddriver:aws:request:httpRequestTime__count",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3128,11 +4614,11 @@
     },
     {
       "collapse": false,
-      "height": 168,
+      "height": 207,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 30,
@@ -3147,7 +4633,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -3156,8 +4642,8 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
+          "span": 4,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
@@ -3166,7 +4652,7 @@
               "legendFormat": "{{requestType}}",
               "metric": "clouddriver:aws:request:httpRequestTime__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3206,7 +4692,7 @@
         },
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 33,
@@ -3221,7 +4707,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -3230,15 +4716,89 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
+          "span": 5,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:aws:request:httpRequestTime__count{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName)",
+              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
-              "legendFormat": "{{requestType}}({{serviceName}})",
+              "legendFormat": "{{serviceName}}.{{requestType}}",
               "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "AWS Requests (non EC2) (clouddrier)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 82,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{error!=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{serviceName}}.{{requestType}}",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -3246,7 +4806,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "AWS Requests (non EC2) (clouddrier)",
+          "title": "AWS Failure Count (clouddrier)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -3326,7 +4886,7 @@
               "legendFormat": "{{requestType}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3400,7 +4960,7 @@
               "legendFormat": "{{requestType}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3487,7 +5047,7 @@
               "legendFormat": "{{basePhase}}",
               "metric": "clouddriver:google:operationWaits__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3563,7 +5123,7 @@
               "legendFormat": "{{scope}}/{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3649,7 +5209,7 @@
               "legendFormat": "{{scope}}/{{basePhase}}",
               "metric": "clouddriver:google:operationWaitRequests",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -3724,7 +5284,7 @@
               "legendFormat": "{{scope}}/{{basePhase}}",
               "metric": "wai",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
               "expr": "sum((clouddriver:google:operationWaits__totalTime)) by (basePhase, scope) / 1000000000 / sum((clouddriver:google:operationWaits__count)) by (basePhase, scope) ",
@@ -3794,7 +5354,7 @@
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 42,
@@ -3809,7 +5369,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -3819,23 +5379,23 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "span": 4,
-          "stack": false,
-          "steppedLine": false,
+          "stack": true,
+          "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:google:api__count[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(idelta(clouddriver:google:api__count{success=\"true\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{api}}",
               "metric": "clouddriver:google:api__count",
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Google API Call Count (clouddriver)",
+          "title": "Google API Success Count (clouddriver)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -3904,13 +5464,13 @@
               "legendFormat": "{{api}}",
               "metric": "clouddriver:google:api__count",
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Google API Call Latency (clouddriver)",
+          "title": "Google API Success Latency (clouddriver)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -3944,7 +5504,7 @@
         },
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 51,
@@ -3959,7 +5519,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -3969,22 +5529,22 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "span": 4,
-          "stack": false,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:google:api__count{success=\"false\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(idelta(clouddriver:google:api__count{success!=\"true\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{api}}",
               "metric": "clouddriver:google:api__count",
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Google API Failures (clouddriver)",
+          "title": "Google API Failure Count (clouddriver)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -4064,7 +5624,7 @@
               "legendFormat": "{{context}}",
               "metric": "clouddriver:google:batchSize",
               "refId": "A",
-              "step": 20
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -4104,7 +5664,7 @@
         },
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 50,
@@ -4119,7 +5679,7 @@
             "total": false,
             "values": false
           },
-          "lines": true,
+          "lines": false,
           "linewidth": 1,
           "links": [],
           "nullPointMode": "null",
@@ -4130,7 +5690,7 @@
           "seriesOverrides": [],
           "span": 5,
           "stack": false,
-          "steppedLine": false,
+          "steppedLine": true,
           "targets": [
             {
               "expr": "label_replace(sum(idelta(clouddriver:google:batchExecute__count[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
@@ -4138,7 +5698,7 @@
               "legendFormat": "{{context}}",
               "metric": "clouddriver:google:batchExecute__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -4212,7 +5772,7 @@
               "legendFormat": "{{context}}",
               "metric": "",
               "refId": "A",
-              "step": 20
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -4299,7 +5859,7 @@
               "legendFormat": "{{operation}}({{phase}})",
               "metric": "clouddriver:google:safeRetry__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -4373,7 +5933,7 @@
               "legendFormat": "{{operation}}({{phase}})",
               "metric": "clouddriver:google:safeRetry__count",
               "refId": "A",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -4418,11 +5978,248 @@
       "showTitle": false,
       "title": "Google Safe Retry",
       "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 274,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 79,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 5,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "sum(idelta(clouddriver:kubernetes:api__count{success=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method)",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{method}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Kubernetes Success Count for \"$KubernetesAccount\" (clouddriver)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 80,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime{success=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method) / sum(rate(clouddriver:kubernetes:api__count{success=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method)",
+              "intervalFactor": 2,
+              "legendFormat": "{{method}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Kubernetes Latency for \"$KubernetesAccount\"  (clouddriver)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 81,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 3,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(idelta(clouddriver:kubernetes:api__count{success!=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method)",
+              "intervalFactor": 2,
+              "legendFormat": "{{method}}",
+              "metric": "",
+              "refId": "A",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Kubernetes Failed Calls for \"$KubernetesAccount\" (clouddriver)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Kubernetes Requests",
+      "titleSize": "h6"
     }
   ],
   "schemaVersion": 14,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "spinnaker"
+  ],
   "templating": {
     "list": [
       {
@@ -4466,6 +6263,26 @@
         "query": "1m,5m,10m,15m,30m",
         "refresh": 2,
         "type": "interval"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "${DS_SPINNAKER}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "",
+        "multi": false,
+        "name": "KubernetesAccount",
+        "options": [],
+        "query": "clouddriver:kubernetes:api__count",
+        "refresh": 1,
+        "regex": "/account=\"([^\"]+)/",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
@@ -4500,5 +6317,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Kitchen Sink",
-  "version": 1
+  "version": 2
 }

@@ -42,7 +42,7 @@ class DatadogServiceTest(unittest.TestCase):
       
   @patch('datadog_service.datadog.initialize')
   def test_initialize_from_dd_agent_config(self, mock_initialize):
-    options = {'dd_agent_config': 'testCONFIG', 'datadog_host': 'testHost'}
+    options = {'dd_agent_config': 'testCONFIG'}
     with patch('datadog_service.open',
                mock.mock_open(read_data='#api_key: COMMENT\n'
                                         'api_key: FOUND_KEY\n'
@@ -55,6 +55,23 @@ class DatadogServiceTest(unittest.TestCase):
     self.assertIsNotNone(service.api)  # initialize on demand
     mock_initialize.assert_called_with(
           api_key='FOUND_KEY', app_key=None, host_name='FOUND_HOST')
+
+  @patch('datadog_service.datadog.initialize')
+  def test_initialize_from_options(self, mock_initialize):
+    options = {'dd_agent_config': 'testCONFIG',
+               'datadog': {'api_key': 'testApi', 'host': 'testHost'}}
+    with patch('datadog_service.open',
+               mock.mock_open(read_data='#api_key: COMMENT\n'
+                                        'api_key: FOUND_KEY\n'
+                                        'hostname: FOUND_HOST\n'),
+               create=True) as mock_patch:
+        service = datadog_service.make_datadog_service(options)
+
+    mock_patch.assert_called_with('testCONFIG','r')
+    self.assertIsNotNone(service)
+    self.assertIsNotNone(service.api)  # initialize on demand
+    mock_initialize.assert_called_with(
+          api_key='testApi', app_key=None, host_name='testHost')
 
   @patch('datadog_service.socket.getfqdn')
   @patch('datadog_service.datadog.initialize')

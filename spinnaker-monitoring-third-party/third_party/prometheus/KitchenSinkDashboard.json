@@ -1055,7 +1055,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Blocked Threads (orca)",
+          "title": "Blocked Queues (orca)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -4732,7 +4732,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "AWS Requests (non EC2) (clouddrier)",
+          "title": "AWS Requests (non EC2) (clouddriver)",
           "tooltip": {
             "shared": true,
             "sort": 0,

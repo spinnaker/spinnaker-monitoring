@@ -60,7 +60,7 @@ function install_client() {
 
   config_path=$(find_config_path)
   if [[ -f "$config_path" ]]; then
-    echo "Enabling stackdriver in "$config_path"
+    echo "Enabling stackdriver in '$config_path'"
     chmod 600 "$config_path"
     sed -e "s/^\( *\)#\( *- stackdriver$\)/\1\2/" \
         -i "$config_path"
@@ -82,7 +82,7 @@ function install_dashboards() {
     exit -1
   fi
 
-  for dashboard in "$DIRNAME"/*Dashboard.json; do
+  for dashboard in "$DIRNAME"/*-dashboard.json; do
     "$DIRNAME/../../bin/spinnaker-monitoring.sh" \
         upload_stackdriver_dashboard --dashboard ${dashboard} \
         "$@"

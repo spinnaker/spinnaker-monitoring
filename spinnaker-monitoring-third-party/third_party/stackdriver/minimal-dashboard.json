@@ -160,7 +160,8 @@
             "dataSets": [
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/threadpool.activeCount\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/threadpool.activeCount\"",
+                  "perSeriesAligner": "ALIGN_SUM"
                 }
               }
             ],
@@ -197,7 +198,8 @@
             "dataSets": [
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/rosco/bakesActive\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/rosco/bakesActive\"",
+                  "perSeriesAligner": "ALIGN_SUM"
                 }
               }
             ],
@@ -215,7 +217,8 @@
             "dataSets": [
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/storageServiceSupport.cacheSize\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/storageServiceSupport.cacheSize\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               }
             ],
@@ -271,42 +274,50 @@
             "dataSets": [
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/echo/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/echo/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/fiat/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/fiat/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/rosco/jvm.memory.used\" AND metric.label.memtype=\"HEAP\""
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/rosco/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                  "perSeriesAligner": "ALIGN_MEAN"
                 }
               }
             ],

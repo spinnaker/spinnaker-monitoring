@@ -171,7 +171,8 @@ class MonitorCommandHandler(WebserverCommandHandler):
     It is put here in a callable so that we can run this in a separate thread.
     The main thread will be the standard WebServer.
     """
-    period = options['period']
+    period = (options.get('monitor_period')
+              or options.get('monitor', {}).get('period', 60))
     catalog = spectator_client.get_source_catalog(options)
     spectator = spectator_client.SpectatorClient(options)
 
@@ -225,7 +226,8 @@ class MonitorCommandHandler(WebserverCommandHandler):
     parser = super(MonitorCommandHandler, self).add_argparser(subparsers)
     for factory in MonitorCommandHandler._service_factories:
       factory.add_argparser(parser)
-    parser.add_argument('--period', default=60, type=int)
+    parser.add_argument('--period', dest='monitor_period',
+                        default=None, type=int)
     return parser
 
 

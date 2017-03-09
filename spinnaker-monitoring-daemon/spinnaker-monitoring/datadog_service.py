@@ -27,7 +27,7 @@ try:
   datadog_available = True
 except ImportError:
   datadog_available = False
-  
+
 
 import spectator_client
 
@@ -55,15 +55,16 @@ class DatadogMetricsService(object):
   def __init__(self, api_key, app_key, host=None):
     """Constructs the object."""
     if not datadog_available:
-      raise ImportError('You must "pip install datadog" to get the datadog client library.')
+      raise ImportError(
+          'You must "pip install datadog" to get the datadog client library.')
     self.__api = None
     self.__host = host
     self.__api_key = api_key
     self.__app_key = app_key
 
   def __append_timeseries_point(
-        self, service, name,
-        instance, metric_metadata, service_metadata, result):
+      self, service, name,
+      instance, metric_metadata, service_metadata, result):
     """Creates a post payload for a DataDog time series data point.
 
        See http://docs.datadoghq.com/api/?lang=python#metrics-post.
@@ -120,37 +121,34 @@ def make_datadog_service(options):
     return match.group(1).strip()
 
 
-  app_key = None
-  api_key = None
-  host = None
-  config_path = options['dd_agent_config']
+  datadog_options = options.get('datadog', {})
+  api_key = os.environ.get('DATADOG_API_KEY', datadog_options.get('api_key'))
+  app_key = os.environ.get('DATADOG_APP_KEY', datadog_options.get('app_key'))
+  host = options.get('datadog_host', datadog_options.get('host'))
+  datadog_host = None
 
-  try:
-    with open(config_path, 'r') as stream:
-      logging.info('Reading Datadog config from %s', config_path)
-      text = stream.read()
-      app_key = read_param('app_key', text)
-      api_key = read_param('api_key', text)
-      host = read_param('hostname', text)
+  if not api_key or not app_key or host is None:
+    config_path = options['dd_agent_config']
+    try:
+      with open(config_path, 'r') as stream:
+        logging.info('Reading Datadog config from %s', config_path)
+        text = stream.read()
+        app_key = app_key or read_param('app_key', text)
+        api_key = api_key or read_param('api_key', text)
+        datadog_host = read_param('hostname', text)
+    except IOError:
+      logging.warning('Could not read config from datadog "%s": %s',
+                      config_path, traceback.format_exc())
 
-  # pylint: disable=bare-except
-  except:
-    logging.warning('Could not read config from "%s": %s',
-                    config_path, traceback.format_exc())
-
-  api_key = api_key or os.environ.get('DATADOG_API_KEY',
-                                      options.get('datadog', {}).get('api_key'))
   if api_key is None:
     raise ValueError('DATADOG_API_KEY is not defined')
 
-  # This can be None
-  app_key = app_key or os.environ.get('DATADOG_APP_KEY',
-                                      options.get('datadog', {}).get('app_key'))
-  host = (host
-          or socket.getfqdn(
-              options.get('datadog_host',
-                          options.get('datadog', {}).get('host', '')))
-          or '')
+  # This is convoluted because we are only going to fqdn hosts we give.
+  # We probably could regardless, but maybe we should keep datadog as is.
+  if host is None and datadog_host is None:
+    host = ''
+  host = socket.getfqdn(host) if host is not None else datadog_host
+
   return DatadogMetricsService(api_key=api_key, app_key=app_key, host=host)
 
 

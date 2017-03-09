@@ -15,16 +15,15 @@
 # pylint: disable=missing-docstring
 
 from datetime import datetime
-import httplib2
 import json
 import logging
 import os
 import re
 import traceback
 import urllib2
+import httplib2
 
 import spectator_client
-import util
 
 
 try:
@@ -126,7 +125,7 @@ class StackdriverMetricsService(object):
           'region': doc['region'],
           'aws_account': doc['accountId'],
           'project_id': self.__project
-       }
+      }
     except (IOError, ValueError, KeyError):
       return None
 
@@ -276,7 +275,7 @@ class StackdriverMetricsService(object):
       logging.info('Retrying create timeseries %s', ts_request)
       (self.stub.projects().timeSeries().create(
           name=self.project_to_resource(self.__project),
-               body={'timeSeries': ts_request})
+          body={'timeSeries': ts_request})
        .execute())
 
   def add_label_to_metric(self, label, metric_type):
@@ -390,12 +389,14 @@ def make_stub(options):
   """Helper function for making a stub to talk to service."""
   if not stackdriver_available:
       raise ImportError(
-           'You must "pip install google-api-python-client oauth2client" to get the stackdriver client library.')
-    
+          'You must "pip install google-api-python-client oauth2client" to get the stackdriver client library.')
+
   stackdriver_config = options.get('stackdriver', {})
   credentials_path = options.get('credentials_path', None)
   if credentials_path is None:
     credentials_path = stackdriver_config.get('credentials_path')
+  if credentials_path:
+    credentials_path = os.path.expandvars(credentials_path)
 
   http = httplib2.Http()
   http = apiclient.http.set_user_agent(

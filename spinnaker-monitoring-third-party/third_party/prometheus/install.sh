@@ -379,7 +379,7 @@ function add_grafana_userdata() {
        -X POST \
        -d "${PAYLOAD//\'/\"}"
 
-  for dashboard in ${SOURCE_DIR}/*Dashboard.json; do
+  for dashboard in ${SOURCE_DIR}/*-dashboard.json; do
     echo "Installing $(basename $dashboard)"
     x=$(sed -e "/\"__inputs\"/,/],/d" \
             -e "/\"__requires\"/,/],/d" \

@@ -626,7 +626,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Spinnaker",
+        "datasource": "${DS_SPINNAKER}",
         "hide": 0,
         "includeAll": true,
         "label": null,

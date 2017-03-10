@@ -672,7 +672,7 @@
       "showTitle": false,
       "title": "JVM Memory",
       "titleSize": "h6"
-    },
+    }
   ],
   "schemaVersion": 14,
   "style": "dark",

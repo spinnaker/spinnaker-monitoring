@@ -1,4 +1,3 @@
-
 steps:
 - name: 'gcr.io/cloud-builders/docker'
   dir: spinnaker-monitoring-daemon

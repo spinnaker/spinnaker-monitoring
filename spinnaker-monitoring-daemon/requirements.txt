@@ -2,16 +2,16 @@
 --index-url https://pypi.python.org/simple/
 
 # 20170226
-# Moved datadog to the datadog cleint install in third-party
+# Moved datadog to the datadog client install in third-party
 # because it seems to be corrupting gce image baking.
-# datadog
+#@ datadog
 
 # Moved google to the stackdriver client install in third-party
-# google-api-python-client
-# oauth2client
+#@ google-api-python-client
+#@ oauth2client
 
 # Moved prometheus to the prometheus client install in third-party
-# prometheus_client
+#@ prometheus_client
 
 
 httplib2

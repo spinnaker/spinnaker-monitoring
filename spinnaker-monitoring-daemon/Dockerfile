@@ -9,6 +9,8 @@ COPY requirements.txt /opt/spinnaker-monitoring/requirements.txt
 
 WORKDIR /opt/spinnaker-monitoring
 
+RUN sed -ie 's/#@ //g' requirements.txt
+
 RUN pip install -r requirements.txt
 
 ENV PYTHONWARNINGS "once"

@@ -24,7 +24,10 @@ CLIENT=true
 DASHBOARDS=true
 
 # Variables for Server Configuration
-PROMETHEUS_VERSION=prometheus-1.5.0.linux-amd64
+PROMETHEUS_VERSION=prometheus-1.5.2.linux-amd64
+NODE_EXPORTER_VERSION=node_exporter-0.13.0.linux-amd64
+PUSHGATEWAY_VERSION=pushgateway-0.3.1.linux-amd64
+GRAFANA_VERSION=grafana_4.1.2-1486989747_amd64
 OPT_DIR=/opt/$PROMETHEUS_VERSION
 PROMETHEUS_PORT=9090
 GRAFANA_PORT=3000
@@ -78,6 +81,12 @@ installed by running apt-get install spinnaker-monitoring-daemon. See the
 
 
 <CONFIG_OPTIONS> are:
+    --user=USER       The grafana user name when installing dashboards.
+    or --user USER   
+
+    --password=PASSWORD      The grafana user password when installing
+    or --password PASSWORD   dashboards.
+
     --gateway=URL     Configure prometheus to use the pushgateway.
     or --gateway URL  If using the gateway, both client and server need this.
                       Generally, the gateway is a last-resort config option.
@@ -117,6 +126,11 @@ Example usage:
    to edit it manually later, or re-run this install with --client_only.
 EOF
 }
+
+
+GRAFANA_USER=${GRAFANA_USER:-admin}
+GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-admin}
+
 
 # We are going to use this file as a template for the prometheus.yml
 # file we give to configure Prometheus.
@@ -170,6 +184,21 @@ function process_args() {
             show_usage
             exit 0
             ;;
+        --user=*)
+            GRAFANA_USER="${key#*=}"  # See --user
+            ;;
+        --user)
+            GRAFANA_USER="$1"  # Only used for dashboards (and source)
+            shift
+            ;;
+        --password=*)
+            GRAFANA_PASSWORD="${key#*=}"  # See --user
+            ;;
+        --password)
+            GRAFANA_PASSWORD="$1"  # Only used for dashboards (and source)
+            shift
+            ;;
+
         --gateway=*)
             GATEWAY_URL="${key#*=}"  # See --gateway
             ;;
@@ -216,6 +245,10 @@ function process_args() {
   done
 }
 
+
+function extract_version_number() {
+  echo "$1" | sed 's/^[^0-9]\+\([0-9]\+\.[0-9]\+\.[0-9]\+\).*/v\1/'
+}
 
 function configure_gce_prometheus() {
   local path="$1"
@@ -319,7 +352,7 @@ EOF
 
 function install_prometheus() {
   curl -s -S -L -o /tmp/prometheus.gz \
-     https://github.com/prometheus/prometheus/releases/download/v1.5.0/prometheus-1.5.0.linux-amd64.tar.gz
+     https://github.com/prometheus/prometheus/releases/download/$(extract_version_number $PROMETHEUS_VERSION)/${PROMETHEUS_VERSION}.tar.gz
   tar xzf /tmp/prometheus.gz -C $(dirname $OPT_DIR)
   rm /tmp/prometheus.gz
   cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
@@ -341,9 +374,9 @@ function install_prometheus() {
 
 function install_node_exporter() {
   curl -s -S -L -o /tmp/node_exporter.gz \
-     https://github.com/prometheus/node_exporter/releases/download/v0.13.0/node_exporter-0.13.0.linux-amd64.tar.gz
+     https://github.com/prometheus/node_exporter/releases/download/$(extract_version_number $NODE_EXPORTER_VERSION)/${NODE_EXPORTER_VERSION}.tar.gz
   tar xzf /tmp/node_exporter.gz -C $OPT_DIR
-  ln -fs $OPT_DIR/node_exporter-0.13.0.linux-amd64/node_exporter \
+  ln -fs $OPT_DIR/${NODE_EXPORTER_VERSION}/node_exporter \
          /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
   cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
@@ -352,9 +385,9 @@ function install_node_exporter() {
 
 function install_push_gateway() {
   curl -s -S -L -o /tmp/pushgateway.gz \
-     https://github.com/prometheus/pushgateway/releases/download/v0.3.1/pushgateway-0.3.1.linux-amd64.tar.gz
+     https://github.com/prometheus/pushgateway/releases/download/$(extract_version_number $PUSHGATEWAY_VERSION)/${PUSHGATEWAY_VERSION}.tar.gz
   tar xzf /tmp/pushgateway.gz -C $OPT_DIR
-  ln -fs $OPT_DIR/pushgateway-0.3.1.linux-amd64/pushgateway \
+  ln -fs $OPT_DIR/${PUSH_GATEWAY_VERSION}/pushgateway \
          /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
   cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
@@ -362,19 +395,24 @@ function install_push_gateway() {
 }
 
 function install_grafana() {
-  curl -s -S -L -o /tmp/grafana.deb \
-      https://grafanarel.s3.amazonaws.com/builds/grafana_4.1.1-1484211277_amd64.deb
-  apt-get install -y adduser libfontconfig
-  dpkg -i /tmp/grafana.deb
+  echo "deb https://packagecloud.io/grafana/stable/debian/ jessie main" \
+      > /etc/apt/sources.list.d/grafana.list
+  curl -s -S https://packagecloud.io/gpg.key | sudo apt-key add -
+  sudo apt-get update -y
+  sudo apt-get install grafana -y --force-yes
+
   update-rc.d grafana-server defaults
-  rm /tmp/grafana.deb
+  sed -e "s/^;admin_user *=.*/admin_user = $GRAFANA_USER/" \
+      -e "s/^;admin_password *=.*/admin_password = ${GRAFANA_PASSWORD//\\//\\\/}/" \
+      -i /etc/grafana/grafana.ini
   service grafana-server restart
 }
 
 function add_grafana_userdata() {
   echo "Adding datasource"
   PAYLOAD="{'name':'Spinnaker','type':'prometheus','url':'http://localhost:${PROMETHEUS_PORT}','access':'direct','isDefault':true}"
-  curl -s -S -u admin:admin http://localhost:${GRAFANA_PORT}/api/datasources \
+  curl -s -S -u "$GRAFANA_USER:$GRAFANA_PASSWORD" \
+       http://localhost:${GRAFANA_PORT}/api/datasources \
        -H "Content-Type: application/json" \
        -X POST \
        -d "${PAYLOAD//\'/\"}"
@@ -386,7 +424,8 @@ function add_grafana_userdata() {
             -e "s/\${DS_SPINNAKER\}/Spinnaker/g" < "$dashboard")
     temp_file=$(mktemp)
     echo "{ \"dashboard\": $x }" > $temp_file
-    curl -s -S -u admin:admin http://localhost:${GRAFANA_PORT}/api/dashboards/import \
+    curl -s -S -u "$GRAFANA_USER:$GRAFANA_PASSWORD" \
+         http://localhost:${GRAFANA_PORT}/api/dashboards/import \
          -H "Content-Type: application/json" \
          -X POST \
          -d @${temp_file}
@@ -453,6 +492,8 @@ fi
 if $CLIENT; then
   # 20170226
   # Moved this from the daemon requirements for consistency with datadog.
+  sudo apt-get update -y
+  sudo apt-get install python-pip -y --force-yes
   pip install -r "$SOURCE_DIR/requirements.txt"
 
   enable_spinnaker_monitoring_config

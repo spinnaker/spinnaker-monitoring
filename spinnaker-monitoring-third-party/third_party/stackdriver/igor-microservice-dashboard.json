@@ -1,5 +1,5 @@
 {
-  "version": 0,
+  "revision": 0,
   "displayName": "Igor Microservice",
   "root": {
     "rowLayout": {
@@ -55,7 +55,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/controller.invocations__count\" AND metric.label.success=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/controller.invocations__count\" AND metric.label.status=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -74,7 +74,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/controller.invocations__count\" AND metric.label.success!=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/controller.invocations__count\" AND metric.label.status!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -93,7 +93,7 @@
         {
           "widgets": [
             {
-              "title": "JVM Memory",
+              "title": "JVM Memory (igor)",
               "xyChart": {
                 "dataSets": [
                   {

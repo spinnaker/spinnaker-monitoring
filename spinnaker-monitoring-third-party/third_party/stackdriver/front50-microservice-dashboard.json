@@ -1,5 +1,5 @@
 {
-  "version": 0,
+  "revision": 0,
   "displayName": "Front50 Microservice",
   "root": {
     "rowLayout": {
@@ -55,7 +55,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/controller.invocations__count\" AND metric.label.success=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/controller.invocations__count\" AND metric.label.status=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -74,7 +74,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/controller.invocations__count\" AND metric.label.success!=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/controller.invocations__count\" AND metric.label.status!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -112,6 +112,29 @@
               }
             },
             {
+              "title": "Item Cache Updates (front50)",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/storageServiceSupport.numUpdated\"",
+                      "perSeriesAligner": "ALIGN_DELTA"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
               "title": "Item Cache Adds (front50)",
               "xyChart": {
                 "dataSets": [
@@ -137,25 +160,6 @@
                   {
                     "timeSeriesFilter": {
                       "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/storageServiceSupport.numRemoved\"",
-                      "perSeriesAligner": "ALIGN_DELTA"
-                    }
-                  }
-                ],
-                "constantLines": [
-                  {}
-                ],
-                "options": {},
-                "y1Axis": {},
-                "xAxis": {}
-              }
-            },
-            {
-              "title": "Item Cache Updates (front50)",
-              "xyChart": {
-                "dataSets": [
-                  {
-                    "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/storageServiceSupport.numUpdated\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -260,7 +264,7 @@
         {
           "widgets": [
             {
-              "title": "JVM Memory",
+              "title": "JVM Memory (front50)",
               "xyChart": {
                 "dataSets": [
                   {

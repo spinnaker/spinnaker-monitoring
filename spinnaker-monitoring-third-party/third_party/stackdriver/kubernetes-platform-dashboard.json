@@ -1,5 +1,5 @@
 {
-  "version": 0,
+  "revision": 0,
   "displayName": "Kubernetes Spinnaker",
   "root": {
     "rowLayout": {

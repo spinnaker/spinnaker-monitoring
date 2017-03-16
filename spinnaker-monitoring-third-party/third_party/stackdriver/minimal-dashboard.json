@@ -1,6 +1,6 @@
 {
+  "revision": 0,
   "displayName": "Minimal Spinnaker Dashboard",
-  "version": 14,
   "root": {
     "gridLayout": {
       "widgets": [

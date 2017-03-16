@@ -1,5 +1,5 @@
 {
-  "version": 0,
+  "revision": 0,
   "displayName": "Gate Microservice",
   "root": {
     "rowLayout": {
@@ -55,7 +55,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/controller.invocations__count\" AND metric.label.success=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/controller.invocations__count\" AND metric.label.status=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -74,8 +74,31 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/controller.invocations__count\" AND metric.label.success!=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/controller.invocations__count\" AND metric.label.status!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_DELTA"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory (gate)",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/jvm.memory.used\" AND metric.label.memtype=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
                     }
                   }
                 ],

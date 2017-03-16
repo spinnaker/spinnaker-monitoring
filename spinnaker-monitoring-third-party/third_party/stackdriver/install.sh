@@ -77,15 +77,18 @@ function install_dashboards() {
     >&2 echo "You need a STACKDRIVER_API_KEY to use this installer."
     exit -1
   fi
-  if [[ ! -f "$DIRNAME/../../bin/spinnaker-monitoring.sh" ]]; then
+  local cli="$DIRNAME/../../bin/spinnaker-monitoring.sh"
+  if [[ ! -f "$cli" ]]; then
+    # See if we are running from source
+    cli="$DIRNAME/../../../spinnaker-monitoring-daemon/bin/spinnaker-monitoring.sh"
+  fi
+  if [[ ! -f "$cli" ]]; then
     >&2 echo "You need spinnaker-monitoring installed into /opt/spinnaker-monitoring to use this installer."
     exit -1
   fi
 
   for dashboard in "$DIRNAME"/*-dashboard.json; do
-    "$DIRNAME/../../bin/spinnaker-monitoring.sh" \
-        upload_stackdriver_dashboard --dashboard ${dashboard} \
-        "$@"
+    "$cli" upload_stackdriver_dashboard --dashboard ${dashboard} "$@"
   done
 }
 

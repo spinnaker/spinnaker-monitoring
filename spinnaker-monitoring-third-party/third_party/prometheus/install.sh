@@ -356,6 +356,8 @@ function install_prometheus() {
   tar xzf /tmp/prometheus.gz -C $(dirname $OPT_DIR)
   rm /tmp/prometheus.gz
   cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
+  sed "s/PROMETHEUS_VERSION/$PROMETHEUS_VERSION/g" -i /etc/init/prometheus.conf
+
   if [[ "$GCE_CONFIG" == "true" ]]; then
       sed "s/spinnaker-prometheus\.yml/gce-prometheus\.yml/" \
           -i /etc/init/prometheus.conf

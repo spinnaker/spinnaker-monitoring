@@ -92,7 +92,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Orchestration\" AND metric.label.isComplete!=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Orchestration\" AND metric.label.isComplete=\"false\"",
                       "perSeriesAligner": "ALIGN_SUM"
                     }
                   }
@@ -106,7 +106,7 @@
               }
             },
             {
-              "title": "Sucessful Orchestrations (orca)",
+              "title": "Successful Orchestrations (orca)",
               "xyChart": {
                 "dataSets": [
                   {
@@ -153,7 +153,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Pipeline\" AND metric.label.isComplete!=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Pipeline\" AND metric.label.isComplete=\"false\"",
                       "perSeriesAligner": "ALIGN_SUM"
                     }
                   }
@@ -167,7 +167,7 @@
               }
             },
             {
-              "title": "Sucessful Pipelines (orca)",
+              "title": "Successful Pipelines (orca)",
               "xyChart": {
                 "dataSets": [
                   {

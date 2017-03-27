@@ -55,7 +55,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/controller.operations__count\" AND metric.label.success=\"true\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operations__count\" AND metric.label.success=\"true\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }

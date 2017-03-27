@@ -56,7 +56,7 @@ function install_server() {
 function install_client() {
   # 20170226
   # Moved this from the daemon requirements for consistency with datadog.
-  pip install -r "$SOURCE_DIR/requirements.txt"
+  pip install -r "$DIRNAME/requirements.txt"
 
   config_path=$(find_config_path)
   if [[ -f "$config_path" ]]; then
@@ -87,6 +87,10 @@ function install_dashboards() {
     exit -1
   fi
 
+  # 20170226
+  # Moved this from the daemon requirements for consistency with datadog.
+  pip install -r "$DIRNAME/requirements.txt"
+
   for dashboard in "$DIRNAME"/*-dashboard.json; do
     "$cli" upload_stackdriver_dashboard --dashboard ${dashboard} "$@"
   done
@@ -108,7 +112,7 @@ if $SERVER; then
 fi
 
 if $DASHBOARDS; then
-  install_dashboards
+  install_dashboards "$@"
 fi
 
 if $CLIENT; then

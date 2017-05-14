@@ -1,9 +1,10 @@
+# This default directory is when running from source.
 DEFAULT_CONFIG_YML_DIR=\
-${DEFAULT_CONFIG_YML_DIR:-$(dirname $0)/../../spinnaker-monitoring/daemon}
+${DEFAULT_CONFIG_YML_DIR:-$(dirname $0)/../../spinnaker-monitoring/spinnaker-monitoring-daemon/config}
 
 function find_config_path() {
   local dirs_to_search=(\
-       /opt/spinnaker-monitoring \
+       /opt/spinnaker-monitoring/config \
        "$HOME/.spinnaker" \
         "$DEFAULT_CONFIG_YML_DIR")
   for dir in ${dirs_to_search[@]}; do
@@ -12,7 +13,10 @@ function find_config_path() {
        return
     fi
   done
-  echo "/opt/spinnaker-monitoring/spinnaker-monitoring.yml"
+
+  # We shouldnt reach this since we already checked for it.
+  # So this is going to cause a failure later.
+  echo "/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml"
   return
 }
 

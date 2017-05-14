@@ -39,7 +39,7 @@ This server also supports the PrometheusPushGateway
 https://prometheus.io/download/#pushgateway
 Using the push gateway, configure the daemon to publish metrics
 to the push gateway by setting the prometheus.push_gateway attribute
-in /opt/spinnaker-monitoring/conf/spinnaker-monitoring.yml to the URL of
+in /opt/spinnaker-monitoring/config/spinnaker-monitoring.yml to the URL of
 the push gateway, and configure prometheus to poll the pushgateway instead
 of this monitoring daemon. Note that you will have to download and install
 the gateway debian package. See prometheus.io.

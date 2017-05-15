@@ -15,4 +15,4 @@
 # limitations under the License.
 
 PYTHONWARNINGS=once \
-python $(dirname $0)/../spinnaker-monitoring "$@"
+exec python $(dirname $0)/../spinnaker-monitoring "$@"

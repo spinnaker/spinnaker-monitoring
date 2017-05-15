@@ -46,8 +46,8 @@ ospackage() {
     into('/opt/spinnaker-monitoring')
   }
   
-  from(file('spinnaker-monitoring.yml')) {
-    into('/opt/spinnaker-monitoring')
+  from(file('config/spinnaker-monitoring.yml')) {
+    into('/opt/spinnaker-monitoring/config')
   }
 
   from('bin') {

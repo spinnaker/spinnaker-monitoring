@@ -35,7 +35,7 @@ import stackdriver_handlers
 import util
 
 
-DEFAULT_CONFIG_PATH = '/opt/spinnaker-monitoring/spinnaker-monitoring.yml'
+DEFAULT_CONFIG_PATH = '/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml'
 
 
 def init_logging(options):

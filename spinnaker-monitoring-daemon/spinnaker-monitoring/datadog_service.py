@@ -16,9 +16,9 @@
 
 
 # pip install datadog
+import ConfigParser
 import logging
 import os
-import re
 import socket
 import traceback
 
@@ -112,13 +112,12 @@ class DatadogMetricsService(object):
 
 
 def make_datadog_service(options):
-  def read_param(param_name, config_text):
+  def read_param(param_name, config_object):
     """Read configuration parameter from Datadog config_text."""
-    match = re.search('^{0}:(.*)$'.format(param_name),
-                      config_text, re.MULTILINE)
-    if not match:
-      return None
-    return match.group(1).strip()
+    for section in config_object.sections():
+      if config_object.has_option(section, param_name):
+        return config_object.get(section, param_name)
+    return None
 
 
   datadog_options = options.get('datadog', {})
@@ -126,19 +125,18 @@ def make_datadog_service(options):
   app_key = os.environ.get('DATADOG_APP_KEY', datadog_options.get('app_key'))
   host = options.get('datadog_host', datadog_options.get('host'))
   datadog_host = None
+  config = ConfigParser.ConfigParser()
 
   if not api_key or not app_key or host is None:
     config_path = options['dd_agent_config']
-    try:
-      with open(config_path, 'r') as stream:
-        logging.info('Reading Datadog config from %s', config_path)
-        text = stream.read()
-        app_key = app_key or read_param('app_key', text)
-        api_key = api_key or read_param('api_key', text)
-        datadog_host = read_param('hostname', text)
-    except IOError:
-      logging.warning('Could not read config from datadog "%s": %s',
-                      config_path, traceback.format_exc())
+    config.read(config_path)
+    logging.info('Reading Datadog config from %s', config_path)
+    app_key = app_key or read_param('app_key', config)
+    api_key = api_key or read_param('api_key', config)
+    datadog_host = read_param('hostname', config)
+
+    if not config.sections():
+      logging.warn('Could not read config from datadog: {}'.format(config_path)),
 
   if api_key is None:
     raise ValueError('DATADOG_API_KEY is not defined')

@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.1.1"
+      "version": "4.3.2"
     },
     {
       "type": "panel",
@@ -38,6 +38,7 @@
   "hideControls": false,
   "id": null,
   "links": [],
+  "refresh": "30s",
   "rows": [
     {
       "collapse": false,
@@ -46,6 +47,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 1,
@@ -72,27 +75,30 @@
               "yaxis": 2
             }
           ],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(node_cpu{mode!=\"idle\"}[$SamplePeriod])) / sum(rate(node_cpu[$SamplePeriod])) ",
+              "EXPR": "sum(rate(node_cpu{mode!=\"idle\",instance~\"$Instance\"}[$SamplePeriod])) / sum(rate(node_cpu[$SamplePeriod])) ",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "All",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "sum(rate(node_cpu{mode!=\"idle\"}[$SamplePeriod])) by (cpu)",
+              "expr": "sum(rate(node_cpu{mode!=\"idle\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{cpu}}",
+              "legendFormat": "{{instance}}",
               "metric": "node_cpu",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -106,6 +112,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -137,6 +144,8 @@
             "Total": "#BF1B00"
           },
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 3,
@@ -163,54 +172,61 @@
               "yaxis": 2
             }
           ],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "node_memory_MemFree ",
+              "expr": "sum(node_memory_MemFree{instance=~\"$Instance\"}) by (instance)",
+              "format": "time_series",
               "hide": false,
+              "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "Free",
+              "legendFormat": "{{instance}}:Free",
               "metric": "",
               "refId": "B",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "node_memory_Committed_AS",
+              "expr": "sum(node_memory_Committed_AS{instance=~\"$Instance\"}) by (instance)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Committed",
+              "legendFormat": "{{instance}}:Committed",
               "metric": "",
               "refId": "G",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "node_memory_Dirty",
+              "expr": "sum(node_memory_Dirty{instance=~\"$Instance\"}) by (instance)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Dirty",
+              "legendFormat": "{{instance}}:Dirty",
               "metric": "",
               "refId": "F",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "node_memory_MemTotal",
+              "expr": "sum(node_memory_MemTotal{instance=~\"$Instance\"}) by (instance)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Total",
+              "legendFormat": "{{instance}}:Total",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "node_memory_MemAvailable",
+              "expr": "sum(node_memory_MemAvailable{instance=~\"$Instance\"}) by (instance)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Available",
+              "legendFormat": "{{instance}}:Available",
               "metric": "node_memory_MemAvailable",
               "refId": "C",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -224,6 +240,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -263,6 +280,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 4,
@@ -286,27 +305,31 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(node_network_receive_bytes{device!=\"lo\"}[$SamplePeriod])",
+              "expr": "sum(rate(node_network_receive_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance,device)",
+              "format": "time_series",
               "hide": false,
+              "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/In",
+              "legendFormat": "{{instance}}:IN({{device}})",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "rate(node_network_transmit_bytes{device!=\"lo\"}[$SamplePeriod])",
+              "expr": "sum(rate(node_network_transmit_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance,device)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/Out",
+              "legendFormat": "{{instance}}:OUT({{device}})",
               "metric": "",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -320,6 +343,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -347,6 +371,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 6,
@@ -370,27 +396,30 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(node_network_receive_bytes{device=\"lo\"}[$SamplePeriod])",
+              "expr": "rate(node_network_receive_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/In",
+              "legendFormat": "{{instance}}:IN({{device}})",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "rate(node_network_transmit_bytes{device=\"lo\"}[$SamplePeriod])",
+              "expr": "rate(node_network_transmit_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/Out",
+              "legendFormat": "{{instance}}:OUT({{device}})",
               "metric": "",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -404,6 +433,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -443,6 +473,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 2,
@@ -469,25 +501,28 @@
               "yaxis": 2
             }
           ],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(node_disk_bytes_written[$SamplePeriod])",
+              "expr": "rate(node_disk_bytes_written{instance=~\"$Instance\"}[$SamplePeriod])",
+              "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/WRITE",
+              "legendFormat": "{{instance}}:WRITE({{device}})",
               "metric": "node_disk_bytes_written",
               "refId": "A",
-              "step": 10
+              "step": 4
             },
             {
-              "expr": "rate(node_disk_bytes_read[$SamplePeriod])",
+              "expr": "rate(node_disk_bytes_read{instance=~\"$Instance\"}[$SamplePeriod])",
+              "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{device}}/READ",
+              "legendFormat": "{{instance}}/READ({{device}})",
               "metric": "node_disk_bytes_read",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -501,6 +536,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -528,6 +564,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 5,
@@ -556,18 +594,21 @@
               "yaxis": 2
             }
           ],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "node_filesystem_free{mountpoint!~\"/run.*\"}",
+              "expr": "label_replace(sum(node_filesystem_free{mountpoint!~\"/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device), \"device\", \"$1\", \"device\", \"/dev(.*)\")",
+              "format": "time_series",
+              "hide": false,
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{device}}({{mountpoint}})",
+              "legendFormat": "{{instance}}:{{device}}",
               "metric": "",
               "refId": "B",
-              "step": 10
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -581,6 +622,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -660,6 +702,26 @@
         "query": "1m,5m,10m,15m,30m",
         "refresh": 2,
         "type": "interval"
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "${DS_SPINNAKER}",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "Instance",
+        "options": [],
+        "query": "node_cpu",
+        "refresh": 1,
+        "regex": "/instance=\"([^\"]+).*/",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
@@ -694,5 +756,5 @@
   },
   "timezone": "browser",
   "title": "Machine Stats",
-  "version": 2
+  "version": 3
 }

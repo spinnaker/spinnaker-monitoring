@@ -38,7 +38,7 @@
   "hideControls": false,
   "id": null,
   "links": [],
-  "refresh": false,
+  "refresh": "30s",
   "rows": [
     {
       "collapse": false,
@@ -1254,5 +1254,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Minimalist",
-  "version": 1
+  "version": 2
 }

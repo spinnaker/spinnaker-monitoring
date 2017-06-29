@@ -466,9 +466,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(gate:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(idelta(gate:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
+              "legendFormat": "{{controller}}({{method}}/{{statusCode}})",
               "refId": "A",
               "step": 4
             }
@@ -756,5 +756,5 @@
   },
   "timezone": "browser",
   "title": "Gate Microservice",
-  "version": 1
+  "version": 2
 }

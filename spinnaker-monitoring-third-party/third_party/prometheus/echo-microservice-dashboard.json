@@ -479,7 +479,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "JVM Memory Usage (echo, $Intance)",
+          "title": "JVM Memory Usage (echo, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -631,5 +631,5 @@
   },
   "timezone": "browser",
   "title": "Echo Microservice",
-  "version": 1
+  "version": 2
 }

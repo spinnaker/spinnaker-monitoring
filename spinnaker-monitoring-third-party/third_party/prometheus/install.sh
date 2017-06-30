@@ -24,14 +24,14 @@ CLIENT=true
 DASHBOARDS=true
 
 # Variables for Server Configuration
-PROMETHEUS_VERSION=prometheus-1.5.2.linux-amd64
-NODE_EXPORTER_VERSION=node_exporter-0.13.0.linux-amd64
-PUSHGATEWAY_VERSION=pushgateway-0.3.1.linux-amd64
-GRAFANA_VERSION=grafana_4.1.2-1486989747_amd64
-OPT_DIR=/opt/$PROMETHEUS_VERSION
+PROMETHEUS_VERSION=prometheus-1.7.1.linux-amd64
+NODE_EXPORTER_VERSION=node_exporter-0.14.0.linux-amd64
+PUSHGATEWAY_VERSION=pushgateway-0.4.0.linux-amd64
+GRAFANA_VERSION=grafana_4.3.2-1486989747_amd64
 PROMETHEUS_PORT=9090
 GRAFANA_PORT=3000
 GCE_CONFIG=false
+OVERWRITE=false
 
 # Variables for Client Configuration
 CLIENT_HOST="not specified"
@@ -95,6 +95,11 @@ installed by running apt-get install spinnaker-monitoring-daemon. See the
                       in GCE VMs within this project and region.
                       This is a server configuration only, though clients
                       should use --client_host to expose the port externally.
+
+    --overwrite       Ovewrite existing dashboards if found. This is false
+                      by default. If true, existing dashboards will upgrade
+                      with any changes made, however will lose any local changes
+                      that might have been added to the previous installation.
 
     --client_host IP    Configure the spinnaker-monitoring daemon to use
     or --client_host=IP the designated NIC. Clients are configured to use
@@ -234,6 +239,9 @@ function process_args() {
             SERVER=false
             CLIENT=false
             ;;
+        --overwrite)
+            OVERWRITE=true
+            ;;
         --no_dashboards)
             DASHBOARDS=false
             ;;
@@ -351,35 +359,71 @@ EOF
 
 
 function install_prometheus() {
+  local old_conf_file_path=""
+  local old_data_path=""
+  if [[ -f /etc/init/prometheus.conf ]]; then
+      old_data_path=$(grep storage.local.path /etc/init/prometheus.conf \
+                      | sed "s/.*-storage.local.path *\([^ ]*\).*/\1/")
+      old_conf_file_path=$(grep config.file /etc/init/prometheus.conf \
+                      | sed "s/.*-config.file *\([^ ]*\).*/\1/")
+  fi
+
   curl -s -S -L -o /tmp/prometheus.gz \
      https://github.com/prometheus/prometheus/releases/download/$(extract_version_number $PROMETHEUS_VERSION)/${PROMETHEUS_VERSION}.tar.gz
-  tar xzf /tmp/prometheus.gz -C $(dirname $OPT_DIR)
+  local version_dir=/opt/$PROMETHEUS_VERSION
+  mkdir -p $version_dir
+  tar xzf /tmp/prometheus.gz -C $(dirname $version_dir)
+  rm -f /opt/prometheus
+  ln -s $version_dir /opt/prometheus
   rm /tmp/prometheus.gz
   cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
-  sed "s/PROMETHEUS_VERSION/$PROMETHEUS_VERSION/g" -i /etc/init/prometheus.conf
-
+  if [[ "$old_data_path" != "" ]]; then
+      if [[ "$old_data_path" == "/opt/prometheus-1.5.2.linux-amd64/data" ]]; then
+         echo "Migrating datastore from $old_data_path to /opt/prometheus-data"
+         mv $old_data_path /opt/prometheus-data
+      else
+         echo "Configuring existing non-standard datastore $old_data_path"
+         sed "s/\/opt\/prometheus-data/${old_data_path//\//\\\/}/" \
+             -i /etc/init/prometheus.conf
+      fi
+  fi
   if [[ "$GCE_CONFIG" == "true" ]]; then
       sed "s/spinnaker-prometheus\.yml/gce-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
-      configure_gce_prometheus "$OPT_DIR/gce-prometheus.yml"
+      configure_gce_prometheus "$version_dir/gce-prometheus.yml"
   elif [[ ! -z $GATEWAY_URL ]]; then
       sed "s/spinnaker-prometheus\.yml/pushgateway-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
-      configure_gateway_prometheus "$OPT_DIR/pushgateway-prometheus.yml"
+      configure_gateway_prometheus "$version_dir/pushgateway-prometheus.yml"
   else
       sed "s/spinnaker-prometheus\.yml/local-prometheus\.yml/" \
           -i /etc/init/prometheus.conf
-      configure_local_prometheus "$OPT_DIR/local-prometheus.yml"
+      configure_local_prometheus "$version_dir/local-prometheus.yml"
   fi
+
+  # Keep old configuration file as backup if it contains
+  # customizations that may need to be re-added.
+  if [[ "$old_conf_file_path" != "" ]]; then
+      local old_backup="/opt/prometheus/$(basename $old_conf_file_path).old"
+      if [[ ! -f $old_backup ]]; then
+        echo "Copying $old_conf_file_path to $old_backup"
+        cp $old_conf_file_path $old_backup
+      else
+        echo "Copying $old_backup already exists."
+      fi
+  fi
+
   service prometheus restart
 }
 
 function install_node_exporter() {
   curl -s -S -L -o /tmp/node_exporter.gz \
      https://github.com/prometheus/node_exporter/releases/download/$(extract_version_number $NODE_EXPORTER_VERSION)/${NODE_EXPORTER_VERSION}.tar.gz
-  tar xzf /tmp/node_exporter.gz -C $OPT_DIR
-  ln -fs $OPT_DIR/${NODE_EXPORTER_VERSION}/node_exporter \
-         /usr/bin/node_exporter
+  local node_dir=/opt/${NODE_EXPORTER_VERSION}
+  mkdir -p $node_dir
+  tar xzf /tmp/node_exporter.gz -C $(dirname $node_dir)
+  rm -f /usr/bin/node_exporter
+  ln -fs $node_dir/node_exporter /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
   cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
   service node_exporter restart
@@ -388,9 +432,11 @@ function install_node_exporter() {
 function install_push_gateway() {
   curl -s -S -L -o /tmp/pushgateway.gz \
      https://github.com/prometheus/pushgateway/releases/download/$(extract_version_number $PUSHGATEWAY_VERSION)/${PUSHGATEWAY_VERSION}.tar.gz
-  tar xzf /tmp/pushgateway.gz -C $OPT_DIR
-  ln -fs $OPT_DIR/${PUSH_GATEWAY_VERSION}/pushgateway \
-         /usr/bin/pushgateway
+  local gateway_dir=/opt/$PUSH_GATEWAY_VERSION
+  mkdir -p $gateway_dir
+  tar xzf /tmp/pushgateway.gz -C $(dirname $gateway_dir)
+  rm -f /usr/bin/pushgateway
+  ln -fs $gateway_dir/pushgateway /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
   cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
   service pushgateway restart
@@ -425,7 +471,7 @@ function add_grafana_userdata() {
             -e "/\"__requires\"/,/],/d" \
             -e "s/\${DS_SPINNAKER\}/Spinnaker/g" < "$dashboard")
     temp_file=$(mktemp)
-    echo "{ \"dashboard\": $x }" > $temp_file
+    echo "{ \"dashboard\": $x, \"overwrite\": $OVERWRITE }" > $temp_file
     curl -s -S -u "$GRAFANA_USER:$GRAFANA_PASSWORD" \
          http://localhost:${GRAFANA_PORT}/api/dashboards/import \
          -H "Content-Type: application/json" \
@@ -471,7 +517,6 @@ fi
 
 
 if $SERVER; then
-  mkdir -p  $OPT_DIR
   if [[ -z $GATEWAY_URL ]]; then
     install_node_exporter
   else

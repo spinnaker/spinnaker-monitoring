@@ -38,7 +38,7 @@
   "hideControls": false,
   "id": null,
   "links": [],
-  "refresh": false,
+  "refresh": "30s",
   "rows": [
     {
       "collapse": false,
@@ -1029,5 +1029,5 @@
   },
   "timezone": "browser",
   "title": "Specific Spinnaker Application Details",
-  "version": 1
+  "version": 2
 }

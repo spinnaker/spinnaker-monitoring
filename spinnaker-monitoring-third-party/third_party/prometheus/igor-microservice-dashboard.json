@@ -466,7 +466,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(igor:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(idelta(igor:controller:invocations__count{status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}({{method}}/{{status}})",
               "refId": "A",
@@ -785,5 +785,5 @@
   },
   "timezone": "browser",
   "title": "Igor Microservice",
-  "version": 1
+  "version": 2
 }

@@ -159,7 +159,7 @@
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{requestType}} / UNK",
-              "metric": "clouddriver:AWS_delay",
+              "metric": "",
               "refId": "A",
               "step": 10
             },
@@ -168,7 +168,7 @@
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{requestType}} / {{statusCode}}",
-              "metric": "clouddriver:AWS_delay",
+              "metric": "",
               "refId": "B",
               "step": 10
             }
@@ -251,10 +251,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (serviceEndpoint, statusCode), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (serviceEndpoint, statusCode), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}} / {{statusCode}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "B",
               "step": 10
             }
@@ -325,10 +325,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\"), \"serviceName\",  \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\"), \"serviceName\",  \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{serviceName}}.{{requestType}}->{{AWSErrorCode}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "B",
               "step": 10
             }
@@ -411,10 +411,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -485,10 +485,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
               "intervalFactor": 2,
               "legendFormat": "{{requestType}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -731,10 +731,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceName, serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceName, serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / {{region}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -805,10 +805,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}}.{{requestType}}",
-              "metric": "clouddriver:aws:request:httpRequestTime__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -1031,12 +1031,32 @@
         "datasource": "${DS_SPINNAKER}",
         "hide": 0,
         "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "AwsRegion",
+        "options": [],
+        "query": "clouddriver:aws:request:httpRequestTime__count",
+        "refresh": 2,
+        "regex": "/.*serviceEndpoint=\"[^\\.]+\\.([^\\.]+).*/",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "${DS_SPINNAKER}",
+        "hide": 0,
+        "includeAll": true,
         "label": "",
         "multi": false,
         "name": "Instance",
         "options": [],
         "query": "clouddriver:aws:request:httpRequestTime__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -1044,6 +1064,43 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Instant Rate",
+          "value": "irate"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
       },
       {
         "auto": false,
@@ -1081,36 +1138,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
-      },
-      {
-        "allValue": ".*",
-        "current": {},
-        "datasource": "${DS_SPINNAKER}",
-        "hide": 0,
-        "includeAll": true,
-        "label": null,
-        "multi": false,
-        "name": "AwsRegion",
-        "options": [],
-        "query": "clouddriver:aws:request:httpRequestTime__count",
-        "refresh": 1,
-        "regex": "/.*serviceEndpoint=\"[^\\.]+\\.([^\\.]+).*/",
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1140,5 +1182,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker AWS Details",
-  "version": 1
+  "version": 2
 }

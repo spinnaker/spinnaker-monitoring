@@ -75,7 +75,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
@@ -236,7 +236,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
@@ -397,7 +397,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{resource}} ",
@@ -472,7 +472,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{account}} ",
@@ -547,7 +547,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{namespace}} ",
@@ -868,7 +868,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{resource}} ",
@@ -943,7 +943,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (account)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (account)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{account}} ",
@@ -1018,7 +1018,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (namespace)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (namespace)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{namespace}} ",
@@ -1090,7 +1090,7 @@
         "name": "Instance",
         "options": [],
         "query": "clouddriver:kubernetes:api__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -1110,7 +1110,7 @@
         "name": "KubernetesAccount",
         "options": [],
         "query": "clouddriver:kubernetes:api__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/account=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -1130,7 +1130,7 @@
         "name": "KubernetesNamespace",
         "options": [],
         "query": "clouddriver:kubernetes:api__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/namespace=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -1138,6 +1138,43 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Instant Rate",
+          "value": "irate"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
       },
       {
         "auto": false,
@@ -1175,16 +1212,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1214,5 +1256,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Kubernetes Details",
-  "version": 1
+  "version": 2
 }

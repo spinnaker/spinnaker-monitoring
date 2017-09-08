@@ -24,10 +24,11 @@ CLIENT=true
 DASHBOARDS=true
 
 # Variables for Server Configuration
+# explicit prometheus versions because its not available with apt-get
+# grafana will be latest version in apt-get
 PROMETHEUS_VERSION=prometheus-1.7.1.linux-amd64
 NODE_EXPORTER_VERSION=node_exporter-0.14.0.linux-amd64
 PUSHGATEWAY_VERSION=pushgateway-0.4.0.linux-amd64
-GRAFANA_VERSION=grafana_4.3.2-1486989747_amd64
 PROMETHEUS_PORT=9090
 GRAFANA_PORT=3000
 GCE_CONFIG=false

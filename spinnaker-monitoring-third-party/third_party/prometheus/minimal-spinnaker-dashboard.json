@@ -234,6 +234,146 @@
     },
     {
       "collapse": false,
+      "height": 291,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 21,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 12,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Clouddriver/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(echo:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Echo/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "B",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(fiat:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Fiat/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "C",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(front50:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Front50/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "D",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Gate/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "E",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(igor:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Igor/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "F",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Orca/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "G",
+              "step": 4
+            },
+            {
+              "expr": "label_replace(sum($Function(rosco:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "Rosco/{{statusCode}}/{{controller}}",
+              "metric": "",
+              "refId": "H",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "5xx Invocation Errors",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "decbytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "decbytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "5xx Errors",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
       "height": 262,
       "panels": [
         {
@@ -427,7 +567,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations:duration{bucket!=\"15m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
+              "expr": "sum($Function(orca:task:invocations:duration{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}/{{cloudProvider}}",
               "metric": "",
@@ -649,7 +789,7 @@
         },
         {
           "aliasColors": {},
-          "bars": true,
+          "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "decimals": null,
           "fill": 1,
@@ -675,7 +815,7 @@
           "renderer": "flot",
           "seriesOverrides": [],
           "span": 6,
-          "stack": true,
+          "stack": false,
           "steppedLine": false,
           "targets": [
             {
@@ -890,154 +1030,6 @@
       "repeatRowId": null,
       "showTitle": false,
       "title": "Operations",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 291,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 21,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 12,
-          "stack": true,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Clouddriver/{{controller}}",
-              "metric": "",
-              "refId": "A",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(echo:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Echo/{{controller}}",
-              "metric": "",
-              "refId": "B",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(fiat:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Fiat/{{controller}}",
-              "metric": "",
-              "refId": "C",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(front50:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Front50/{{controller}}",
-              "metric": "",
-              "refId": "D",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Gate/{{controller}}",
-              "metric": "",
-              "refId": "E",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{statusCode=\"429\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Gate/{{controller}}",
-              "metric": "",
-              "refId": "I",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(igor:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Igor/{{controller}}",
-              "metric": "",
-              "refId": "F",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Orca/{{controller}}",
-              "metric": "",
-              "refId": "G",
-              "step": 4
-            },
-            {
-              "expr": "label_replace(sum($Function(rosco:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{statusCode}}/Rosco/{{controller}}",
-              "metric": "",
-              "refId": "H",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "5xx Invocation Errors",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "5xx Errors",
       "titleSize": "h6"
     }
   ],

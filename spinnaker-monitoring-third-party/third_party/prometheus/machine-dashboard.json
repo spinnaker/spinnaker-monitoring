@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.3.2"
+      "version": "4.4.3"
     },
     {
       "type": "panel",
@@ -82,24 +82,25 @@
           "targets": [
             {
               "EXPR": "sum($Function(node_cpu{mode!=\"idle\",instance~\"$Instance\"}[$SamplePeriod])) / sum($Function(node_cpu[$SamplePeriod])) ",
-              "expr": "sum($Function(node_cpu{mode!=\"idle\"}[$SamplePeriod])) by (job)",
+              "expr": "sum($Function(node_cpu{mode!=\"idle\"}[$SamplePeriod])) by (job) / sum($Function(node_cpu[$SamplePeriod])) by (job)",
               "format": "time_series",
               "hide": false,
+              "interval": "",
               "intervalFactor": 2,
               "legendFormat": "All",
               "metric": "",
               "refId": "A",
-              "step": 600
+              "step": 10
             },
             {
-              "expr": "sum($Function(node_cpu{mode!=\"idle\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(node_cpu{mode!=\"idle\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum($Function(node_cpu{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
               "metric": "",
               "refId": "B",
-              "step": 600
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -170,7 +171,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(node_memory_MemTotal{instance=~\"$Instance\"}  - node_memory_MemAvailable{instance=~\"$Instance\"}) by (instance)",
+              "expr": "sum((node_memory_MemTotal{instance=~\"$Instance\"}  - node_memory_MemAvailable{instance=~\"$Instance\"}) / node_memory_MemTotal{instance=~\"$Instance\"}) by (instance)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -178,13 +179,13 @@
               "legendFormat": "{{instance}}",
               "metric": "",
               "refId": "A",
-              "step": 600
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Memory Used by Instance",
+          "title": "Memory Utilization by Instance",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -200,7 +201,7 @@
           },
           "yaxes": [
             {
-              "format": "decbytes",
+              "format": "percentunit",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -208,7 +209,7 @@
               "show": true
             },
             {
-              "format": "short",
+              "format": "percentunit",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -266,7 +267,7 @@
               "legendFormat": "{{instance}}",
               "metric": "",
               "refId": "B",
-              "step": 600
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -344,38 +345,43 @@
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "seriesOverrides": [],
+          "seriesOverrides": [
+            {
+              "alias": "eth0/OUT",
+              "yaxis": 2
+            }
+          ],
           "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance,device)",
+              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}:IN({{device}})",
+              "legendFormat": "{{device}}/IN",
               "metric": "",
               "refId": "A",
-              "step": 240
+              "step": 4
             },
             {
-              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance,device)",
+              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}:OUT({{device}})",
+              "legendFormat": "{{device}}/OUT",
               "metric": "",
               "refId": "B",
-              "step": 240
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "External Networking",
+          "title": "External Networking ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -435,38 +441,43 @@
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "seriesOverrides": [],
+          "seriesOverrides": [
+            {
+              "alias": "lo/OUT",
+              "yaxis": 2
+            }
+          ],
           "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_network_receive_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance, device)",
+              "expr": "sum($Function(node_network_receive_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}:IN({{device}})",
+              "legendFormat": "{{device}}/IN",
               "metric": "",
               "refId": "A",
-              "step": 240
+              "step": 4
             },
             {
-              "expr": "sum($Function(node_network_transmit_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance, device)",
+              "expr": "sum($Function(node_network_transmit_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}:OUT({{device}})",
+              "legendFormat": "{{device}}/OUT",
               "metric": "",
               "refId": "B",
-              "step": 240
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Local Networking",
+          "title": "Local Networking By Device ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -509,7 +520,7 @@
     },
     {
       "collapse": false,
-      "height": 264,
+      "height": 263,
       "panels": [
         {
           "aliasColors": {},
@@ -548,259 +559,29 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_disk_bytes_written{instance=~\"$Instance\"}[$SamplePeriod])) by (instance, device)",
+              "expr": "sum($Function(node_disk_bytes_written{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}:WRITE({{device}})",
+              "legendFormat": "{{device}}/WRITE",
               "metric": "",
               "refId": "A",
-              "step": 240
+              "step": 4
             },
             {
-              "expr": "sum($Function(node_disk_bytes_read{instance=~\"$Instance\"}[$SamplePeriod])) by (instance, device)",
+              "expr": "sum($Function(node_disk_bytes_read{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{instance}}/READ({{device}})",
+              "legendFormat": "{{device}}/READ",
               "metric": "",
               "refId": "B",
-              "step": 240
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Disk IO",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "Bps",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "Bps",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {
-            "Available": "#E0F9D7",
-            "Free": "#7EB26D",
-            "Total": "#BF1B00"
-          },
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 3,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [
-            {
-              "alias": "Dirty",
-              "yaxis": 2
-            }
-          ],
-          "spaceLength": 10,
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(node_memory_MemFree{instance=~\"$Instance\"}) by (instance)",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}:Free",
-              "metric": "",
-              "refId": "B",
-              "step": 240
-            },
-            {
-              "expr": "sum(node_memory_Committed_AS{instance=~\"$Instance\"}) by (instance)",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}:Committed",
-              "metric": "",
-              "refId": "G",
-              "step": 240
-            },
-            {
-              "expr": "sum(node_memory_Dirty{instance=~\"$Instance\"}) by (instance)",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}:Dirty",
-              "metric": "",
-              "refId": "F",
-              "step": 240
-            },
-            {
-              "expr": "sum(node_memory_MemTotal{instance=~\"$Instance\"}) by (instance)",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}:Total",
-              "metric": "",
-              "refId": "A",
-              "step": 240
-            },
-            {
-              "expr": "sum(node_memory_MemAvailable{instance=~\"$Instance\"}) by (instance)",
-              "format": "time_series",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{instance}}:Available",
-              "metric": "",
-              "refId": "C",
-              "step": 240
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "System Memory",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "buckets": null,
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "decbytes",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Dashboard Row",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 183,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 8,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "{{device}} IN",
-              "metric": "",
-              "refId": "C",
-              "step": 240
-            },
-            {
-              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "{{device}} OUT",
-              "metric": "",
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Networking Throughput by Device",
+          "title": "Disk IO by Device ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -880,13 +661,13 @@
               "legendFormat": "{{instance}}:{{device}}",
               "metric": "",
               "refId": "B",
-              "step": 240
+              "step": 4
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Disk Available",
+          "title": "Disk Available ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -911,6 +692,417 @@
             },
             {
               "format": "percentunit",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 199,
+      "panels": [
+        {
+          "aliasColors": {
+            "Available": "#E0F9D7",
+            "Free": "#7EB26D",
+            "Total": "#BF1B00"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 3,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "Dirty",
+              "yaxis": 2
+            }
+          ],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum(node_memory_MemFree{instance=~\"$Instance\"})",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "Free",
+              "metric": "",
+              "refId": "B",
+              "step": 4
+            },
+            {
+              "expr": "sum(node_memory_Committed_AS{instance=~\"$Instance\"})",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Committed",
+              "metric": "",
+              "refId": "G",
+              "step": 4
+            },
+            {
+              "expr": "sum(node_memory_Dirty{instance=~\"$Instance\"})",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Dirty",
+              "metric": "",
+              "refId": "F",
+              "step": 4
+            },
+            {
+              "expr": "sum(node_memory_MemTotal{instance=~\"$Instance\"})",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Total",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            },
+            {
+              "expr": "sum(node_memory_MemAvailable{instance=~\"$Instance\"})",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "Available",
+              "metric": "",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "System Memory by Category ($Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "decbytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "decbytes",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 8,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}/IN",
+              "metric": "",
+              "refId": "C",
+              "step": 4
+            },
+            {
+              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{device}}/OUT",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Networking Throughput by Device ($Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 10,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu) / sum($Function(node_cpu{instance=~\"$Instance\"}[$SamplePeriod])) by (cpu)",
+              "format": "time_series",
+              "hide": true,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{cpu}}",
+              "metric": "",
+              "refId": "C",
+              "step": 4
+            },
+            {
+              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu)",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{cpu}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "CPU Usage by Core ($Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 11,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (mode) ",
+              "format": "time_series",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{mode}}",
+              "metric": "",
+              "refId": "C",
+              "step": 4
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "CPU Usage by Mode ($Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "s",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -956,9 +1148,10 @@
       {
         "allValue": null,
         "current": {
+          "selected": true,
           "tags": [],
-          "text": "Instant Rate",
-          "value": "irate"
+          "text": "Delta",
+          "value": "delta"
         },
         "hide": 0,
         "includeAll": false,
@@ -967,7 +1160,7 @@
         "name": "Function",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "Delta",
             "value": "delta"
           },
@@ -982,7 +1175,7 @@
             "value": "idelta"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "Instant Rate",
             "value": "irate"
           }
@@ -1003,7 +1196,7 @@
         "name": "SamplePeriod",
         "options": [
           {
-            "selected": false,
+            "selected": true,
             "text": "1m",
             "value": "1m"
           },
@@ -1023,12 +1216,17 @@
             "value": "15m"
           },
           {
-            "selected": true,
+            "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }

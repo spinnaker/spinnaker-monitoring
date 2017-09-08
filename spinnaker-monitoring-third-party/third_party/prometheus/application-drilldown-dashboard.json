@@ -75,7 +75,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -87,7 +87,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "$Application Active Orchestrations (orca)",
+          "title": "Active Orchestrations by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -150,21 +150,21 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
-              "metric": "orca:task:invocations",
+              "metric": "",
               "refId": "C",
               "step": 10
             },
             {
-              "expr": "-1 * sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "ERR {{taskName}}",
-              "metric": "orca:task:invocations",
+              "metric": "",
               "refId": "D",
               "step": 10
             }
@@ -172,7 +172,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "$Application Orchestrations Completed (orca)",
+          "title": "Orchestrations Completed by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -247,7 +247,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -259,7 +259,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "$Application Active Pipelines (orca)",
+          "title": "Active Pipelines by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -322,21 +322,21 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
-              "metric": "orca:task:invocations",
+              "metric": "",
               "refId": "C",
               "step": 10
             },
             {
-              "expr": "-1 * sum(idelta(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "ERR {{taskName}}",
-              "metric": "orca:task:invocations",
+              "metric": "",
               "refId": "D",
               "step": 10
             }
@@ -344,7 +344,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "$Application Pipelines Completed (orca)",
+          "title": "Pipelines Completed by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -386,6 +386,173 @@
     },
     {
       "collapse": false,
+      "height": 183,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 65,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(orca:queue:pushed:messages{application=~\"$Application\"}[$SamplePeriod])) by (application)",
+              "format": "time_series",
+              "intervalFactor": 2,
+              "legendFormat": "{{application}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Pushed Messages by Application (orca, $Application)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 64,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(orca:task:invocations:duration{application=~\"$Application\"}[$SamplePeriod])) by (application, cloudProvider, bucket)",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 2,
+              "legendFormat": "{{bucket}}/{{cloudProvider}}/{{application}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Task Durations by Application (orca, $Application)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Queues",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
       "height": 235,
       "panels": [
         {
@@ -419,11 +586,11 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(echo:pipelines:triggered{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
+              "expr": "sum($Function(echo:pipelines:triggered{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}({{application}})",
-              "metric": "echo:pipelines:triggered",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -498,25 +665,25 @@
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Active",
-              "metric": "rosco:bakesActive",
+              "metric": "",
               "refId": "A",
               "step": 20
             },
             {
-              "expr": "sum(idelta(rosco:bakesRequested[$SamplePeriod])) by (flavor)",
+              "expr": "sum($Function(rosco:bakesRequested[$SamplePeriod])) by (flavor)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Request({{flavor}})",
-              "metric": "rosco:bakes",
+              "metric": "",
               "refId": "B",
               "step": 20
             },
             {
-              "expr": "-1 * sum(idelta(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
+              "expr": "-1 * sum($Function(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Failed {{region}}",
-              "metric": "bakesC",
+              "metric": "",
               "refId": "C",
               "step": 20
             }
@@ -524,7 +691,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Bake Requests and Failures (global)",
+          "title": "Bake Requests and Failures (rosco)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -599,7 +766,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Bakes Completed (global)",
+          "title": "Bakes Completed (rosco)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -764,26 +931,26 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "idelta(front50:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(front50:hystrix:countExceptionsThrown[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "front50/{{metricType}}({{metricGroup}})",
-              "metric": "front50:hystrix:countExceptionsThrown",
+              "metric": "",
               "refId": "A",
               "step": 10
             },
             {
-              "expr": "idelta(gate:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(gate:hystrix:countExceptionsThrown[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "gate/{{metricType}}({{metricGroup}})",
-              "metric": "gate:hystrix:countExceptionsThrown",
+              "metric": "",
               "refId": "B",
               "step": 10
             },
             {
-              "expr": "idelta(igor:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(igor:hystrix:countExceptionsThrown[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "igor/{{metricType}}({{metricGroup}})",
-              "metric": "igor:hystrix:countExceptionsThrown",
+              "metric": "",
               "refId": "C",
               "step": 10
             }
@@ -931,6 +1098,43 @@
   "templating": {
     "list": [
       {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "delta",
+          "value": "delta"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
+      },
+      {
         "auto": false,
         "auto_count": 30,
         "auto_min": "10s",
@@ -966,9 +1170,14 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       },
@@ -987,7 +1196,7 @@
         "name": "Application",
         "options": [],
         "query": "orca:task:invocations",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/sourceApplication=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -999,7 +1208,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1029,5 +1238,5 @@
   },
   "timezone": "browser",
   "title": "Specific Spinnaker Application Details",
-  "version": 2
+  "version": 3
 }

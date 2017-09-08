@@ -57,7 +57,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -75,11 +75,11 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
-              "metric": "clouddriver:google:operationWaits__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -134,7 +134,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -152,7 +152,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
               "metric": "",
@@ -220,7 +220,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -295,7 +295,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -370,7 +370,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -457,7 +457,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -475,7 +475,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase)",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
@@ -531,7 +531,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -549,7 +549,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase)",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
@@ -605,7 +605,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -623,7 +623,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (basePhase)",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
@@ -691,7 +691,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -709,7 +709,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{resource}}",
@@ -767,7 +767,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -785,7 +785,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
@@ -794,7 +794,7 @@
               "step": 10
             },
             {
-              "expr": "sum(label_replace(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{zoneRegion}}+",
@@ -803,7 +803,7 @@
               "step": 10
             },
             {
-              "expr": "sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "global",
@@ -873,7 +873,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -891,11 +891,11 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{resource}}",
-              "metric": "clouddriver:google:api__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -949,7 +949,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -967,7 +967,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
@@ -976,7 +976,7 @@
               "step": 10
             },
             {
-              "expr": "sum(label_replace(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{zoneRegion}}+",
@@ -985,7 +985,7 @@
               "step": 10
             },
             {
-              "expr": "sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "global",
@@ -1044,6 +1044,82 @@
       "panels": [
         {
           "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 58,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}",
+              "metric": "",
+              "refId": "B",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Global GCP Success (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
@@ -1055,7 +1131,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1117,13 +1193,25 @@
               "show": true
             }
           ]
-        },
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Global API Success",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 239,
+      "panels": [
         {
           "aliasColors": {},
           "bars": true,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 58,
+          "id": 42,
           "legend": {
             "avg": false,
             "current": false,
@@ -1131,7 +1219,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1149,19 +1237,19 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{api}}",
               "metric": "",
-              "refId": "B",
+              "refId": "A",
               "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Global GCP Success (clouddriver, $Instance)",
+          "title": "Regional GCP Success in $GcpRegion (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -1193,19 +1281,7 @@
               "show": true
             }
           ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Global API Success",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 239,
-      "panels": [
+        },
         {
           "aliasColors": {},
           "bars": false,
@@ -1219,7 +1295,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1281,82 +1357,6 @@
               "show": true
             }
           ]
-        },
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 42,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Regional GCP Success in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
         }
       ],
       "repeat": null,
@@ -1372,82 +1372,6 @@
       "panels": [
         {
           "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 57,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(label_replace(sum(idelta(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}/{{cell}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Zonal GCP Success in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
           "bars": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
@@ -1459,7 +1383,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1521,6 +1445,82 @@
               "show": true
             }
           ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 57,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}/{{cell}}",
+              "metric": "",
+              "refId": "B",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Zonal GCP Success in $GcpRegion (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
         }
       ],
       "repeat": null,
@@ -1547,7 +1547,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1565,10 +1565,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:google:batchSize{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:batchSize{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{context}}",
-              "metric": "clouddriver:google:batchSize",
+              "metric": "",
               "refId": "A",
               "step": 20
             }
@@ -1621,7 +1621,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1639,10 +1639,10 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{context}}",
-              "metric": "clouddriver:google:batchExecute__count",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -1695,7 +1695,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1781,7 +1781,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1799,7 +1799,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(label_replace(idelta(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")) by (operation, phase)",
+              "expr": "sum(label_replace($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")) by (operation, phase)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
@@ -1856,7 +1856,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1874,7 +1874,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(idelta(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (instance, phase, operation), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
@@ -1931,7 +1931,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1949,7 +1949,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(idelta(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (instance, phase, operation, cell), \"operation\", \"$1\", \"operation\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}/{{cell}}",
@@ -2018,7 +2018,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -2092,7 +2092,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -2166,7 +2166,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -2252,7 +2252,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -2270,7 +2270,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(front50:google:storage:invocation__count{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(front50:google:storage:invocation__count{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
@@ -2325,7 +2325,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -2412,7 +2412,7 @@
         "name": "GcpRegion",
         "options": [],
         "query": "clouddriver:google:api__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/.*region=\"([^\"]+).*/",
         "sort": 1,
         "tagValuesQuery": "",
@@ -2432,7 +2432,7 @@
         "name": "Instance",
         "options": [],
         "query": "clouddriver:google:api__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -2452,7 +2452,7 @@
         "name": "Front50Instance",
         "options": [],
         "query": "front50:google:storage:invocation__count",
-        "refresh": 1,
+        "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -2460,6 +2460,43 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Instant Rate",
+          "value": "irate"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
       },
       {
         "auto": false,
@@ -2497,16 +2534,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -2536,5 +2578,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker GCP Details",
-  "version": 2
+  "version": 3
 }

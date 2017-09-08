@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.1.1"
+      "version": "4.3.2"
     },
     {
       "type": "panel",
@@ -42,11 +42,13 @@
   "rows": [
     {
       "collapse": false,
-      "height": 217,
+      "height": 205,
       "panels": [
         {
           "aliasColors": {},
           "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 11,
@@ -57,7 +59,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -70,17 +72,19 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": true,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum(front50:hystrix:countShortCircuited{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "front50/{{metricGroup}}({{metricType}})",
+              "legendFormat": "{{metricGroup}}({{metricType}})",
               "metric": "",
               "refId": "A",
-              "step": 4
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -94,6 +98,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -121,6 +126,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 37,
@@ -131,7 +138,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -144,17 +151,20 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 5,
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(front50:hystrix:countExceptionsThrown{instance=~\"$Instance\"}[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(front50:hystrix:countExceptionsThrown{instance=~\"$Instance\"}[$SamplePeriod])) by (metricType, metricGroup)",
+              "format": "time_series",
+              "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "front50/{{metricType}}({{metricGroup}})",
-              "metric": "front50:hystrix:countExceptionsThrown",
+              "legendFormat": "{{metricType}}({{metricGroup}})",
+              "metric": "",
               "refId": "A",
-              "step": 4
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -168,6 +178,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -195,6 +206,8 @@
         {
           "aliasColors": {},
           "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 12,
@@ -203,7 +216,7 @@
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -216,24 +229,26 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 3,
+          "spaceLength": 10,
+          "span": 4,
           "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:hystrix:rollingCountFailure{instance=~\"$Instance\"}) by (metricGroup, metricType)",
-              "hide": true,
+              "expr": "sum(front50:hystrix:rollingCountFallbackSuccess{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "format": "time_series",
+              "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "front50({{metricGroup}}/{{metricType}})",
+              "legendFormat": "{{metricGroup}}/{{metricType}}",
               "metric": "",
               "refId": "A",
-              "step": 2
+              "step": 40
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Rolling Count Failure (front50, $Instance)",
+          "title": "Hystrix Rolling Count Fallback Success (front50, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -241,6 +256,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -275,580 +291,13 @@
     },
     {
       "collapse": false,
-      "height": 291,
+      "height": 147,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 3,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(front50:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Success (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 28,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Success Latency (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Front50 2xx",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 69,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(front50:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Failure (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 70,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(front50:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Failure Latency (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Front50 NOT 2xx",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 232,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "decimals": null,
-          "fill": 1,
-          "id": 20,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 5,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(front50:storageServiceSupport:cacheSize{instance=~\"$Instance\"}) by (objectType)",
-              "intervalFactor": 2,
-              "legendFormat": "{{objectType}}",
-              "metric": "front50:storageServiceSupport:cacheSize",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Item Cache Size (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {
-            "del APPLICATION": "#7EB26D",
-            "del APPLICATION_PERMISSION": "#EAB839",
-            "del NOTIFICATION": "#6ED0E0",
-            "del PIPELINE": "#EF843C",
-            "del PROJECT": "#E24D42",
-            "del SERVICE_ACCOUNT": "#1F78C1",
-            "del SNAPSHOT": "#BA43A9",
-            "del STRATEGY": "#705DA0"
-          },
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 15,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 3.5,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(front50:storageServiceSupport:numAdded{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
-              "intervalFactor": 2,
-              "legendFormat": "add {{objectType}}",
-              "metric": "front50:storageServiceSupport:numAdded",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "expr": "-1 * sum(idelta(front50:storageServiceSupport:numRemoved{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
-              "intervalFactor": 2,
-              "legendFormat": "del {{objectType}}",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Item Cache Adds (+) and Removes (-) (front50, $Instance)",
-          "tooltip": {
-            "shared": false,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": [
-              "total"
-            ]
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 19,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 3.5,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(front50:storageServiceSupport:numUpdated{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
-              "intervalFactor": 2,
-              "legendFormat": "{{objectType}}",
-              "metric": "front50:storageServiceSupport:numUpdated",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Item Cache Updates (front50, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Front50 Cache",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 16,
@@ -859,7 +308,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -872,22 +321,25 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
+          "spaceLength": 10,
+          "span": 8,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "drop_common_labels(front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"}) / 1000",
+              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "format": "time_series",
+              "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{objectType}}",
+              "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Item Cache Age (front50, $Instance)",
+          "title": "5xx Invocation Errors by Method (front50, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -895,6 +347,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -931,6 +384,8 @@
             "STRATEGY": "#705DA0"
           },
           "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 17,
@@ -941,7 +396,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -954,26 +409,27 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
+          "spaceLength": 10,
+          "span": 4,
           "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(front50:storageServiceSupport:autoRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:autoRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "force/{{objectType}}",
-              "metric": "front50:storageServiceSupport:autoRefreshTime__count",
+              "metric": "",
               "refId": "A",
-              "step": 4
+              "step": 40
             },
             {
-              "expr": "-1 * (sum(idelta(front50:storageServiceSupport:scheduledRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType))",
+              "expr": "-1 * (sum($Function(front50:storageServiceSupport:scheduledRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType))",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "B",
-              "step": 4
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -987,6 +443,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1016,19 +473,21 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Front50 Cache Refresh",
+      "title": "5xx Errors",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 227,
+      "height": 228,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 9,
+          "id": 3,
           "legend": {
             "avg": false,
             "current": false,
@@ -1036,7 +495,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1049,16 +508,373 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
+          "spaceLength": 10,
+          "span": 8,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "format": "time_series",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}/{{method}}",
+              "refId": "A",
+              "step": 20
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Controller Invocation by Method (front50, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "decimals": null,
+          "fill": 1,
+          "id": 20,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(front50:google:storage:invocation__count{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(front50:storageServiceSupport:cacheSize{instance=~\"$Instance\"}) by (objectType)",
+              "intervalFactor": 2,
+              "legendFormat": "{{objectType}}",
+              "metric": "",
+              "refId": "A",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Item Cache Size (front50, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Invocations by Method",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 154,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 28,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 8,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{controller}}/{{method}}",
+              "refId": "A",
+              "step": 20
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Controller Invocation Latency by Method (front50, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {
+            "del APPLICATION": "#7EB26D",
+            "del APPLICATION_PERMISSION": "#EAB839",
+            "del NOTIFICATION": "#6ED0E0",
+            "del PIPELINE": "#EF843C",
+            "del PROJECT": "#E24D42",
+            "del SERVICE_ACCOUNT": "#1F78C1",
+            "del SNAPSHOT": "#BA43A9",
+            "del STRATEGY": "#705DA0"
+          },
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 15,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(front50:storageServiceSupport:numAdded{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "intervalFactor": 2,
+              "legendFormat": "add {{objectType}}",
+              "metric": "",
+              "refId": "A",
+              "step": 40
+            },
+            {
+              "expr": "-1 * sum($Function(front50:storageServiceSupport:numRemoved{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "intervalFactor": 2,
+              "legendFormat": "del {{objectType}}",
+              "refId": "B",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Item Cache Adds (+) and Removes (-) (front50, $Instance)",
+          "tooltip": {
+            "shared": false,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": [
+              "total"
+            ]
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Latency by Method",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 197,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 9,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 8,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(front50:google:storage:invocation__count{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
+              "format": "time_series",
+              "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": [],
@@ -1072,6 +888,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1099,6 +916,98 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 19,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(front50:storageServiceSupport:numUpdated{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "intervalFactor": 2,
+              "legendFormat": "{{objectType}}",
+              "metric": "",
+              "refId": "A",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Item Cache Updates (front50, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Google Invocations",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 185,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 10,
@@ -1109,7 +1018,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1121,7 +1030,8 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
+          "spaceLength": 10,
+          "span": 8,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -1130,7 +1040,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 4
+              "step": 20
             }
           ],
           "thresholds": [],
@@ -1144,6 +1054,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1167,31 +1078,23 @@
               "show": true
             }
           ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Google Storage",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 291,
-      "panels": [
+        },
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 21,
+          "id": 38,
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1204,17 +1107,105 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "drop_common_labels(front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"}) / 1000",
+              "intervalFactor": 2,
+              "legendFormat": "{{objectType}}",
+              "refId": "A",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Item Cache Age (front50, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "s",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Google Latency",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 180,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 21,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(front50:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id, memtype)",
+              "expr": "avg(front50:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id)",
               "intervalFactor": 2,
-              "legendFormat": "Front50({{id}}/{{memtype}})",
-              "metric": "front50:jvm:memory:used",
+              "legendFormat": "{{id}}",
+              "metric": "",
               "refId": "D",
-              "step": 2
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -1228,6 +1219,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1270,25 +1262,16 @@
     "list": [
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
+        "current": {},
         "datasource": "${DS_SPINNAKER}",
         "hide": 0,
         "includeAll": true,
         "label": null,
         "multi": false,
         "name": "Instance",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          }
-        ],
+        "options": [],
         "query": "front50:controller:invocations__count",
-        "refresh": 2,
+        "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -1296,6 +1279,43 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Delta",
+          "value": "delta"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": true,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": false,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
       },
       {
         "auto": false,
@@ -1333,16 +1353,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1372,5 +1397,5 @@
   },
   "timezone": "browser",
   "title": "Front50 Microservice",
-  "version": 1
+  "version": 2
 }

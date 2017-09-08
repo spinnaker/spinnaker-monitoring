@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.1.1"
+      "version": "4.3.2"
     },
     {
       "type": "panel",
@@ -42,11 +42,103 @@
   "rows": [
     {
       "collapse": false,
-      "height": 276,
+      "height": 166,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 73,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "sum($Function(echo:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
+              "refId": "C",
+              "step": 10
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Controller 5xx Errors (echo, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Invocations by Status",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 176,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 4,
@@ -57,7 +149,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -70,23 +162,24 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 5,
-          "stack": false,
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(echo:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum($Function(echo:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
+              "legendFormat": "{{controller}}/{{method}}",
               "refId": "C",
-              "step": 4
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Controller Invocation Success (echo, $Instance)",
+          "title": "Controller Invocations by Method (echo, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -94,6 +187,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -117,10 +211,24 @@
               "show": true
             }
           ]
-        },
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Invocations by Method",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 178,
+      "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 23,
@@ -131,7 +239,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -144,23 +252,24 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 4,
+          "spaceLength": 10,
+          "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(echo:controller:invocations__totalTime{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(echo:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum(rate(echo:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(echo:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
+              "legendFormat": "{{controller}}/{{method}}",
               "refId": "C",
-              "step": 4
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Controller Invocation Success Latency (echo, $Instance)",
+          "title": "Controller Invocation Latency by Method (echo, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -168,6 +277,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -191,10 +301,24 @@
               "show": true
             }
           ]
-        },
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Latency by Method",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 169,
+      "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 38,
@@ -205,7 +329,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -218,16 +342,17 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 3,
-          "stack": false,
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(idelta(echo:pipelines:triggered{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
+              "expr": "sum($Function(echo:pipelines:triggered{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}",
-              "metric": "echo:pipelines:triggered",
+              "metric": "",
               "refId": "A",
               "step": 10
             }
@@ -243,6 +368,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -272,176 +398,18 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Echo 2xx",
+      "title": "Pipelines",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 250,
+      "height": 173,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 73,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(idelta(echo:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "C",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Failures (echo, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 74,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "sum(rate(echo:controller:invocations__totalTime{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(echo:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "C",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Failure Latency (echo, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Echo NOT 2xx",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 291,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 21,
@@ -450,7 +418,7 @@
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -463,17 +431,18 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(echo:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id, memtype)",
+              "expr": "sum(echo:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id)",
               "intervalFactor": 2,
-              "legendFormat": "Echo({{id}}/{{memtype}})",
-              "metric": "echo:jvm:memory:used",
+              "legendFormat": "{{id}}",
+              "metric": "",
               "refId": "B",
-              "step": 2
+              "step": 10
             }
           ],
           "thresholds": [],
@@ -487,6 +456,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -529,25 +499,16 @@
     "list": [
       {
         "allValue": ".*",
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
+        "current": {},
         "datasource": "${DS_SPINNAKER}",
         "hide": 0,
         "includeAll": true,
         "label": null,
         "multi": false,
         "name": "Instance",
-        "options": [
-          {
-            "selected": true,
-            "text": "All",
-            "value": "$__all"
-          }
-        ],
+        "options": [],
         "query": "igor:controller:invocations__count",
-        "refresh": 2,
+        "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 0,
         "tagValuesQuery": "",
@@ -555,6 +516,43 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Instant Rate",
+          "value": "irate"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
       },
       {
         "auto": false,
@@ -592,16 +590,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -631,5 +634,5 @@
   },
   "timezone": "browser",
   "title": "Echo Microservice",
-  "version": 2
+  "version": 3
 }

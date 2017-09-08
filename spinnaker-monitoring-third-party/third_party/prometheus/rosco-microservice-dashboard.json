@@ -42,20 +42,24 @@
   "rows": [
     {
       "collapse": false,
-      "height": 247,
+      "height": 166,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 7,
+          "id": 73,
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -68,22 +72,24 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(rosco:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "sum($Function(rosco:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 4
+              "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
+              "refId": "C",
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Controller Invocation Success (rosco, $Instance)",
+          "title": "Controller 5xx Errors (rosco, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -91,6 +97,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -111,77 +118,6 @@
               "logBase": 1,
               "max": null,
               "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 27,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "max": false,
-            "min": false,
-            "show": true,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(rosco:controller:invocations__totalTime{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method)  / sum(rate(rosco:controller:invocations__count{instance=~\"$Instance\",status=\"2xx\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}})",
-              "refId": "A",
-              "step": 4
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Controller Invocation Success Latency (rosco, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
               "show": true
             }
           ]
@@ -191,25 +127,29 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Rosco 2xx",
+      "title": "Invocations by Status",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 250,
+      "height": 176,
       "panels": [
         {
           "aliasColors": {},
-          "bars": false,
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 77,
+          "id": 4,
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -222,22 +162,24 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
+          "spaceLength": 10,
+          "span": 12,
+          "stack": true,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(idelta(rosco:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "sum($Function(rosco:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "A",
-              "step": 4
+              "legendFormat": "{{controller}}/{{method}}",
+              "refId": "C",
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Controller Invocation Failures (rosco, $Instance)",
+          "title": "Controller Invocations by Method (rosco, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -245,6 +187,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -268,19 +211,35 @@
               "show": true
             }
           ]
-        },
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Invocations by Method",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 178,
+      "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
-          "id": 78,
+          "id": 23,
           "legend": {
             "avg": false,
             "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -293,22 +252,24 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 6,
+          "spaceLength": 10,
+          "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(rosco:controller:invocations__totalTime{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status)  / sum(rate(rosco:controller:invocations__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "sum(rate(rosco:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(rosco:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{controller}}({{method}}/{{status}})",
-              "refId": "A",
-              "step": 4
+              "legendFormat": "{{controller}}/{{method}}",
+              "refId": "C",
+              "step": 10
             }
           ],
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Controller Invocation Failure Latency (rosco, $Instance)",
+          "title": "Controller Invocation Latency by Method (rosco, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 0,
@@ -316,6 +277,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -345,7 +307,7 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Rosco NOT 2xx",
+      "title": "Latency by Method",
       "titleSize": "h6"
     },
     {
@@ -365,7 +327,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -440,7 +402,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -458,29 +420,29 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rosco:bakesActive{instance=~\"$Instance\"})",
+              "expr": "sum(rosco:bakesActive{instance=~\"$Instance\"}) by (instance)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Active",
-              "metric": "rosco:bakesActive",
+              "legendFormat": "Active/{{instance}}",
+              "metric": "",
               "refId": "A",
               "step": 4
             },
             {
-              "expr": "sum(idelta(rosco:bakesRequested{instance=~\"$Instance\"}[$SamplePeriod])) by (flavor)",
+              "expr": "sum($Function(rosco:bakesRequested{instance=~\"$Instance\"}[$SamplePeriod])) by (flavor)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Request({{flavor}})",
-              "metric": "rosco:bakes",
+              "legendFormat": "Request/{{flavor}}",
+              "metric": "",
               "refId": "B",
               "step": 4
             },
             {
-              "expr": "-1 * sum(idelta(rosco:bakesCompleted__count{instance=~\"$Instance\",success=\"false\"}[$SamplePeriod])) by (region)",
+              "expr": "-1 * sum($Function(rosco:bakesCompleted__count{instance=~\"$Instance\",success=\"false\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "Failed {{region}}",
-              "metric": "bakesC",
+              "legendFormat": "Failed/{{region}}",
+              "metric": "",
               "refId": "C",
               "step": 4
             }
@@ -543,7 +505,7 @@
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -561,10 +523,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(rosco:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id, memtype)",
+              "expr": "avg(rosco:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id)",
               "intervalFactor": 2,
-              "legendFormat": "Rosco({{id}}/{{memtype}})",
-              "metric": "rosco:jvm:memory:used",
+              "legendFormat": "{{id}}",
+              "metric": "",
               "refId": "H",
               "step": 2
             }
@@ -650,6 +612,43 @@
         "useTags": false
       },
       {
+        "allValue": null,
+        "current": {
+          "tags": [],
+          "text": "Instant Rate",
+          "value": "irate"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "Function",
+        "options": [
+          {
+            "selected": false,
+            "text": "Delta",
+            "value": "delta"
+          },
+          {
+            "selected": false,
+            "text": "Rate",
+            "value": "rate"
+          },
+          {
+            "selected": false,
+            "text": "Instant Delta",
+            "value": "idelta"
+          },
+          {
+            "selected": true,
+            "text": "Instant Rate",
+            "value": "irate"
+          }
+        ],
+        "query": "delta,rate,idelta,irate",
+        "type": "custom"
+      },
+      {
         "auto": false,
         "auto_count": 30,
         "auto_min": "10s",
@@ -685,16 +684,21 @@
             "selected": false,
             "text": "30m",
             "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
           }
         ],
-        "query": "1m,5m,10m,15m,30m",
+        "query": "1m,5m,10m,15m,30m,1h",
         "refresh": 2,
         "type": "interval"
       }
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -724,5 +728,5 @@
   },
   "timezone": "browser",
   "title": "Rosco Microservice",
-  "version": 1
+  "version": 2
 }

@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.1.1"
+      "version": "4.4.3"
     },
     {
       "type": "panel",
@@ -42,11 +42,1179 @@
   "rows": [
     {
       "collapse": false,
+      "height": 250,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 62,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, statusCode)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{statusCode}}/{{resource}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP API Failures by Resource (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 63,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\", scope=\"regional\"}[$SamplePeriod])) by (region, statusCode)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{statusCode}}/{{region}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            },
+            {
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion, statusCode)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{statusCode}}/{{zoneRegion}}+",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            },
+            {
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\",scope=\"global\"}[$SamplePeriod])) by (zone, statusCode)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{statusCode}}/global",
+              "metric": "",
+              "refId": "C",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP API Failures by Region (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "API Errors",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 253,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 55,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
+              "format": "time_series",
+              "hide": true,
+              "intervalFactor": 2,
+              "legendFormat": "{{resource}}",
+              "metric": "",
+              "refId": "A",
+              "step": 4
+            },
+            {
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, status, statusCode)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{resource}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP API Calls by Resource (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 56,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\"}[$SamplePeriod])) by (region)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{region}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            },
+            {
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{zoneRegion}}+",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            },
+            {
+              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (zone)",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "global",
+              "metric": "",
+              "refId": "C",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP API Calls by Region (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "API Call Summary",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 240,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 58,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Global GCP API Calls (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 59,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Global GCP API Latency (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Global API Calls",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 242,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 42,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}",
+              "metric": "",
+              "refId": "A",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Regional GCP API Calls in $GcpRegion (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 60,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Regional GCP API Latency in $GcpRegion (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Regional API Calls",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 227,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 57,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": true,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}/{{cell}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Zonal GCP API in $GcpRegion (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 61,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\", zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 2,
+              "legendFormat": "{{api}}/{{zone}}",
+              "metric": "",
+              "refId": "B",
+              "step": 30
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Zonal GCP API Latency in $GcpRegion (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "transparent": false,
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Zonal API Calls",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
+      "height": 196,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 47,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 3,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:google:batchSize{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{context}}",
+              "metric": "",
+              "refId": "A",
+              "step": 60
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP Batch Size (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": true,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 50,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": false,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 5,
+          "stack": false,
+          "steppedLine": true,
+          "targets": [
+            {
+              "expr": "label_replace(sum($Function(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{context}}",
+              "metric": "",
+              "refId": "A",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP Batch Count (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            }
+          ]
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_SPINNAKER}",
+          "fill": 1,
+          "id": 49,
+          "legend": {
+            "avg": false,
+            "current": false,
+            "hideEmpty": true,
+            "hideZero": true,
+            "max": false,
+            "min": false,
+            "show": false,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "null",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "span": 4,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "label_replace(rate(clouddriver:google:batchExecute__totalTime{instance=~\"$Instance\"}[$SamplePeriod]) / rate(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod]), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "intervalFactor": 2,
+              "legendFormat": "{{context}}",
+              "metric": "",
+              "refId": "A",
+              "step": 40
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "GCP Batch Latency (clouddriver, $Instance)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "ns",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Batch Calls",
+      "titleSize": "h6"
+    },
+    {
+      "collapse": false,
       "height": 252,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 54,
@@ -70,18 +1238,20 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 30
             }
           ],
           "thresholds": [],
@@ -89,12 +1259,13 @@
           "timeShift": null,
           "title": "Successful GCP Operations (clouddriver, $Instance)",
           "tooltip": {
-            "shared": false,
+            "shared": true,
             "sort": 0,
             "value_type": "individual"
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -124,6 +1295,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 46,
@@ -147,17 +1320,19 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 30
             }
           ],
           "thresholds": [],
@@ -171,6 +1346,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -205,11 +1381,13 @@
     },
     {
       "collapse": false,
-      "height": 215,
+      "height": 229,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 44,
@@ -233,18 +1411,20 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 5,
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) ",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -258,6 +1438,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -285,6 +1466,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 67,
@@ -308,18 +1491,30 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase) ",
+              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) ",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{basePhase}}",
+              "legendFormat": "{{basePhase}}//{{region}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
+            },
+            {
+              "expr": "rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])",
+              "format": "time_series",
+              "hide": true,
+              "intervalFactor": 2,
+              "legendFormat": "",
+              "metric": "",
+              "refId": "B",
+              "step": 4
             }
           ],
           "thresholds": [],
@@ -333,6 +1528,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -360,6 +1556,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 68,
@@ -383,18 +1581,20 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 3,
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum(label_replace(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) / sum(label_replace(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) ",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}/{{cell}}",
               "metric": "",
               "refId": "A",
-              "step": 20
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -408,6 +1608,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -437,16 +1638,18 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "GCP Operation Attempts",
+      "title": "Waiting GCP Operations",
       "titleSize": "h6"
     },
     {
       "collapse": false,
-      "height": 319,
+      "height": 331,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 64,
@@ -470,17 +1673,19 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 5,
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum($Function(clouddriver:google:operationWaitRequests{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase)",
+              "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -494,6 +1699,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -521,6 +1727,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 65,
@@ -544,6 +1752,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -554,7 +1763,7 @@
               "legendFormat": "{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -568,6 +1777,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -595,6 +1805,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 66,
@@ -618,7 +1830,8 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
-          "span": 3,
+          "spaceLength": 10,
+          "span": 4,
           "stack": false,
           "steppedLine": false,
           "targets": [
@@ -628,7 +1841,7 @@
               "legendFormat": "{{basePhase}}",
               "metric": "",
               "refId": "A",
-              "step": 20
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -642,6 +1855,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -671,1097 +1885,7 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "GCP Operations Started",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 253,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 55,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{resource}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Success by Resource (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 56,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{region}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{zoneRegion}}+",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            },
-            {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "global",
-              "metric": "",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Success by Region (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "API Success Breakout",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 62,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{resource}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Failure by Resource (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 63,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\", scope=\"regional\"}[$SamplePeriod])) by (region)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{region}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            },
-            {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{zoneRegion}}+",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            },
-            {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success!=\"true\",scope=\"global\"}[$SamplePeriod])) by (zone)",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "global",
-              "metric": "",
-              "refId": "C",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Failure by Region (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "API Failure Breakout",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 250,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 58,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Global GCP Success (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 59,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Global GCP Success Latency (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Global API Success",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 239,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 42,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Regional GCP Success in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 60,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",success=\"true\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Regional GCP Success Latency in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Regional API Success",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 227,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 61,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",success=\"true\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\", zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Zonal GCP Success Latency in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 57,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 6,
-          "stack": true,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",success=\"true\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
-              "hide": false,
-              "intervalFactor": 2,
-              "legendFormat": "{{api}}/{{cell}}",
-              "metric": "",
-              "refId": "B",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "Zonal GCP Success in $GcpRegion (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "transparent": false,
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "Zonal API Success",
-      "titleSize": "h6"
-    },
-    {
-      "collapse": false,
-      "height": 196,
-      "panels": [
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 47,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 3,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(sum($Function(clouddriver:google:batchSize{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{context}}",
-              "metric": "",
-              "refId": "A",
-              "step": 20
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Batch Size (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": true,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 50,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": false,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 5,
-          "stack": false,
-          "steppedLine": true,
-          "targets": [
-            {
-              "expr": "label_replace(sum($Function(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{context}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Batch Count (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            },
-            {
-              "format": "short",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": "0",
-              "show": true
-            }
-          ]
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "datasource": "${DS_SPINNAKER}",
-          "fill": 1,
-          "id": 49,
-          "legend": {
-            "avg": false,
-            "current": false,
-            "hideEmpty": true,
-            "hideZero": true,
-            "max": false,
-            "min": false,
-            "show": false,
-            "total": false,
-            "values": false
-          },
-          "lines": true,
-          "linewidth": 1,
-          "links": [],
-          "nullPointMode": "null",
-          "percentage": false,
-          "pointradius": 5,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "span": 4,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "expr": "label_replace(rate(clouddriver:google:batchExecute__totalTime{instance=~\"$Instance\"}[$SamplePeriod]) / rate(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod]), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
-              "intervalFactor": 2,
-              "legendFormat": "{{context}}",
-              "metric": "",
-              "refId": "A",
-              "step": 10
-            }
-          ],
-          "thresholds": [],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "GCP Batch Latency (clouddriver, $Instance)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "name": null,
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            },
-            {
-              "format": "ns",
-              "label": null,
-              "logBase": 1,
-              "max": null,
-              "min": null,
-              "show": true
-            }
-          ]
-        }
-      ],
-      "repeat": null,
-      "repeatIteration": null,
-      "repeatRowId": null,
-      "showTitle": false,
-      "title": "GCP Batch",
+      "title": "Started GCP Operations",
       "titleSize": "h6"
     },
     {
@@ -1771,6 +1895,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 69,
@@ -1794,6 +1920,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -1805,7 +1932,7 @@
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -1819,6 +1946,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1846,6 +1974,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 70,
@@ -1869,6 +1999,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -1880,7 +2011,7 @@
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -1894,6 +2025,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1921,6 +2053,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 71,
@@ -1944,6 +2078,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -1955,7 +2090,7 @@
               "legendFormat": "{{phase}}.{{operation}}/{{cell}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -1969,6 +2104,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -2002,12 +2138,14 @@
       "titleSize": "h6"
     },
     {
-      "collapse": false,
+      "collapse": true,
       "height": 250,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 53,
@@ -2031,6 +2169,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -2041,7 +2180,7 @@
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -2055,6 +2194,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -2082,6 +2222,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 72,
@@ -2105,6 +2247,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -2115,7 +2258,7 @@
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -2129,6 +2272,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -2156,6 +2300,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 73,
@@ -2179,6 +2325,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 4,
           "stack": false,
           "steppedLine": false,
@@ -2189,7 +2336,7 @@
               "legendFormat": "{{phase}}.{{operation}}/{{cell}}",
               "metric": "",
               "refId": "A",
-              "step": 10
+              "step": 40
             }
           ],
           "thresholds": [],
@@ -2203,6 +2350,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -2242,6 +2390,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 9,
@@ -2265,6 +2415,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
@@ -2274,7 +2425,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 10
+              "step": 30
             }
           ],
           "thresholds": [],
@@ -2288,6 +2439,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -2315,6 +2467,8 @@
         {
           "aliasColors": {},
           "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": "${DS_SPINNAKER}",
           "fill": 1,
           "id": 10,
@@ -2337,6 +2491,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
@@ -2346,7 +2501,7 @@
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
-              "step": 10
+              "step": 30
             }
           ],
           "thresholds": [],
@@ -2360,6 +2515,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,

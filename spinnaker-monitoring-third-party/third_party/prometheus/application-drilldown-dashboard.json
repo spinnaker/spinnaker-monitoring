@@ -57,7 +57,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -75,7 +75,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -132,7 +132,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -150,7 +150,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -159,7 +159,7 @@
               "step": 10
             },
             {
-              "expr": "-1 * sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
@@ -229,7 +229,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -247,7 +247,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -304,7 +304,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -322,7 +322,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{taskName}}",
@@ -331,7 +331,7 @@
               "step": 10
             },
             {
-              "expr": "-1 * sum($Function(orca:task:invocations{sourceApplication=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
@@ -568,7 +568,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -643,7 +643,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -736,7 +736,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -823,7 +823,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -913,7 +913,7 @@
             "hideZero": true,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1001,7 +1001,7 @@
             "current": false,
             "max": false,
             "min": false,
-            "show": true,
+            "show": false,
             "total": false,
             "values": false
           },
@@ -1197,7 +1197,7 @@
         "options": [],
         "query": "orca:task:invocations",
         "refresh": 2,
-        "regex": "/sourceApplication=\"([^\"]+)/",
+        "regex": "/application=\"([^\"]+)/",
         "sort": 0,
         "tagValuesQuery": "",
         "tags": [],

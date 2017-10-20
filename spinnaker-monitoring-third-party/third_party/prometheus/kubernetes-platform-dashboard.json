@@ -90,7 +90,7 @@
           "title": "Kubernetes Success for \"$KubernetesAccount\" in \"$KubernetesNamespace\" (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -164,7 +164,7 @@
           "title": "Kubernetes Latency for \"$KubernetesAccount\" in \"$KubernetesNamespace\" (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -251,7 +251,7 @@
           "title": "Kubernetes Failure for \"$KubernetesAccount\" in \"$KubernetesNamespace\" (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -325,7 +325,7 @@
           "title": "Kubernetes Failure Latency for \"$KubernetesAccount\" in \"$KubernetesNamespace\" (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -412,7 +412,7 @@
           "title": "Kubernetes Success by Type (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -487,7 +487,7 @@
           "title": "Kubernetes Success by Account (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -562,7 +562,7 @@
           "title": "Kubernetes Success by Namespace (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -648,7 +648,7 @@
           "title": "Kubernetes Latency by Type (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -722,7 +722,7 @@
           "title": "Kubernetes Latency by Account (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -796,7 +796,7 @@
           "title": "Kubernetes Latency by Namespace (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -883,7 +883,7 @@
           "title": "Kubernetes Failure by Type (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -958,7 +958,7 @@
           "title": "Kubernetes Failure by Account (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1033,7 +1033,7 @@
           "title": "Kubernetes Failure by Namespace (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1092,7 +1092,7 @@
         "query": "clouddriver:kubernetes:api__count",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1112,7 +1112,7 @@
         "query": "clouddriver:kubernetes:api__count",
         "refresh": 2,
         "regex": "/account=\"([^\"]+)/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1132,7 +1132,7 @@
         "query": "clouddriver:kubernetes:api__count",
         "refresh": 2,
         "regex": "/namespace=\"([^\"]+)/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1256,5 +1256,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Kubernetes Details",
-  "version": 2
+  "version": 3
 }

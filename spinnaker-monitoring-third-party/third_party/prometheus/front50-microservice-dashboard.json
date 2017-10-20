@@ -93,7 +93,7 @@
           "title": "Hystrix Short Circuited (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -173,7 +173,7 @@
           "title": "Hystrix Exceptions Thrown (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -251,7 +251,7 @@
           "title": "Hystrix Rolling Count Fallback Success (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -342,7 +342,7 @@
           "title": "5xx Invocation Errors by Method (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -438,7 +438,7 @@
           "title": "Cache Refreshes / Minute  (negative are scheduled) (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -528,7 +528,7 @@
           "title": "Controller Invocation by Method (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -607,7 +607,7 @@
           "title": "Item Cache Size (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -696,7 +696,7 @@
           "title": "Controller Invocation Latency by Method (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -790,7 +790,7 @@
           "title": "Item Cache Adds (+) and Removes (-) (front50, $Instance)",
           "tooltip": {
             "shared": false,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -883,7 +883,7 @@
           "title": "Google Storage Service Invocations (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -961,7 +961,7 @@
           "title": "Item Cache Updates (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1049,7 +1049,7 @@
           "title": "Google Storage Service Invocation Latency (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1126,7 +1126,7 @@
           "title": "Item Cache Age (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1214,7 +1214,7 @@
           "title": "JVM Memory Usage (front50, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1273,7 +1273,7 @@
         "query": "front50:controller:invocations__count",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1397,5 +1397,5 @@
   },
   "timezone": "browser",
   "title": "Front50 Microservice",
-  "version": 2
+  "version": 3
 }

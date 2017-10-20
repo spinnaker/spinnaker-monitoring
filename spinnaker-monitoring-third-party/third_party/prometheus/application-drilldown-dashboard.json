@@ -90,7 +90,7 @@
           "title": "Active Orchestrations by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -175,7 +175,7 @@
           "title": "Orchestrations Completed by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -262,7 +262,7 @@
           "title": "Active Pipelines by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -347,7 +347,7 @@
           "title": "Pipelines Completed by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -435,7 +435,7 @@
           "title": "Pushed Messages by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -513,7 +513,7 @@
           "title": "Task Durations by Application (orca, $Application)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -601,7 +601,7 @@
           "title": "$Application Pipelines Triggered (echo)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -694,7 +694,7 @@
           "title": "Bake Requests and Failures (rosco)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -769,7 +769,7 @@
           "title": "Bakes Completed (rosco)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -871,7 +871,7 @@
           "title": "Hystrix Short Circuited (global)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -961,7 +961,7 @@
           "title": "Hystrix Exceptions Thrown (global)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1052,7 +1052,7 @@
           "title": "Hystrix Rolling Count Failure (global)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -1198,7 +1198,7 @@
         "query": "orca:task:invocations",
         "refresh": 2,
         "regex": "/application=\"([^\"]+)/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1238,5 +1238,5 @@
   },
   "timezone": "browser",
   "title": "Specific Spinnaker Application Details",
-  "version": 3
+  "version": 4
 }

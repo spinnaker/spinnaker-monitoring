@@ -93,7 +93,7 @@
           "title": "5xx Invocation Errors (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -173,7 +173,7 @@
           "title": "Active Tasks per Type/Platform (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -263,7 +263,7 @@
           "title": "Controller Invocations by Method (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -343,7 +343,7 @@
           "title": "Tasks Completed per Type/Platform (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -430,7 +430,7 @@
           "title": "Controller Invocation Latency by Method (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -508,7 +508,7 @@
           "title": "Task Durations > 5m per Time-Bucket/Platform (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -597,7 +597,7 @@
           "title": "Active Threads (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -674,7 +674,7 @@
           "title": "Blocked Queues (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -763,7 +763,7 @@
           "title": "Pushed Messages by Instance (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -840,7 +840,7 @@
           "title": "Acknowledged Messages by Instance (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -928,7 +928,7 @@
           "title": "JVM Memory Usage (orca, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -987,7 +987,7 @@
         "query": "orca:controller:invocations__count",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1111,5 +1111,5 @@
   },
   "timezone": "browser",
   "title": "Orca Microservice",
-  "version": 2
+  "version": 3
 }

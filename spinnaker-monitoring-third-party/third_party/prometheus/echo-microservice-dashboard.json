@@ -92,7 +92,7 @@
           "title": "Controller 5xx Errors (echo, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -182,7 +182,7 @@
           "title": "Controller Invocations by Method (echo, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -272,7 +272,7 @@
           "title": "Controller Invocation Latency by Method (echo, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -363,7 +363,7 @@
           "title": "Pipelines Triggered (echo, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -451,7 +451,7 @@
           "title": "JVM Memory Usage (echo, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -510,7 +510,7 @@
         "query": "igor:controller:invocations__count",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -634,5 +634,5 @@
   },
   "timezone": "browser",
   "title": "Echo Microservice",
-  "version": 3
+  "version": 4
 }

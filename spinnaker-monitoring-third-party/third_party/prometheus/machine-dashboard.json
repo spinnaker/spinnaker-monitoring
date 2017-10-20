@@ -109,7 +109,7 @@
           "title": "CPU Utilization by Instance",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -188,7 +188,7 @@
           "title": "Memory Utilization by Instance",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -276,7 +276,7 @@
           "title": "Disk Utilization by Instance",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -384,7 +384,7 @@
           "title": "External Networking ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -480,7 +480,7 @@
           "title": "Local Networking By Device ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -584,7 +584,7 @@
           "title": "Disk IO by Device ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -670,7 +670,7 @@
           "title": "Disk Available ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -810,7 +810,7 @@
           "title": "System Memory by Category ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -900,7 +900,7 @@
           "title": "Networking Throughput by Device ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1002,7 +1002,7 @@
           "title": "CPU Usage by Core ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1081,7 +1081,7 @@
           "title": "CPU Usage by Mode ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1138,7 +1138,7 @@
         "query": "node_cpu",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1263,5 +1263,5 @@
   },
   "timezone": "browser",
   "title": "Machine Stats",
-  "version": 3
+  "version": 4
 }

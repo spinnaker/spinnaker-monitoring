@@ -97,7 +97,7 @@
           "title": "AWS Delay by Service  (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -179,7 +179,7 @@
           "title": "AWS Delay by Request (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -265,7 +265,7 @@
           "title": "AWS Errors by Region (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -339,7 +339,7 @@
           "title": "AWS Errors in $AwsRegion (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -425,7 +425,7 @@
           "title": "AWS EC2 Requests  by Region (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -499,7 +499,7 @@
           "title": "AWS EC2 Requests in $AwsRegion (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -585,7 +585,7 @@
           "title": "AWS EC2 Request Latency by Region  (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -659,7 +659,7 @@
           "title": "AWS EC2 Request Latency in $AwsRegion  (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -745,7 +745,7 @@
           "title": "AWS Requests (non EC2) by Region (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -819,7 +819,7 @@
           "title": "AWS Requests (non EC2) in $AwsRegion (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -905,7 +905,7 @@
           "title": "AWS Non-EC2 Request Latency by Region  (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -979,7 +979,7 @@
           "title": "AWS Non-EC2 Request Latency in $AwsRegion  (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1038,7 +1038,7 @@
         "query": "clouddriver:aws:request:httpRequestTime__count",
         "refresh": 2,
         "regex": "/.*serviceEndpoint=\"[^\\.]+\\.([^\\.]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1058,7 +1058,7 @@
         "query": "clouddriver:aws:request:httpRequestTime__count",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1182,5 +1182,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker AWS Details",
-  "version": 2
+  "version": 3
 }

@@ -94,7 +94,7 @@
           "title": "$Account 5xx Errors (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -172,7 +172,7 @@
           "title": "$Account Cache Drift by Region/Agent (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -264,7 +264,7 @@
           "title": "$Account Controller Invocation by Method (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -343,7 +343,7 @@
           "title": "Execution Count by Instance (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -433,7 +433,7 @@
           "title": "$Account Controller Invocation Latency by Method (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -510,7 +510,7 @@
           "title": "Execution Latency by Instance (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -602,7 +602,7 @@
           "title": "Google Operation Success (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -683,7 +683,7 @@
           "title": "Google Operation Failures (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -774,7 +774,7 @@
           "title": "Google Operations Started (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -871,7 +871,7 @@
           "title": "Google Operation Wait Until Done Time (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -960,7 +960,7 @@
           "title": "JVM Memory Usage (clouddriver, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1019,7 +1019,7 @@
         "query": "clouddriver:controller:invocations__count",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1039,7 +1039,7 @@
         "query": "clouddriver:controller:invocations__count",
         "refresh": 1,
         "regex": "/account=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -1163,5 +1163,5 @@
   },
   "timezone": "browser",
   "title": "Clouddriver Microservice",
-  "version": 2
+  "version": 3
 }

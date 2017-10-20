@@ -92,7 +92,7 @@
           "title": "5xx Controller Invocations (fiat, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -182,7 +182,7 @@
           "title": "Controller Invocations by Method (fiat, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -272,7 +272,7 @@
           "title": "Controller Invocation Latency by Method (fiat, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -360,7 +360,7 @@
           "title": "JVM Memory Usage (fiat, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -428,7 +428,7 @@
         "query": "rosco:controller:invocations__count",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -552,5 +552,5 @@
   },
   "timezone": "browser",
   "title": "Fiat Microservice",
-  "version": 2
+  "version": 3
 }

@@ -92,7 +92,7 @@
           "title": "Hystrix Short Circuited ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -170,7 +170,7 @@
           "title": "Hystrix Exceptions Thrown ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -247,7 +247,7 @@
           "title": "Hystrix Rolling Count Failure ($Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -337,7 +337,7 @@
           "title": "5xx Controller Invocations (igor, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -427,7 +427,7 @@
           "title": "Controller Invocations by Method (igor, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -517,7 +517,7 @@
           "title": "Controller Invocation Latency by Method (igor, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -605,7 +605,7 @@
           "title": "JVM Memory Usage (igor, $Instance)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -673,7 +673,7 @@
         "query": "igor:controller:invocations__count",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
-        "sort": 0,
+        "sort": 1,
         "tagValuesQuery": "",
         "tags": [],
         "tagsQuery": "",
@@ -797,5 +797,5 @@
   },
   "timezone": "browser",
   "title": "Igor Microservice",
-  "version": 3
+  "version": 4
 }

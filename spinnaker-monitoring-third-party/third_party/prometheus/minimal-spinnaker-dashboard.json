@@ -105,7 +105,7 @@
           "title": "Hystrix Short Circuited",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "cumulative"
           },
           "type": "graph",
@@ -195,7 +195,7 @@
           "title": "Hystrix Fallback Success",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -335,7 +335,7 @@
           "title": "5xx Invocation Errors",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -422,7 +422,7 @@
           "title": "Active Tasks per Type/Platform (orca)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -497,7 +497,7 @@
           "title": "Completed Tasks per Type/Platform (orca)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -581,7 +581,7 @@
           "title": "Task Duration > 5m per Time-Bucket/Platform (orca)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -653,7 +653,7 @@
           "title": "Pipelines Triggered (echo)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -758,7 +758,7 @@
           "title": "Bake Activity (rosco)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -833,7 +833,7 @@
           "title": "Item Cache Size (front50)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -920,7 +920,7 @@
           "title": "Execution Count (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -995,7 +995,7 @@
           "title": "Execution Latency (clouddriver)",
           "tooltip": {
             "shared": true,
-            "sort": 0,
+            "sort": 2,
             "value_type": "individual"
           },
           "type": "graph",
@@ -1157,5 +1157,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Minimalist",
-  "version": 3
+  "version": 4
 }

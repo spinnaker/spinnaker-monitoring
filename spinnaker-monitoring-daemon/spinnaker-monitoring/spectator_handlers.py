@@ -338,7 +338,7 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
               '<tr><th>Service</th><th>Metric</th>'
               '<th>Timestamp</th><th>Values</th><th>Labels</th></tr>']
     def process_metrics_helper(metrics):
-      for key, value in metrics.items():
+      for key, value in sorted(metrics.items()):
           # pylint: disable=bad-indentation
           tagged_values = self.all_tagged_values(value.get('values'))
           service_url = '/show{0}'.format(

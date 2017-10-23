@@ -135,7 +135,7 @@ class SpectatorClientTest(unittest.TestCase):
   def setUp(self):
     options = {'prototype_path': None, 'host': TEST_HOST}
     self.spectator = TestableSpectatorClient(options)
-    self.default_query_params = '?tagNameRegex=.%2B'  # tagNameRegex=.+
+    self.default_query_params = '?tagNameRegex=.%2A'  # tagNameRegex=.*
 
 
   @patch('glob.glob')
@@ -464,8 +464,8 @@ class SpectatorClientTest(unittest.TestCase):
          'gate': {'metrics_url': [gate_url]}})
       
     self.assertEquals(
-        sorted([(clouddriver_url + '&tagNameRegex=.%2B', None),
-                (gate_url + '&tagNameRegex=.%2B', None)]),
+        sorted([(clouddriver_url + '&tagNameRegex=.%2A', None),
+                (gate_url + '&tagNameRegex=.%2A', None)]),
         sorted(self.spectator.requests))
 
     del response['spectator.datapoints']

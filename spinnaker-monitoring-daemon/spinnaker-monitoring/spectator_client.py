@@ -103,10 +103,7 @@ def foreach_metric_in_service_map(
 
 
 def normalize_name_and_tags(name, metric_instance, metric_metadata):
-  tags = metric_instance.get('tags', None)
-  if not tags:
-    return name, None   # signal this metric had no tags so we can ignore it.
-
+  tags = metric_instance.get('tags', [])
   is_timer = metric_metadata['kind'] == 'Timer'
   if is_timer:
     tags = list(tags)
@@ -138,7 +135,7 @@ class SpectatorClient(object):
 
   def __init__(self, options):
     self.__prototype = None
-    self.__default_scan_params = {'tagNameRegex': '.+'}
+    self.__default_scan_params = {'tagNameRegex': '.*'}
     self.__previous_scan_lock = threading.Lock()
     self.__previous_scan = {} if options.get('log_metric_diff') else None
 

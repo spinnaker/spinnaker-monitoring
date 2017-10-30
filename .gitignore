@@ -12,3 +12,5 @@ var/
 *.pyc
 *~
 .gradle
+.idea
+spinnaker-monitoring.iml

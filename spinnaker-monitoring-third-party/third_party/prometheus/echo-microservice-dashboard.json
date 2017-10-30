@@ -507,7 +507,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "igor:controller:invocations__count",
+        "query": "echo:controller:invocations__count",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

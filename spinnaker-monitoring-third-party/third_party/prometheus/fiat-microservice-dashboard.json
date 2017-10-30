@@ -425,7 +425,7 @@
             "value": "$__all"
           }
         ],
-        "query": "rosco:controller:invocations__count",
+        "query": "fiat:controller:invocations__count",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

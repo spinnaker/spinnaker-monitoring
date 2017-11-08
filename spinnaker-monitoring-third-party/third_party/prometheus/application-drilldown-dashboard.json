@@ -75,10 +75,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\", isComplete=\"false\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{taskName}}",
+              "legendFormat": "{{application}}",
               "metric": "",
               "refId": "B",
               "step": 10
@@ -150,20 +150,20 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{taskName}}",
+              "legendFormat": "{{application}}",
               "metric": "",
               "refId": "C",
               "step": 10
             },
             {
-              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Orchestration\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "ERR {{taskName}}",
+              "legendFormat": "ERR {{application}}",
               "metric": "",
               "refId": "D",
               "step": 10
@@ -247,10 +247,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\", isComplete=\"false\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{taskName}}",
+              "legendFormat": "{{application}}",
               "metric": "",
               "refId": "B",
               "step": 10
@@ -322,20 +322,20 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status=\"SUCCEEDED\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{taskName}}",
+              "legendFormat": "{{application}}",
               "metric": "",
               "refId": "C",
               "step": 10
             },
             {
-              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (taskName)",
+              "expr": "-1 * sum($Function(orca:task:invocations{application=~\"$Application\", executionType=\"Pipeline\",isComplete=\"true\", status!=\"SUCCEEDED\"}[$SamplePeriod])) by (application)",
               "hide": false,
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "ERR {{taskName}}",
+              "legendFormat": "ERR {{application}}",
               "metric": "",
               "refId": "D",
               "step": 10

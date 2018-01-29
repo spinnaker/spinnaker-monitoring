@@ -26,8 +26,8 @@ DASHBOARDS=true
 # Variables for Server Configuration
 # explicit prometheus versions because its not available with apt-get
 # grafana will be latest version in apt-get
-PROMETHEUS_VERSION=prometheus-1.7.1.linux-amd64
-NODE_EXPORTER_VERSION=node_exporter-0.14.0.linux-amd64
+PROMETHEUS_VERSION=prometheus-2.2.1.linux-amd64
+NODE_EXPORTER_VERSION=node_exporter-0.15.2.linux-amd64
 PUSHGATEWAY_VERSION=pushgateway-0.4.0.linux-amd64
 PROMETHEUS_PORT=9090
 GRAFANA_PORT=3000
@@ -263,6 +263,7 @@ function configure_gce_prometheus() {
   local path="$1"
   local project=$(gce_project_or_empty)
   local zone_list=$(gce_zone_list_or_empty)
+
   if [[ -z $project ]]; then
       >&2 echo "You are not on GCE so must manually configure $path"
       return
@@ -363,8 +364,8 @@ function install_prometheus() {
   local old_conf_file_path=""
   local old_data_path=""
   if [[ -f /etc/init/prometheus.conf ]]; then
-      old_data_path=$(grep storage.local.path /etc/init/prometheus.conf \
-                      | sed "s/.*-storage.local.path *\([^ ]*\).*/\1/")
+      old_data_path=$(grep storage.tsdb.path /etc/init/prometheus.conf \
+                      | sed "s/.*--storage.tsdb.path *\([^ ]*\).*/\1/")
       old_conf_file_path=$(grep config.file /etc/init/prometheus.conf \
                       | sed "s/.*-config.file *\([^ ]*\).*/\1/")
   fi
@@ -375,18 +376,13 @@ function install_prometheus() {
   mkdir -p $version_dir
   tar xzf /tmp/prometheus.gz -C $(dirname $version_dir)
   rm -f /opt/prometheus
-  ln -s $version_dir /opt/prometheus
+  ln -fs $version_dir /opt/prometheus
   rm /tmp/prometheus.gz
   cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
   if [[ "$old_data_path" != "" ]]; then
-      if [[ "$old_data_path" == "/opt/prometheus-1.5.2.linux-amd64/data" ]]; then
-         echo "Migrating datastore from $old_data_path to /opt/prometheus-data"
-         mv $old_data_path /opt/prometheus-data
-      else
-         echo "Configuring existing non-standard datastore $old_data_path"
-         sed "s/\/opt\/prometheus-data/${old_data_path//\//\\\/}/" \
-             -i /etc/init/prometheus.conf
-      fi
+     echo "Configuring existing non-standard datastore $old_data_path"
+     sed "s/\/opt\/prometheus-data/${old_data_path//\//\\\/}/" \
+         -i /etc/init/prometheus.conf
   fi
   if [[ "$GCE_CONFIG" == "true" ]]; then
       sed "s/spinnaker-prometheus\.yml/gce-prometheus\.yml/" \
@@ -424,7 +420,8 @@ function install_node_exporter() {
   mkdir -p $node_dir
   tar xzf /tmp/node_exporter.gz -C $(dirname $node_dir)
   rm -f /usr/bin/node_exporter
-  ln -fs $node_dir/node_exporter /usr/bin/node_exporter
+  ln -fs $node_dir /opt/node_exporter
+  ln -fs /opt/node_exporter/node_exporter /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
   cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
   service node_exporter restart

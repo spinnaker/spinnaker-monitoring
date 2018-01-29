@@ -259,7 +259,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum((node_filesystem_size{mountpoint!~\"/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"} -\n node_filesystem_avail{mountpoint!~\"/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) / node_filesystem_size{mountpoint!~\"/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device) , \"device\", \"$1\", \"device\", \"/dev(.*)\")",
+              "expr": "label_replace(sum((node_filesystem_size{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"} -\n node_filesystem_avail{mountpoint!~\"/var/lib/docker.*/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) / node_filesystem_size{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device) , \"device\", \"$1\", \"device\", \"/dev(.*)\")",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -653,7 +653,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(node_filesystem_free{mountpoint!~\"/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device), \"device\", \"$1\", \"device\", \"/dev(.*)\")",
+              "expr": "label_replace(sum(node_filesystem_free{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device), \"device\", \"$1\", \"device\", \"/dev(.*)\")",
               "format": "time_series",
               "hide": false,
               "interval": "",

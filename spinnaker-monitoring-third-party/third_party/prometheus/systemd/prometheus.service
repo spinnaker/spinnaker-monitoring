@@ -1,0 +1,15 @@
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/opt/prometheus/prometheus \
+  --config.file /opt/prometheus/spinnaker-prometheus.yml \
+  --storage.tsdb.path /opt/prometheus-data
+
+[Install]
+WantedBy=multi-user.target

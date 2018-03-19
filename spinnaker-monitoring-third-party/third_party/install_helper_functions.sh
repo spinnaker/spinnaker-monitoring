@@ -2,6 +2,36 @@
 DEFAULT_CONFIG_YML_DIR=\
 ${DEFAULT_CONFIG_YML_DIR:-$(dirname $0)/../../spinnaker-monitoring/spinnaker-monitoring-daemon/config}
 
+if [[ `ps -p 1 | tail -1` == *systemd ]]; then
+  USING_SYSTEMD=true
+else
+  USING_SYSTEMD=false
+fi
+
+
+function determine_autostart_config_path() {
+   local service_name=$1
+   if $USING_SYSTEMD; then
+      echo "/lib/systemd/system/${service_name}.service"
+   else
+      echo "/etc/init/${service_name}.conf"
+   fi
+}
+
+
+function restart_service() {
+   local service_name=$1
+   if $USING_SYSTEMD; then
+      sudo systemctl daemon-reload
+      sudo systemctl stop $service_name || true
+      sudo systemctl start $service_name
+      sudo systemctl enable $service_name
+   else
+      service $service_name restart
+   fi
+}
+
+
 function find_config_path() {
   local dirs_to_search=(\
        /opt/spinnaker-monitoring/config \

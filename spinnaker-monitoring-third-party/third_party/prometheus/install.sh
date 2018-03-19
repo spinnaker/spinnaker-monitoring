@@ -41,6 +41,13 @@ CLIENT_HOST="not specified"
 GATEWAY_URL=
 
 
+if [[ $USE_SYSTEMD ]]; then
+  AUTOSTART_SOURCE_DIR=${SOURCE_DIR}/systemd
+else
+  AUTOSTART_SOURCE_DIR=${SOURCE_DIR}/upstart
+fi
+    
+
 function show_usage() {
     cat <<EOF
 
@@ -359,14 +366,15 @@ EOF
   chmod 644 $path
 }
 
-
 function install_prometheus() {
   local old_conf_file_path=""
   local old_data_path=""
-  if [[ -f /etc/init/prometheus.conf ]]; then
-      old_data_path=$(grep storage.tsdb.path /etc/init/prometheus.conf \
+  local autostart_config_path=$(determine_autostart_config_path "prometheus")
+
+  if [[ -f $autostart_config_path ]]; then
+      old_data_path=$(grep storage.tsdb.path $autostart_config_path \
                       | sed "s/.*--storage.tsdb.path *\([^ ]*\).*/\1/")
-      old_conf_file_path=$(grep config.file /etc/init/prometheus.conf \
+      old_conf_file_path=$(grep config.file $autostart_config_path \
                       | sed "s/.*-config.file *\([^ ]*\).*/\1/")
   fi
 
@@ -378,23 +386,23 @@ function install_prometheus() {
   rm -f /opt/prometheus
   ln -fs $version_dir /opt/prometheus
   rm /tmp/prometheus.gz
-  cp "$SOURCE_DIR/prometheus.conf" /etc/init/prometheus.conf
+  cp "$AUTOSTART_SOURCE_DIR/$(basename $autostart_config_path)" $autostart_config_path
   if [[ "$old_data_path" != "" ]]; then
      echo "Configuring existing non-standard datastore $old_data_path"
      sed "s/\/opt\/prometheus-data/${old_data_path//\//\\\/}/" \
-         -i /etc/init/prometheus.conf
+         -i $autostart_config_path
   fi
   if [[ "$GCE_CONFIG" == "true" ]]; then
       sed "s/spinnaker-prometheus\.yml/gce-prometheus\.yml/" \
-          -i /etc/init/prometheus.conf
+          -i $autostart_config_path
       configure_gce_prometheus "$version_dir/gce-prometheus.yml"
   elif [[ ! -z $GATEWAY_URL ]]; then
       sed "s/spinnaker-prometheus\.yml/pushgateway-prometheus\.yml/" \
-          -i /etc/init/prometheus.conf
+          -i $autostart_config_path
       configure_gateway_prometheus "$version_dir/pushgateway-prometheus.yml"
   else
       sed "s/spinnaker-prometheus\.yml/local-prometheus\.yml/" \
-          -i /etc/init/prometheus.conf
+          -i $autostart_config_path
       configure_local_prometheus "$version_dir/local-prometheus.yml"
   fi
 
@@ -410,7 +418,7 @@ function install_prometheus() {
       fi
   fi
 
-  service prometheus restart
+  restart_service "prometheus"
 }
 
 function install_node_exporter() {
@@ -421,10 +429,13 @@ function install_node_exporter() {
   tar xzf /tmp/node_exporter.gz -C $(dirname $node_dir)
   rm -f /usr/bin/node_exporter
   ln -fs $node_dir /opt/node_exporter
-  ln -fs /opt/node_exporter/node_exporter /usr/bin/node_exporter
+  ln -fs $node_dir/node_exporter /usr/bin/node_exporter
   rm /tmp/node_exporter.gz
-  cp $SOURCE_DIR/node_exporter.conf /etc/init/node_exporter.conf
-  service node_exporter restart
+
+  local autostart_config_path=$(determine_autostart_config_path "node_exporter")
+  cp $AUTOSTART_SOURCE_DIR/$(basename $autostart_config_path) $autostart_config_path
+
+  restart_service "node_exporter"
 }
 
 function install_push_gateway() {
@@ -436,8 +447,11 @@ function install_push_gateway() {
   rm -f /usr/bin/pushgateway
   ln -fs $gateway_dir/pushgateway /usr/bin/pushgateway
   rm /tmp/pushgateway.gz
-  cp $SOURCE_DIR/pushgateway.conf /etc/init/pushgateway.conf
-  service pushgateway restart
+
+  local autostart_config_path=$(determine_autostart_config_path "pushgateway")
+  cp $AUTOSTART_SOURCE_DIR/$(basename $autostart_config_path) $autostart_config_path
+
+  restart_service "pushgateway"
 }
 
 function install_grafana() {
@@ -451,7 +465,8 @@ function install_grafana() {
   sed -e "s/^;admin_user *=.*/admin_user = $GRAFANA_USER/" \
       -e "s/^;admin_password *=.*/admin_password = ${GRAFANA_PASSWORD//\\//\\\/}/" \
       -i /etc/grafana/grafana.ini
-  service grafana-server restart
+
+  restart_service "grafana-server"
 }
 
 function add_grafana_userdata() {

@@ -186,6 +186,7 @@ class SpectatorClientTest(unittest.TestCase):
                        'front50': localhost_urls(8080),
                        'gate': localhost_urls(8084),
                        'igor': localhost_urls(8088),
+                       'kayenta': localhost_urls(8090),
                        'orca': localhost_urls(8083),
                        'rosco': localhost_urls(8087)},
                       got_urls)

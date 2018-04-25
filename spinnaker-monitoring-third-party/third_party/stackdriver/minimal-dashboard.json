@@ -1,5 +1,5 @@
 {
-  "revision": 0,
+  "revision": 1,
   "displayName": "Minimal Spinnaker Dashboard",
   "root": {
     "gridLayout": {
@@ -11,19 +11,19 @@
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/hystrix.countShortCircuited\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
                 }
               },
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/hystrix.countShortCircuited\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
                 }
               },
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/hystrix.countShortCircuited\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
                 }
               }
             ],
@@ -42,18 +42,37 @@
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/hystrix.countExceptionsThrown\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
                 }
               },
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/gate/hystrix.countExceptionsThrown\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
                 }
               },
               {
                 "timeSeriesFilter": {
                   "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/hystrix.countExceptionsThrown\"",
+                  "perSeriesAligner": "ALIGN_NEXT_OLDER"
+                }
+              }
+            ],
+            "constantLines": [
+              {}
+            ],
+            "options": {},
+            "y1Axis": {},
+            "xAxis": {}
+          }
+        },
+        {
+          "title": "Active Stages (orca)",
+          "xyChart": {
+            "dataSets": [
+              {
+                "timeSeriesFilter": {
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/stage.invocations\"",
                   "perSeriesAligner": "ALIGN_DELTA"
                 }
               }
@@ -67,81 +86,18 @@
           }
         },
         {
-          "title": "Active Orchestrations (orca)",
+          "title": "Completed Stages (orca)",
           "xyChart": {
             "dataSets": [
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.isComplete=\"false\" AND metric.label.executionType=\"Orchestration\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
-                }
-              }
-            ],
-            "constantLines": [
-              {}
-            ],
-            "options": {},
-            "y1Axis": {},
-            "xAxis": {}
-          }
-        },
-        {
-          "title": "Active Pipelines (orca)",
-          "xyChart": {
-            "dataSets": [
-              {
-                "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.isComplete=\"false\" AND metric.label.executionType=\"Pipeline\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
-                }
-              }
-            ],
-            "constantLines": [
-              {}
-            ],
-            "options": {},
-            "y1Axis": {},
-            "xAxis": {}
-          }
-        },
-        {
-          "title": "Completed Orchestrations (orca)",
-          "xyChart": {
-            "dataSets": [
-              {
-                "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.status=\"SUCCEEDED\" AND metric.label.executionType=\"Orchestration\"",
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/stage.invocations.duration\" AND metric.label.status=\"SUCCEEDED\"",
                   "perSeriesAligner": "ALIGN_DELTA"
                 }
               },
               {
                 "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.status!=\"SUCCEEDED\" AND metric.label.executionType=\"Orchestration\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
-                }
-              }
-            ],
-            "constantLines": [
-              {}
-            ],
-            "options": {},
-            "y1Axis": {},
-            "xAxis": {}
-          }
-        },
-        {
-          "title": "Completed Pipelines (orca)",
-          "xyChart": {
-            "dataSets": [
-              {
-                "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.status=\"SUCCEEDED\" AND metric.label.executionType=\"Pipeline\"",
-                  "perSeriesAligner": "ALIGN_DELTA"
-                }
-              },
-              {
-                "timeSeriesFilter": {
-                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.status!=\"SUCCEEDED\" AND metric.label.executionType=\"Pipeline\"",
+                  "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/sage.invocations.duration\" AND metric.label.status!=\"SUCCEEDED\"",
                   "perSeriesAligner": "ALIGN_DELTA"
                 }
               }

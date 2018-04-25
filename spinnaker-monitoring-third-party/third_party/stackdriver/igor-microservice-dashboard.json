@@ -1,5 +1,5 @@
 {
-  "revision": 0,
+  "revision": 1,
   "displayName": "Igor Microservice",
   "root": {
     "rowLayout": {
@@ -13,7 +13,7 @@
                   {
                     "timeSeriesFilter": {
                       "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/hystrix.countShortCircuited\"",
-                      "perSeriesAligner": "ALIGN_DELTA"
+                      "perSeriesAligner": "ALIGN_NEXT_OLDER"
                     }
                   }
                 ],
@@ -32,7 +32,7 @@
                   {
                     "timeSeriesFilter": {
                       "filter": "metric.type=\"custom.googleapis.com/spinnaker/igor/hystrix.countExceptionsThrown\"",
-                      "perSeriesAligner": "ALIGN_DELTA"
+                      "perSeriesAligner": "ALIGN_NEXT_OLDER"
                     }
                   }
                 ],

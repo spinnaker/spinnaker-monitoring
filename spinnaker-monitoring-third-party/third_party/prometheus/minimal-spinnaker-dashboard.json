@@ -407,7 +407,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{isComplete=\"false\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations{isComplete=\"false\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -419,7 +419,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Active Tasks per Type/Platform (orca)",
+          "title": "Active Stages per Type/Platform (orca)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -482,7 +482,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations{isComplete=\"true\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations{isComplete=\"true\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -494,7 +494,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Completed Tasks per Type/Platform (orca)",
+          "title": "Completed Stages per Type/Platform (orca)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -531,7 +531,7 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Orca Tasks",
+      "title": "Orca Stages",
       "titleSize": "h6"
     },
     {
@@ -567,7 +567,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:task:invocations:duration{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
+              "expr": "sum($Function(orca:stage:invocations:duration{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}/{{cloudProvider}}",
               "metric": "",
@@ -578,7 +578,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Task Duration > 5m per Time-Bucket/Platform (orca)",
+          "title": "Stage Duration > 5m per Time-Bucket/Platform (orca)",
           "tooltip": {
             "shared": true,
             "sort": 2,

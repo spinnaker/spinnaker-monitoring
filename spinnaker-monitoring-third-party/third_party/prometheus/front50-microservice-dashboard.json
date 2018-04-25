@@ -1113,7 +1113,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "drop_common_labels(front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"}) / 1000",
+              "expr": "front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"} / 1000",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "A",

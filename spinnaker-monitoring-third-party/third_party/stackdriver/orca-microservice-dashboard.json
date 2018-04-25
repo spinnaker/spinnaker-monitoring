@@ -1,5 +1,5 @@
 {
-  "revision": 0,
+  "revision": 1,
   "displayName": "Orca Microservice",
   "root": {
     "rowLayout": {
@@ -87,31 +87,12 @@
         {
           "widgets": [
             {
-              "title": "Active Orchestrations (orca)",
+              "title": "Active Stages (orca)",
               "xyChart": {
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Orchestration\" AND metric.label.isComplete=\"false\"",
-                      "perSeriesAligner": "ALIGN_SUM"
-                    }
-                  }
-                ],
-                "constantLines": [
-                  {}
-                ],
-                "options": {},
-                "y1Axis": {},
-                "xAxis": {}
-              }
-            },
-            {
-              "title": "Successful Orchestrations (orca)",
-              "xyChart": {
-                "dataSets": [
-                  {
-                    "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Orchestration\" AND metric.label.isComplete=\"true\" AND metric.label.status=\"SUCCEEDED\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/stage.invocations\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -125,54 +106,12 @@
               }
             },
             {
-              "title": "Failed Orchestrations (orca)",
+              "title": "Successful Stages (orca)",
               "xyChart": {
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Orchestration\" AND metric.label.isComplete=\"true\" AND metric.label.status!=\"SUCCEEDED\"",
-                      "perSeriesAligner": "ALIGN_DELTA"
-                    }
-                  }
-                ],
-                "constantLines": [
-                  {}
-                ],
-                "options": {},
-                "y1Axis": {},
-                "xAxis": {}
-              }
-            }
-          ]
-        },
-        {
-          "widgets": [
-            {
-              "title": "Active Pipelines (orca)",
-              "xyChart": {
-                "dataSets": [
-                  {
-                    "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Pipeline\" AND metric.label.isComplete=\"false\"",
-                      "perSeriesAligner": "ALIGN_SUM"
-                    }
-                  }
-                ],
-                "constantLines": [
-                  {}
-                ],
-                "options": {},
-                "y1Axis": {},
-                "xAxis": {}
-              }
-            },
-            {
-              "title": "Successful Pipelines (orca)",
-              "xyChart": {
-                "dataSets": [
-                  {
-                    "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Pipeline\" AND metric.label.isComplete=\"true\" AND metric.label.status=\"SUCCEEDED\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/stage.invocations.duration\" AND metric.label.status=\"SUCCEEDED\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }
@@ -186,12 +125,12 @@
               }
             },
             {
-              "title": "Failed Pipelines (orca)",
+              "title": "Failed Stages (orca)",
               "xyChart": {
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task.invocations\" AND metric.label.executionType=\"Pipeline\" AND metric.label.isComplete=\"true\" AND metric.label.status!=\"SUCCEEDED\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/stage.invocations.duration\" AND  metric.label.status!=\"SUCCEEDED\"",
                       "perSeriesAligner": "ALIGN_DELTA"
                     }
                   }

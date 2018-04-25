@@ -112,7 +112,7 @@ if $SERVER; then
 fi
 
 if $DASHBOARDS; then
-  install_dashboards "$@"
+  install_dashboards
 fi
 
 if $CLIENT; then

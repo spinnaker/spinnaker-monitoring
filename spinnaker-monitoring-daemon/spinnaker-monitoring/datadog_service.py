@@ -20,7 +20,6 @@ import ConfigParser
 import logging
 import os
 import socket
-import traceback
 
 try:
   import datadog
@@ -28,9 +27,161 @@ try:
 except ImportError:
   datadog_available = False
 
-
 import spectator_client
 
+class DatadogArgumentsGenerator(object):
+  """
+  Generates the correct Datadog parameters to pass in to
+  DatadogMetricsService from the slew of options passed in.
+  """
+
+  def __init__(self, options):
+
+    self.options = options
+
+    assert 'datadog' in self.options, \
+      'Key "datadog" is mandatory in supplied options'
+    assert 'dd_agent_config' in self.options, \
+      'Key "dd_agent_config" is mandatory in supplied options'
+
+    self.datadog_config = ConfigParser.ConfigParser()
+    self.datadog_config.read(options['dd_agent_config'])
+
+    if not self.datadog_config.sections():
+      logging.warn('Could not read config from datadog: {}'
+                   .format(options['dd_agent_config']))
+
+  def generate_arguments(self):
+
+    required_options = {
+      'api_key': self.__resolve_value(identifier='Datadog API key',
+                                      key='api_key'),
+    }
+
+    nonessential_options = {
+
+      # we only need Datadog write access, for which an api key is
+      # sufficient, hence this is not required
+      'app_key': self.__resolve_value(identifier='Datadog app key',
+                                      key='app_key', required=False),
+
+      'tags': self.__convert_to_list_of_strings(
+                self.__resolve_value(identifier='Datadog static tags',
+                                     key='tags',
+                                     required=False
+                                     )
+              ),
+
+      'host': socket.getfqdn(
+                self.__resolve_value(identifier='host',
+                                     key='host',
+                                     required=False) or
+                self.__lookup_in_agent_config('hostname') or
+                ''
+              ),
+    }
+
+    required_options.update(nonessential_options)
+
+    return required_options
+
+  def __contains_value(self, key, dictionary):
+    return key in dictionary and dictionary[key] is not None
+
+  def __resolve_value(self, identifier, key, required=True):
+    """
+    Resolve to a value set in either an environment variable,
+    in the outer section of spinnaker-monitoring.yml, within the
+    datadog field of spinnaker-monitoring.yml, in the datadog
+    agent configuration file, all in that order, or error out.
+    Whichever source provides a non-None value first wins.
+
+    Order of lookup is as as follows:
+
+    1. Check for string 'DATADOG_%s' % key.toupper() as
+       environment variable.
+    2. Check for string 'datadog_%s' % key in the
+       spinnaker-monitoring.yaml.
+    3. Check for key as just '%s' % key in the datadog
+       section in the spinnaker-monitoring.yaml
+    4. Check for key as just '%s' % key in the Datadog
+       agent configuration.
+
+    If, after this, `required` is False, don't throw an error
+    but return None instead.
+
+    Parameter:
+      identifier: String. If value could not be found,
+                  use this parameter in the error message
+                  to refer to what you were actually trying to find.
+      key: String. Look for this key.
+      required: Bool. If the value is not required and
+                could not be found, return None.
+    """
+
+    environment_key = 'DATADOG_{0}'.format(key.upper())
+    yaml_key = 'datadog_{0}'.format(key)
+
+    # check if value is set as an environment variable
+    if self.__contains_value(environment_key, os.environ):
+      return os.environ[environment_key]
+
+    # check if value is set in spinnaker-monitoring.yml as a high-level key
+    if self.__contains_value(yaml_key, self.options):
+      return self.options[yaml_key]
+
+    # check if value is set in spinnaker-monitoring.yml as a key under the datadog
+    # section.
+    if self.__contains_value(key, self.options['datadog']):
+      return self.options['datadog'][key]
+
+    # check finally if value is set in Datadog agent configuration.
+    configuration_value = self.__lookup_in_agent_config(key)
+    if configuration_value is not None:
+      return configuration_value
+
+    if not required:
+      return None
+
+    raise ValueError('{0} could not be found as environment '
+                     'variable {1}, or read from spinnaker-monitoring.yml file as '
+                     '{2} as an outer value, or found as {3} under section datadog '
+                     'and could not be read from datadog agent configuration using'
+                     'key {3}'
+                     .format(identifier, environment_key, yaml_key, key)
+                     )
+
+  def __convert_to_list_of_strings(self, argument, default=None):
+    """
+    This function takes a parameter and attempts
+    to convert it to a list of strings
+    if it looks like a list of strings.
+
+    Parameter should look like
+    https://github.com/DataDog/dd-agent/blob/master/datadog.conf.example#L37
+    to be correctly parsed.
+
+    Otherwise return default. """
+
+    if isinstance(argument, str):
+      argument = [str(item) for item in argument.replace(' ', '').split(',')]
+
+    # if, despite everything, we could not parse as list of strings, give up.
+    if not (isinstance(argument, list) and all(isinstance(item, str) for item in argument)):
+      logging.debug('Argument {0} was not parsable as a list.'
+                    'Returning as supplied default value.'.format(argument))
+      return default or []
+
+    return argument
+
+  def __lookup_in_agent_config(self, key):
+    """ Look for a value in the Datadog agent configuration """
+
+    for section in self.datadog_config.sections():
+      if self.datadog_config.has_option(section, key):
+        return self.datadog_config.get(section, key)
+
+    return None
 
 class DatadogMetricsService(object):
   """A metrics service for interacting with Datadog."""
@@ -46,21 +197,20 @@ class DatadogMetricsService(object):
   def api(self):
     """The Datadog API stub for interacting with Datadog."""
     if self.__api is None:
-      datadog.initialize(api_key=self.__api_key, app_key=self.__app_key,
-                         host_name=self.__host)
+      datadog.initialize(api_key=self.__arguments['api_key'],
+                         app_key=self.__arguments['app_key'],
+                         host_name=self.__arguments['host'])
       self.__api = datadog.api
     return self.__api
 
 
-  def __init__(self, api_key, app_key, host=None):
+  def __init__(self, **arguments):
     """Constructs the object."""
     if not datadog_available:
       raise ImportError(
           'You must "pip install datadog" to get the datadog client library.')
     self.__api = None
-    self.__host = host
-    self.__api_key = api_key
-    self.__app_key = app_key
+    self.__arguments = arguments
 
   def __append_timeseries_point(
       self, service, name,
@@ -82,7 +232,8 @@ class DatadogMetricsService(object):
     # <name>__count or <name>__totalTime and removes the "statistic" tag.
     name, tags = spectator_client.normalize_name_and_tags(
         name, instance, metric_metadata)
-    if tags is None:
+
+    if tags is None and not self.__arguments['tags']:
       return  # ignore metrics that had no tags because these are bogus.
 
     result.append({
@@ -90,7 +241,8 @@ class DatadogMetricsService(object):
         'host': service_metadata['__host'],
         'points': [(elem['t'] / 1000, elem['v'])
                    for elem in instance['values']],
-        'tags': ['{0}:{1}'.format(tag['key'], tag['value']) for tag in tags]
+        'tags': (['{0}:{1}'.format(tag['key'], tag['value']) for tag in
+                 tags] + self.__arguments['tags'])
     })
 
   def publish_metrics(self, service_metrics):
@@ -112,42 +264,10 @@ class DatadogMetricsService(object):
 
 
 def make_datadog_service(options):
-  def read_param(param_name, config_object):
-    """Read configuration parameter from Datadog config_text."""
-    for section in config_object.sections():
-      if config_object.has_option(section, param_name):
-        return config_object.get(section, param_name)
-    return None
 
+  arguments = DatadogArgumentsGenerator(options).generate_arguments()
 
-  datadog_options = options.get('datadog', {})
-  api_key = os.environ.get('DATADOG_API_KEY', datadog_options.get('api_key'))
-  app_key = os.environ.get('DATADOG_APP_KEY', datadog_options.get('app_key'))
-  host = options.get('datadog_host', datadog_options.get('host'))
-  datadog_host = None
-  config = ConfigParser.ConfigParser()
-
-  if not api_key or not app_key or host is None:
-    config_path = options['dd_agent_config']
-    config.read(config_path)
-    logging.info('Reading Datadog config from %s', config_path)
-    app_key = app_key or read_param('app_key', config)
-    api_key = api_key or read_param('api_key', config)
-    datadog_host = read_param('hostname', config)
-
-    if not config.sections():
-      logging.warn('Could not read config from datadog: {}'.format(config_path)),
-
-  if api_key is None:
-    raise ValueError('DATADOG_API_KEY is not defined')
-
-  # This is convoluted because we are only going to fqdn hosts we give.
-  # We probably could regardless, but maybe we should keep datadog as is.
-  if host is None and datadog_host is None:
-    host = ''
-  host = socket.getfqdn(host) if host is not None else datadog_host
-
-  return DatadogMetricsService(api_key=api_key, app_key=app_key, host=host)
+  return DatadogMetricsService(**arguments)
 
 
 def add_standard_parser_arguments(parser):

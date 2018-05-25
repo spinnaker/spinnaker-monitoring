@@ -30,6 +30,7 @@ import urllib2
 import urlparse
 import yaml
 
+from metric_filter import MetricFilter
 
 DEFAULT_REGISTRY_DIR = '/opt/spinnaker-monitoring/registry'
 
@@ -122,6 +123,8 @@ class SpectatorClient(object):
   def add_standard_parser_arguments(parser):
     parser.add_argument('--prototype_path', default='',
                         help='Optional filter to restrict metrics of interest.')
+    parser.add_argument('--metric_filter_path', default='',
+                        help='Optional filter to restrict metrics of interest.')
     parser.add_argument(
         '--log_metric_diff',
         default=False, action='store_true',
@@ -143,6 +146,22 @@ class SpectatorClient(object):
       # pylint: disable=invalid-name
       with open(options['prototype_path']) as fd:
         self.__prototype = json.JSONDecoder().decode(fd.read())
+
+    self.__service_metric_filter = {}
+    self.__default_metric_filter = lambda all: all
+
+    if options['metric_filter_path']:
+      # pylint: disable=invalid-name
+      with open(options['metric_filter_path']) as fd:
+        filter_spec = yaml.load(fd)
+      default_spec = filter_spec.get('default')
+      self.__default_metric_filter = (
+        MetricFilter(default_spec)
+        if default_spec
+        else self.__default_metric_filter)
+
+      for service, spec in filter_spec.get('services', {}).items():
+        self.__service_metric_filter[service] = MetricFilter(spec)
 
   def __log_scan_diff(self, host, port, metrics):
     """Diff this scan with the previous one for debugging purposes."""
@@ -214,7 +233,7 @@ class SpectatorClient(object):
       request.add_header('Authorization', 'Basic %s' % authorization)
     return request
 
-  def collect_metrics(self, base_url, params=None):
+  def collect_metrics(self, service, base_url, params=None):
     """Return JSON metrics from the given server."""
     info = urlparse.urlsplit(base_url)
     host = info.hostname
@@ -250,33 +269,52 @@ class SpectatorClient(object):
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
     response = urllib2.urlopen(self.create_request(url, authorization))
 
-    all_metrics = json.JSONDecoder(encoding='utf-8').decode(response.read())
+    spectator_response = json.JSONDecoder(encoding='utf-8').decode(response.read())
     try:
-      self.__log_scan_diff(host, port + 1012, all_metrics.get('metrics', {}))
+      self.__log_scan_diff(host, port + 1012,
+                           spectator_response.get('metrics', {}))
     except:
       extype, exvalue, ignore_tb = sys.exc_info()
       logging.error(traceback.format_exception_only(extype, exvalue))
 
-    # Record how many data values we collected.
-    # Add success tag so we have a tag and dont get filtered out.
-    num_metrics = 0
-    for metric_data in all_metrics.get('metrics', {}).values():
-      num_metrics += len(metric_data.get('values', []))
+    spectator_response['__port'] = port
+    spectator_response['__host'] = (
+        socket.getfqdn()
+        if host in ['localhost', '127.0.0.1', None, '']
+        else host)
 
-    all_metrics['__port'] = port
-    all_metrics['__host'] = (socket.getfqdn()
-                             if host in ['localhost', '127.0.0.1', None, '']
-                             else host)
-    all_metrics['metrics']['spectator.datapoints'] = {
+    # Add a placeholder for spectator.datapoints.
+    # We'll compute the actual value later, but
+    # inject it here first so it can be filtered on.
+    # if it is filtered out then we dont need to compute it.
+    spectator_response['metrics']['spectator.datapoints'] = {
         'kind': 'Gauge',
         'values': [{
             'tags': [{'key': 'success', 'value': "true"}],
-            'values': [{'v': num_metrics, 't': int(time.time() * 1000)}]
+            'values': [{'v': 0, 't': int(time.time() * 1000)}]
         }]
     }
 
-    return (self.filter_metrics(all_metrics, self.__prototype)
-            if self.__prototype else all_metrics)
+    if self.__prototype:
+      logging.warn('--prototype_path is deprecated,.'
+                   ' Please migrate to --metric_filter_path.')
+      spectator_response = self.filter_metrics(
+          spectator_response, self.__prototype)
+
+    metric_filter = self.__service_metric_filter.get(
+        service, self.__default_metric_filter)
+    filtered_metrics = metric_filter(spectator_response['metrics'])
+
+    # Now count the datapoints
+    datapoints = filtered_metrics.get('spectator.datapoints')
+    if datapoints:
+      num_metrics = 0
+      for metric_data in filtered_metrics.values():
+        num_metrics += len(metric_data.get('values', []))
+      datapoints['values'][0]['values'][0]['v'] = num_metrics - 1  # not including this one
+
+    spectator_response['metrics'] = filtered_metrics
+    return spectator_response
 
   def filter_metrics(self, instance, prototype):
     """Filter metrics entries in |instance| to those that match |prototype|.
@@ -344,7 +382,7 @@ class SpectatorClient(object):
       for service_url in url_endpoints:
         try:
           endpoint_data_list.append(self.collect_metrics(
-              service_url, params=params))
+              service, service_url, params=params))
         except IOError as ioex:
           logging.getLogger(__name__).error(
               '%s failed %s with %s',

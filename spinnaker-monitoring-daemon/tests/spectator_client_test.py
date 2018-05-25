@@ -18,11 +18,14 @@ import copy
 import json
 import os
 import sys
+import yaml
 import unittest
 from StringIO import StringIO
 import mock
+
 from mock import patch
 from urllib2 import Request
+from tempfile import NamedTemporaryFile
 
 import spectator_client
 
@@ -133,7 +136,9 @@ class SpectatorClientTest(unittest.TestCase):
           os.path.join(os.path.dirname(__file__), '..', 'registry.dev'))
 
   def setUp(self):
-    options = {'prototype_path': None, 'host': TEST_HOST}
+    options = {'prototype_path': None,
+               'host': TEST_HOST,
+               'metric_filter_path': None}
     self.spectator = TestableSpectatorClient(options)
     self.default_query_params = '?tagNameRegex=.%2A'  # tagNameRegex=.*
 
@@ -212,9 +217,55 @@ class SpectatorClientTest(unittest.TestCase):
     mock_urlopen.return_value = mock_http_response
     mock_time.return_value = now_time
 
-    response = self.spectator.collect_metrics(url)
+    response = self.spectator.collect_metrics('testService', url)
     self.assertEquals([(url + self.default_query_params, None)],
                       self.spectator.requests)
+    self.assertEqual(expect, response)
+
+  @patch('spectator_client.time.time')
+  @patch('spectator_client.urllib2.urlopen')
+  def test_collect_metrics_filter_no_jvm(self, mock_urlopen, mock_time):
+    spec = {'services': {
+              'filterTest': {
+                'meters': {
+                  'excludeNameRegex': 'jvm.*'
+                }
+              }
+            }}
+
+    with NamedTemporaryFile(delete=False) as fd:
+      fd.write(yaml.dump(spec))
+      metric_path = fd.name
+
+    options = {'prototype_path': None,
+               'host': TEST_HOST,
+               'metric_filter_path': metric_path}
+    test_spectator = TestableSpectatorClient(options)
+    os.remove(metric_path)
+
+    now_time = 1.234
+    port = 80
+    url = 'http://{0}/spectator-metrics'.format(TEST_HOST)
+    metrics_response = CLOUDDRIVER_RESPONSE_OBJ
+    expect = copy.deepcopy(metrics_response)
+    expect['__host'] = TEST_HOST
+    expect['__port'] = port
+    expect['metrics']['spectator.datapoints'] = {
+      'kind': 'Gauge',
+      'values': [{'values': [{'t': int(now_time * 1000), 'v': 1}],
+                  'tags': [{'key': 'success', 'value': 'true'}]}]
+    }
+    del expect['metrics']['jvm.buffer.memoryUsed']
+    del expect['metrics']['jvm.gc.maxDataSize']
+
+    text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
+    mock_http_response = StringIO(text)
+    mock_urlopen.return_value = mock_http_response
+    mock_time.return_value = now_time
+
+    response = test_spectator.collect_metrics('filterTest', url)
+    self.assertEquals([(url + self.default_query_params, None)],
+                      test_spectator.requests)
     self.assertEqual(expect, response)
 
   @patch('spectator_client.urllib2.urlopen')
@@ -236,7 +287,7 @@ class SpectatorClientTest(unittest.TestCase):
     mock_http_response = StringIO(text)
     mock_urlopen.return_value = mock_http_response
 
-    self.spectator.collect_metrics(url, params)
+    self.spectator.collect_metrics('testService', url, params)
     self.assertEquals([(url + expected_query, None)],
                       self.spectator.requests)
 
@@ -261,7 +312,7 @@ class SpectatorClientTest(unittest.TestCase):
     mock_urlopen.return_value = mock_http_response
     mock_time.return_value = now_time
 
-    response = self.spectator.collect_metrics(url)
+    response = self.spectator.collect_metrics('testService', url)
     self.assertEquals([
       ('https://{0}/spectator-metrics{1}'.format(TEST_HOST,
                                                  self.default_query_params),

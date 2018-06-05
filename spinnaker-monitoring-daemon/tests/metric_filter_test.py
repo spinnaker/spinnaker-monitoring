@@ -154,19 +154,19 @@ class MetricFilterTest(unittest.TestCase):
     return sorted(result, key=lambda entry: '+'.join(sorted(entry['tags'].values())))
       
   def _expect_all_without_any_tags(self, spec):
-    filter = MetricFilter(spec)
+    filter = MetricFilter('test', spec)
     all_metrics = copy.deepcopy(ORIGINAL_METRICS)
     got = filter(all_metrics)
     self.assertMeterListsEqual(TAGLESS_METRICS, got)
 
   def _expect_all_without_delete_me_tag(self, spec):
-    filter = MetricFilter(spec)
+    filter = MetricFilter('test', spec)
     all_metrics = copy.deepcopy(ORIGINAL_METRICS)
     got = filter(all_metrics)
     self.assertMeterListsEqual(FILTERED_METRICS, got)
 
   def _expect_all_without_meter_one(self, spec):
-    filter = MetricFilter(spec)
+    filter = MetricFilter('test', spec)
     expect_metrics = copy.deepcopy(ORIGINAL_METRICS)
     del expect_metrics['test.meterOne']
 
@@ -177,7 +177,7 @@ class MetricFilterTest(unittest.TestCase):
       
   def test_noop_filter(self):
     spec = {}
-    filter = MetricFilter(spec)
+    filter = MetricFilter('test', spec)
     all_metrics = copy.deepcopy(ORIGINAL_METRICS)
     got = filter(all_metrics)
     self.assertMeterListsEqual(ORIGINAL_METRICS, got)
@@ -191,7 +191,7 @@ class MetricFilterTest(unittest.TestCase):
             ]
          }
     }
-    filter = MetricFilter(spec)
+    filter = MetricFilter('test', spec)
     all_metrics = copy.deepcopy(ORIGINAL_METRICS)
     expect_metrics = {
         'test.meterTwo.sameTime': copy.deepcopy(

@@ -55,7 +55,6 @@ def get_source_catalog(options):
   global _cached_registry_catalog
   global _cached_registry_timestamp
   try:
-    
     timestamp = os.path.getmtime(registry_dir)
   except OSError as err:
     logging.error(err)
@@ -123,7 +122,7 @@ class SpectatorClient(object):
   def add_standard_parser_arguments(parser):
     parser.add_argument('--prototype_path', default='',
                         help='Optional filter to restrict metrics of interest.')
-    parser.add_argument('--metric_filter_path', default='',
+    parser.add_argument('--metric_filter_dir', default='',
                         help='Optional filter to restrict metrics of interest.')
     parser.add_argument(
         '--log_metric_diff',
@@ -133,8 +132,9 @@ class SpectatorClient(object):
              ' This is to show a change in what metrics are available, not'
              ' the values of the metrics themselves.')
     parser.add_argument('--registry_dir', default=None,
-                        help='The directory containing the *.yml files specifying'
-                              ' each of the URLs to collect metrics from.')
+                        help='The directory containing the *.yml files'
+                             ' specifying each of the URLs to collect'
+                             ' metrics from.')
 
   def __init__(self, options):
     self.__prototype = None
@@ -147,21 +147,17 @@ class SpectatorClient(object):
       with open(options['prototype_path']) as fd:
         self.__prototype = json.JSONDecoder().decode(fd.read())
 
-    self.__service_metric_filter = {}
+    self.__filter_dir = options['metric_filter_dir']
+
+    # responses are filtered with only highest precedence filter found.
+    #   base_url comes from instrumented process itself
+    #   service comes from daemon configuration for instrumented service
+    #   default comes from daemon global config
+    self.__base_url_metric_filter = {}  # highest precedence
+    self.__service_metric_filter = {}   # next precedence
     self.__default_metric_filter = lambda all: all
-
-    if options['metric_filter_path']:
-      # pylint: disable=invalid-name
-      with open(options['metric_filter_path']) as fd:
-        filter_spec = yaml.load(fd)
-      default_spec = filter_spec.get('default')
-      self.__default_metric_filter = (
-        MetricFilter(default_spec)
-        if default_spec
-        else self.__default_metric_filter)
-
-      for service, spec in filter_spec.get('services', {}).items():
-        self.__service_metric_filter[service] = MetricFilter(spec)
+    self.__default_metric_filter = self.determine_service_metric_filter(
+        'default')
 
   def __log_scan_diff(self, host, port, metrics):
     """Diff this scan with the previous one for debugging purposes."""
@@ -269,7 +265,8 @@ class SpectatorClient(object):
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
     response = urllib2.urlopen(self.create_request(url, authorization))
 
-    spectator_response = json.JSONDecoder(encoding='utf-8').decode(response.read())
+    spectator_response = json.JSONDecoder(encoding='utf-8').decode(
+        response.read())
     try:
       self.__log_scan_diff(host, port + 1012,
                            spectator_response.get('metrics', {}))
@@ -297,13 +294,12 @@ class SpectatorClient(object):
 
     if self.__prototype:
       logging.warn('--prototype_path is deprecated,.'
-                   ' Please migrate to --metric_filter_path.')
+                   ' Please migrate to --metric_filter_dir.')
       spectator_response = self.filter_metrics(
           spectator_response, self.__prototype)
 
-    metric_filter = self.__service_metric_filter.get(
-        service, self.__default_metric_filter)
-    filtered_metrics = metric_filter(spectator_response['metrics'])
+    filtered_metrics = self.filter_response(
+        service, base_url, spectator_response)
 
     # Now count the datapoints
     datapoints = filtered_metrics.get('spectator.datapoints')
@@ -311,10 +307,56 @@ class SpectatorClient(object):
       num_metrics = 0
       for metric_data in filtered_metrics.values():
         num_metrics += len(metric_data.get('values', []))
-      datapoints['values'][0]['values'][0]['v'] = num_metrics - 1  # not including this one
+      # -1 so this counting all the metrics other than this one counting them.
+      datapoints['values'][0]['values'][0]['v'] = num_metrics - 1
 
     spectator_response['metrics'] = filtered_metrics
     return spectator_response
+
+  def make_base_url_metric_filter_or_none(self, base_url):
+    # Not yet implemented.
+    return None
+
+  def determine_service_metric_filter(self, service):
+    metric_filter = self.__service_metric_filter.get(service)
+    if metric_filter is not None:
+      return metric_filter
+
+    metric_filter = self.__default_metric_filter
+    if self.__filter_dir:
+      path = os.path.join(self.__filter_dir, service + '.yml')
+      if os.path.exists(path):
+        # pylint: disable=invalid-name
+        with open(path) as fd:
+          whole_spec = yaml.load(fd)
+          filter_spec = whole_spec.get('monitoring', {}).get('filters')
+          if filter_spec is not None:
+            logging.info('Loading metric filter from "%s"', path)
+            metric_filter = MetricFilter(service, filter_spec)
+          else:
+            logging.info('"%s" has no monitoring.filters entry -- ignoring',
+                         path)
+
+    self.__service_metric_filter[service] = metric_filter
+    return metric_filter
+
+  def filter_response(self, service, base_url, spectator_response):
+    response_start_time = spectator_response['startTime']
+    metric_filter, start_time = self.__base_url_metric_filter.get(
+        base_url, (None, None))
+    if start_time and start_time != response_start_time:
+      del self.__base_url_metric_filter[base_url]
+      metric_filter = None
+
+    if metric_filter is None:
+      metric_filter = self.make_base_url_metric_filter_or_none(base_url)
+      if metric_filter is not None:
+        self.__base_url_metric_filter[base_url] = (metric_filter,
+                                                   response_start_time)
+      else:
+        metric_filter = self.determine_service_metric_filter(service)
+
+    return metric_filter(spectator_response['metrics'])
 
   def filter_metrics(self, instance, prototype):
     """Filter metrics entries in |instance| to those that match |prototype|.
@@ -322,6 +364,8 @@ class SpectatorClient(object):
     Only the names and tags are checked. The instance must contain a
     tag binding found in the prototype, but may also contain additional tags.
     The prototype is the same format as the json of the metrics returned.
+
+    DEPRECATED -- use MetricFilter instead
     """
     filtered = {}
 

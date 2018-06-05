@@ -63,6 +63,7 @@ tags:
     - <tag name regex>
 """
 
+import logging
 import re
 
 
@@ -148,10 +149,13 @@ class MetricFilter(object):
                             and their MeterSpec specifying tags.
   """
 
-  def __init__(self, filter_spec):
+  def __init__(self, name, filter_spec, **kwargs):
     """Initialize a new metric filter using the given specification."""
     self.__init_tags(filter_spec)
     self.__init_meters(filter_spec)
+    self.__filter_name = name
+    self.__log_meters_found = kwargs.pop('log_meters', True)
+    self.__log_labels_found = kwargs.pop('log_labels', True)
 
   def __init_tags(self, filter_spec):
     tags = filter_spec.get('tags', {})
@@ -292,6 +296,9 @@ class MetricFilter(object):
       for regex in self.__exclude_name_regexes:
         if regex.match(name):
           self.__exclude_name_literal.add(name)
+          if self.__log_meters_found:
+            logging.info('Found %s meter "%s": EXCLUDE from pattern "%s"',
+                         self.__filter_name, name, regex.pattern)
           return True
       return False
 
@@ -308,6 +315,9 @@ class MetricFilter(object):
           if info[0].match(name):
             spec = info[1]
             self.__name_literal_to_meter_spec[name] = spec
+            if self.__log_meters_found:
+              logging.info('Found %s meter "%s": INCLUDE from pattern "%s"',
+                           self.__filter_name, name, info[0].pattern)
             break
 
       if spec is None:

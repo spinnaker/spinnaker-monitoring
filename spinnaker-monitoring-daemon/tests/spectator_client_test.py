@@ -19,13 +19,14 @@ import json
 import os
 import sys
 import yaml
+import shutil
 import unittest
 from StringIO import StringIO
 import mock
 
 from mock import patch
 from urllib2 import Request
-from tempfile import NamedTemporaryFile
+from tempfile import mkdtemp
 
 import spectator_client
 
@@ -76,7 +77,8 @@ CLOUDDRIVER_RESPONSE_OBJ = {
         'values': [{'t': 1471917869673, 'v': 24.0}]
       }]
     }
-  }
+  },
+  'startTime': 12345678
 }
 
 
@@ -112,7 +114,8 @@ GATE_RESPONSE_OBJ = {
         'values': [{'t' : 1471917869679, 'v' : 1.0}]
       }]
     }
-  }
+  },
+  'startTime': 87654321
 }
 
 GATE_RESPONSE_TEXT = json.JSONEncoder(encoding='utf-8').encode(
@@ -138,7 +141,7 @@ class SpectatorClientTest(unittest.TestCase):
   def setUp(self):
     options = {'prototype_path': None,
                'host': TEST_HOST,
-               'metric_filter_path': None}
+               'metric_filter_dir': None}
     self.spectator = TestableSpectatorClient(options)
     self.default_query_params = '?tagNameRegex=.%2A'  # tagNameRegex=.*
 
@@ -225,23 +228,23 @@ class SpectatorClientTest(unittest.TestCase):
   @patch('spectator_client.time.time')
   @patch('spectator_client.urllib2.urlopen')
   def test_collect_metrics_filter_no_jvm(self, mock_urlopen, mock_time):
-    spec = {'services': {
-              'filterTest': {
+    spec = {'monitoring': {
+              'filters': {
                 'meters': {
                   'excludeNameRegex': 'jvm.*'
                 }
               }
             }}
 
-    with NamedTemporaryFile(delete=False) as fd:
+    temp_dir = mkdtemp()
+    metric_path = os.path.join(temp_dir, 'filterTestService.yml')
+    with open(metric_path, 'w') as fd:
       fd.write(yaml.dump(spec))
-      metric_path = fd.name
 
     options = {'prototype_path': None,
                'host': TEST_HOST,
-               'metric_filter_path': metric_path}
+               'metric_filter_dir': temp_dir}
     test_spectator = TestableSpectatorClient(options)
-    os.remove(metric_path)
 
     now_time = 1.234
     port = 80
@@ -263,7 +266,9 @@ class SpectatorClientTest(unittest.TestCase):
     mock_urlopen.return_value = mock_http_response
     mock_time.return_value = now_time
 
-    response = test_spectator.collect_metrics('filterTest', url)
+    response = test_spectator.collect_metrics('filterTestService', url)
+    shutil.rmtree(temp_dir)
+
     self.assertEquals([(url + self.default_query_params, None)],
                       test_spectator.requests)
     self.assertEqual(expect, response)
@@ -555,9 +560,10 @@ class SpectatorClientTest(unittest.TestCase):
 
   def test_filter_name(self):
     prototype = {'metrics': {'tasks': {}}}
-    expect = {'applicationName': 'clouddriver',
-              'metrics': {
-                  'tasks': CLOUDDRIVER_RESPONSE_OBJ['metrics']['tasks']}}
+    expect = dict(CLOUDDRIVER_RESPONSE_OBJ)
+    expect['metrics'] = {
+        'tasks': CLOUDDRIVER_RESPONSE_OBJ['metrics']['tasks']
+    }
     got = self.spectator.filter_metrics(CLOUDDRIVER_RESPONSE_OBJ, prototype)
     self.assertEqual(expect, got)
 
@@ -574,9 +580,8 @@ class SpectatorClientTest(unittest.TestCase):
 
     metric = dict(CLOUDDRIVER_RESPONSE_OBJ['metrics']['jvm.buffer.memoryUsed'])
     metric['values'] = [metric['values'][1]]  # Keep just the one tag set value.
-    expect = {'applicationName': 'clouddriver',
-              'metrics': {'jvm.buffer.memoryUsed': metric}
-             }
+    expect = dict(CLOUDDRIVER_RESPONSE_OBJ)
+    expect['metrics'] = {'jvm.buffer.memoryUsed': metric}
     got = self.spectator.filter_metrics(CLOUDDRIVER_RESPONSE_OBJ, prototype)
     self.assertEqual(expect, got)
 

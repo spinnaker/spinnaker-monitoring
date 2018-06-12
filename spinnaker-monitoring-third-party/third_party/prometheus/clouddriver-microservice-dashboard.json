@@ -856,7 +856,7 @@
               "step": 10
             },
             {
-              "expr": "clouddriver:google:operationWaits__count{instance=~\"$Instance\"}",
+              "expr": "sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\"}[$SamplePeriod]))",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "",
@@ -1163,5 +1163,5 @@
   },
   "timezone": "browser",
   "title": "Clouddriver Microservice",
-  "version": 3
+  "version": 4
 }

@@ -1113,7 +1113,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"} / 1000",
+              "expr": "avg(front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"})",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "A",
@@ -1139,7 +1139,7 @@
           },
           "yaxes": [
             {
-              "format": "s",
+              "format": "ms",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1397,5 +1397,5 @@
   },
   "timezone": "browser",
   "title": "Front50 Microservice",
-  "version": 3
+  "version": 4
 }

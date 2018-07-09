@@ -301,12 +301,40 @@ class SpectatorClient(object):
     filtered_metrics = self.filter_response(
         service, base_url, spectator_response)
 
+    # NOTE: 20180614
+    # There have been occasional bugs in spinnaker
+    # where gauges are returned as 'NaN'.
+    #
+    # This string value is causing prometheus errors
+    # which prevent any metrics from being stored.
+    num_metrics = 0
+    for metric_name, metric_data in filtered_metrics.items():
+      meter_values = metric_data.get('values', [])
+      num_metrics += len(meter_values)
+      empty_value_list_indexes = []
+      for index, values_list in enumerate(meter_values):
+        # Ensure the value of each measurement is a float
+        # If jackson encountered NaN or Inf values then
+        # it will make them strings by default.
+        # These should probably not be present, but if they are
+        # This will convert NaN or Inf into a float
+        for elem in values_list['values']:
+          if elem['v'] == 'NaN':
+            logging.warn('Removing illegal NaN from "%s.%s"', service, metric_name)
+            values_list['values'] = [e for e in values_list['values'] if e['v'] != 'NaN']
+            if not values_list['values']:
+              empty_value_list_indexes.append(index)
+            break
+
+      # If there are metrics that only had NaN values,
+      # delete them in reverse order so list indexes are still valid.
+      # This could still leave meters with no metrics.
+      while empty_value_list_indexes:
+        del meter_values[empty_value_list_indexes.pop()]
+
     # Now count the datapoints
     datapoints = filtered_metrics.get('spectator.datapoints')
     if datapoints:
-      num_metrics = 0
-      for metric_data in filtered_metrics.values():
-        num_metrics += len(metric_data.get('values', []))
       # -1 so this counting all the metrics other than this one counting them.
       datapoints['values'][0]['values'][0]['v'] = num_metrics - 1
 

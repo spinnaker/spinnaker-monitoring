@@ -270,8 +270,8 @@ class StackdriverMetricsService(object):
                     label, metric_type, batch[ts_index]))
 
     counter_to_gauge_pattern = (r'timeSeries\[(\d+?)\]\.metricKind'
-                                r' had an invalid value of \"GAUGE\"'
-                                r'.* must be CUMULATIVE.')
+                                r' had an invalid value of \"(CUMULATIVE|GAUGE)\"'
+                                r'.* must be (CUMULATIVE|GAUGE).')
     for match in re.finditer(counter_to_gauge_pattern, message):
       ts_index = int(match.group(1))
       metric = batch[ts_index]['metric']

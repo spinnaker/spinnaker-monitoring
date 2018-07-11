@@ -268,7 +268,42 @@ class StackdriverMetricsService(object):
       metric_type = metric['type']
       found.append((self.add_label_and_retry,
                     label, metric_type, batch[ts_index]))
+
+    counter_to_gauge_pattern = (r'timeSeries\[(\d+?)\]\.metricKind'
+                                r' had an invalid value of \"GAUGE\"'
+                                r'.* must be CUMULATIVE.')
+    for match in re.finditer(counter_to_gauge_pattern, message):
+      ts_index = int(match.group(1))
+      metric = batch[ts_index]['metric']
+      metric_type = metric['type']
+      found.append((self.delete_descriptor_and_retry,
+                    metric_type, batch[ts_index]))
+
     return found
+
+  def delete_descriptor_and_retry(self, metric_type, ts_request):
+    metric_name_param = '/'.join([
+        self.project_to_resource(self.__project),
+        'metricDescriptors', metric_type])
+    api = self.stub.projects().metricDescriptors()
+
+    try:
+      logging.info('Deleting existing descriptor %s', metric_name_param)
+      response = api.delete(name=metric_name_param).execute()
+      logging.info('Delete response: %s', repr(response))
+    except HttpError as err:
+      logging.error('Could not delete descriptor %s', err)
+      if err.resp.status != 404:
+        return
+      else:
+        logging.info("Ignore error.")
+
+    logging.info('Retrying create timeseries %s', ts_request)
+    (self.stub.projects().timeSeries().create(
+        name=self.project_to_resource(self.__project),
+        body={'timeSeries': ts_request})
+     .execute())
+
 
   def add_label_and_retry(self, label, metric_type, ts_request):
     if self.add_label_to_metric(label, metric_type):

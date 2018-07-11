@@ -58,7 +58,7 @@ def get_aws_identity_document():
 
 # https://cloud.google.com/compute/docs/storing-retrieving-metadata
 def get_google_metadata(attribute):
-  url = os.path.join('http://169.254.169.254/computeMetadata/v1', attribute)
+  url = 'http://169.254.169.254/computeMetadata/v1/' + attribute
   request = urllib2.Request(url)
   request.add_header('Metadata-Flavor', 'Google')
   try:
@@ -257,10 +257,11 @@ class StackdriverMetricsService(object):
     except KeyError:
       return []
 
-    pattern = (r'timeSeries\[(\d+?)\]\.metric\.labels\[\d+?\]'
-               r' had an invalid value of "(\w+?)"')
     found = []
-    for match in re.finditer(pattern, message):
+
+    unknown_label_pattern = (r'timeSeries\[(\d+?)\]\.metric\.labels\[\d+?\]'
+                             r' had an invalid value of "(\w+?)"')
+    for match in re.finditer(unknown_label_pattern, message):
       ts_index = int(match.group(1))
       label = match.group(2)
       metric = batch[ts_index]['metric']
@@ -279,9 +280,9 @@ class StackdriverMetricsService(object):
        .execute())
 
   def add_label_to_metric(self, label, metric_type):
-    metric_name_param = os.path.join(
+    metric_name_param = '/'.join([
         self.project_to_resource(self.__project),
-        'metricDescriptors', metric_type)
+        'metricDescriptors', metric_type])
     logging.info('Attempting to add label "%s" to %s', label, metric_type)
     api = self.stub.projects().metricDescriptors()
 
@@ -327,9 +328,10 @@ class StackdriverMetricsService(object):
 
   def handle_time_series_http_error(self, error, batch):
     logging.error('Caught %s', error)
+
     if error.resp.status == 400:
       problems = self.find_problematic_elements(error, batch)
-      logging.info('PROBLEMS {0!r}'.format(problems))
+      logging.info('PROBLEMS %r', problems)
       if problems and not self.__fix_stackdriver_labels_unsafe:
         logging.info(
             'Fixing this problem would wipe stackdriver data.'
@@ -343,8 +345,7 @@ class StackdriverMetricsService(object):
             elem[0](*elem[1:])
           except BaseException as bex:
             traceback.print_exc()
-            logging.error('Failed {0}({1}): {2}'.format(
-                elem[0], elem[1:], bex))
+            logging.error('Failed %s(%s): %s', elem[0], elem[1:], bex)
 
   def add_metric_to_timeseries(self, service, name, instance,
                                metric_metadata, service_metadata, result):
@@ -366,9 +367,6 @@ class StackdriverMetricsService(object):
               for e in instance['values']]
 
     if metric_metadata['kind'] in ['Counter', 'Timer']:
-      # TODO(ewiseblatt): 20161115
-      # startTime is in a newer spectator version that is not yet
-      # available all over.
       start_time = self.millis_to_time(service_metadata.get('startTime', 0))
       metric_kind = 'CUMULATIVE'
       for elem in points:
@@ -388,8 +386,9 @@ class StackdriverMetricsService(object):
 def make_stub(options):
   """Helper function for making a stub to talk to service."""
   if not stackdriver_available:
-      raise ImportError(
-          'You must "pip install google-api-python-client oauth2client" to get the stackdriver client library.')
+    raise ImportError(
+        'You must "pip install google-api-python-client oauth2client"'
+        ' to get the stackdriver client library.')
 
   stackdriver_config = options.get('stackdriver', {})
   credentials_path = options.get('credentials_path', None)
@@ -413,12 +412,13 @@ def make_stub(options):
   developer_key = os.environ.get('STACKDRIVER_API_KEY',
                                  options.get('stackdriver', {}).get('api_key'))
   if developer_key:
-    url = 'https://monitoring.googleapis.com/$discovery/rest?labels=DASHBOARD_TRUSTED_TESTER&key=' + developer_key
+    url = ('https://monitoring.googleapis.com/$discovery/rest'
+           '?labels=DASHBOARD_TRUSTED_TESTER&key=' + developer_key)
     return apiclient.discovery.build(
         'monitoring', 'v3', http=http,
         discoveryServiceUrl=url)
-  else:
-    return apiclient.discovery.build('monitoring', 'v3', http=http)
+
+  return apiclient.discovery.build('monitoring', 'v3', http=http)
 
 
 def make_service(options):

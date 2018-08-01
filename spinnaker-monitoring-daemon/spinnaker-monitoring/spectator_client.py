@@ -33,6 +33,7 @@ import yaml
 from metric_filter import MetricFilter
 
 DEFAULT_REGISTRY_DIR = '/opt/spinnaker-monitoring/registry'
+DEFAULT_FILTER_DIR = '/opt/spinnaker-monitoring/filters'
 
 # pylint: disable=invalid-name
 _cached_registry_catalog = None
@@ -148,6 +149,17 @@ class SpectatorClient(object):
         self.__prototype = json.JSONDecoder().decode(fd.read())
 
     self.__filter_dir = options['metric_filter_dir']
+    if self.__filter_dir:
+      logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
+    else:
+      path = os.path.abspath(
+          os.path.join(os.path.dirname(os.path.dirname(__file__)), 'filters'))
+      if os.path.exists(path):
+        self.__filter_dir = path
+        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
+      elif os.path.exists(DEFAULT_FILTER_DIR):
+        self.__filter_dir = DEFAULT_FILTER_DIR
+        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
 
     # responses are filtered with only highest precedence filter found.
     #   base_url comes from instrumented process itself

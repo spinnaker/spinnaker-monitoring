@@ -184,15 +184,16 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     for type_name, service_tag_map in sorted(service_tag_map.items()):
       tag_service_map = self.to_tag_service_map(columns, service_tag_map)
       num_labels = len(tag_service_map)
-
+      _, info = type_map[type_name].items()[0]
+      kind = info[0].get('kind')
       row_html = ['<tr>']
       row_span = ' rowspan={0}'.format(num_labels) if num_labels > 1 else ''
       query_params = dict(params or {})
       query_params['meterNameRegex'] = type_name
       metric_url = '/show{0}'.format(self.params_to_query(query_params))
       row_html.append(
-          '<td{row_span}><A href="{url}">{type_name}</A></td>'.format(
-              row_span=row_span, url=metric_url, type_name=type_name))
+          '<td{row_span}><A href="{url}">{type_name}</A><br/>{kind}</td>'.format(
+              row_span=row_span, url=metric_url, type_name=type_name, kind=kind))
 
       for label_name, service_values in tag_service_map.items():
         if label_name is None:
@@ -315,7 +316,7 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
       for key, value in metrics.items():
         tagged_values = self.all_tagged_values(value.get('values'))
         parts = ['Service "{0}"'.format(service)]
-        parts.append('  {0}'.format(key))
+        parts.append('  {0}  [{1}]'.format(key, value.get('kind')))
 
         for one in tagged_values:
           tag_list = one[0]
@@ -348,12 +349,13 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
           html = (
               '<tr>'
               '<th rowspan={rowspan}><A href="{service_url}">{service}</A></th>'
-              '<th rowspan={rowspan}><A href="{metric_url}">{key}</A></th>'
+              '<th rowspan={rowspan}><A href="{metric_url}">{key}</A><br/>{kind}</th>'
               .format(rowspan=len(tagged_values),
                       service_url=service_url,
                       service=service,
                       metric_url=metric_url,
-                      key=key))
+                      key=key,
+                      kind=value.get('kind')))
           for one in tagged_values:
             tag_list = one[0]
             tag_html = '<br/>'.join([elem.as_html() for elem in tag_list])

@@ -15,5 +15,9 @@ RUN pip install -r requirements.txt
 
 ENV PYTHONWARNINGS "once"
 
+RUN addgroup spinnaker
+RUN adduser spinnaker -D -G spinnaker
+USER spinnaker
+
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]
 CMD ["--config", "/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml", "monitor"]

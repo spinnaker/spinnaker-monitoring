@@ -13,20 +13,56 @@
 # limitations under the License.
 
 import cgi
+import collections
+import datetime
 import httplib
 import json
 import os
 import logging
+import textwrap
+import time
+from multiprocessing.pool import ThreadPool
 
 from command_processor import CommandHandler
 from command_processor import get_global_options
 import http_server
 import stackdriver_service
+
 from stackdriver_service import StackdriverMetricsService
+try:
+  from googleapiclient.errors import HttpError
+  STACKDRIVER_AVAILABLE = True
+except ImportError:
+  STACKDRIVER_AVAILABLE = False
+
+
+def compare_descriptor_types(a, b):
+  """Compare two metric types to sort them in order."""
+  # pylint: disable=invalid-name
+  a_root = a['type'][len(StackdriverMetricsService.CUSTOM_PREFIX):]
+  b_root = b['type'][len(StackdriverMetricsService.CUSTOM_PREFIX):]
+  return (-1 if a_root < b_root
+          else 0 if a_root == b_root
+          else 1)
+
+
+def get_descriptor_list(options):
+  """Return a list of all the stackdriver custom metric descriptors."""
+  stackdriver = stackdriver_service.make_service(options)
+  project = stackdriver.project
+  type_map = stackdriver.fetch_all_custom_descriptors(project)
+  descriptor_list = type_map.values()
+  descriptor_list.sort(compare_descriptor_types)
+  return descriptor_list
 
 
 class BatchProcessor(object):
   """Helper class for managing events in batch."""
+
+  @property
+  def project(self):
+    return self.__project
+
   def __init__(self, project, stackdriver, data_list,
                invocation_factory, get_name):
     """Constructor.
@@ -136,33 +172,15 @@ class BaseStackdriverCommandHandler(CommandHandler):
 class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   """Administrative handler to list all the known descriptors."""
 
-  @staticmethod
-  def compare_types(a, b):
-    """Compare two metric types to sort them in order."""
-    # pylint: disable=invalid-name
-    a_root = a['type'][len(StackdriverMetricsService.CUSTOM_PREFIX):]
-    b_root = b['type'][len(StackdriverMetricsService.CUSTOM_PREFIX):]
-    return (-1 if a_root < b_root
-            else 0 if a_root == b_root
-            else 1)
-
-  def __get_descriptor_list(self, options):
-    stackdriver = stackdriver_service.make_service(options)
-    project = stackdriver.project
-    type_map = stackdriver.fetch_all_custom_descriptors(project)
-    descriptor_list = type_map.values()
-    descriptor_list.sort(self.compare_types)
-    return descriptor_list
-
   def process_commandline_request(self, options):
-    descriptor_list = self.__get_descriptor_list(options)
+    descriptor_list = get_descriptor_list(options)
     json_text = json.JSONEncoder(indent=2).encode(descriptor_list)
     self.output(options, json_text)
 
   def process_web_request(self, request, path, params, fragment):
     options = dict(get_global_options())
     options.update(params)
-    descriptor_list = self.__get_descriptor_list(options)
+    descriptor_list = get_descriptor_list(options)
 
     if self.accepts_content_type(request, 'text/html'):
       html = self.descriptors_to_html(descriptor_list)
@@ -207,18 +225,361 @@ class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     return '\n\n'.join(text)
 
 
+class SurveyInfo(collections.namedtuple(
+    'DescriptorSurveyInfo',
+    ['type_name', 'iso_time', 'days_ago', 'error', 'deleted'])):
+  """Information reported on custom metric descriptor."""
+
+  UNKNOWN_DAYS_AGO = -1
+  UNKNOWN_ISO = None
+
+  @staticmethod
+  def make_seen(type_name, iso_time, days_ago):
+    """Construct SurveyInfo for descriptor that is in use."""
+    return SurveyInfo(type_name, iso_time, days_ago, None, False)
+
+  @staticmethod
+  def make_unknown(type_name):
+    """Construct SurveyInfo for descriptor that is not in use."""
+    return SurveyInfo(
+        type_name, SurveyInfo.UNKNOWN_ISO, SurveyInfo.UNKNOWN_DAYS_AGO,
+        None, False)
+
+  @staticmethod
+  def make_deleted(type_name):
+    """Construct SurveyInfo for descriptor that has been deleted."""
+    return SurveyInfo(
+        type_name, SurveyInfo.UNKNOWN_ISO, SurveyInfo.UNKNOWN_DAYS_AGO,
+        None, True)
+
+  @staticmethod
+  def make_error(type_name, error):
+    """Construct SurveyInfo for descriptor that could not be determined."""
+    return SurveyInfo(
+        type_name, SurveyInfo.UNKNOWN_ISO, SurveyInfo.UNKNOWN_DAYS_AGO,
+        error, False)
+
+  @staticmethod
+  def to_days_since(days_ago):
+    """Return 'days_ago' as a string."""
+    if days_ago is None or days_ago == SurveyInfo.UNKNOWN_DAYS_AGO:
+      return ''
+    if days_ago < 1:
+      return 'today'
+    if days_ago == 1:
+      return '1 day'
+    return '%d days' % days_ago
+
+  def days_ago_str(self):
+    """Return 'days_ago' as a string."""
+    return self.to_days_since(self.days_ago)
+
+
+class StackdriverSurveyor(object):
+  """Survey stackdriver custom metric descriptors for recent usage.
+
+  This is for housekeeping to get rid of unused metric descriptors.
+  We need to worry about that because descriptors are in short supply
+  for the project, and Spinnaker wants more than is available.
+
+  Since stackdriver descriptors are permanent, we'll provide a means
+  to get rid of obsolete ones to make way for new ones. This class
+  provides a means for detecting possible obsolete descriptors.
+  """
+
+  @property
+  def project(self):
+    """The project being surveyed."""
+    return self.__project
+
+  @property
+  def start_time(self):
+    """The start time string used for the survey."""
+    return self.__op_params['interval_startTime']
+
+  @property
+  def end_time(self):
+    """The end time string used for the survey."""
+    return self.__op_params['interval_endTime']
+
+  @property
+  def days_since(self):
+    """The number of days between start and end time."""
+    return self.__days_since
+
+  def __init__(self, options):
+    num_threads = options.get('num_threads', 50)
+    factory = stackdriver_service.make_service
+
+    # The python client library is not thread friendly
+    # so we'll need a different stub for each thread.
+    # We only need the list method from that stub
+    # so we'll build a pool of those.
+    self.__op_methods = [
+        factory(options).stub.projects().timeSeries().list
+        for _ in range(num_threads)
+    ]
+    self.__project = factory(options).project
+
+    self.__max_attempts = 10
+    self.__secs_between_attempts = 2
+    self.__days_since = int(options.get('days_since', 1))
+    self.__today = datetime.datetime.today()
+    self.__date_format = '%Y-%m-%dT%H:%M:%SZ'
+
+    end_time = datetime.datetime.now()
+    start_time = end_time.date() - datetime.timedelta(self.__days_since)
+
+    self.__op_params = {
+        'name': 'projects/' + self.__project,
+        'interval_endTime': end_time.strftime(self.__date_format),
+        'interval_startTime': start_time.strftime(self.__date_format),
+        'pageSize': 1
+    }
+
+  def build_survey_from_descriptor_list(self, descriptor_list):
+    """Returns a dict of SurveyInfo keyed by descriptor type_name.
+
+    Args:
+      descriptor_names: [list of descriptor objects]
+    """
+    type_names = [descriptor['type'] for descriptor in descriptor_list]
+    return self.build_survey_from_type_names(type_names)
+
+  def survey_to_sorted_list(self, survey):
+    def sort_key(info):
+      rank = -1 if info.error else info.days_ago
+      return '%d %s' % (rank, info.type_name)
+
+    return sorted(survey.values(), key=sort_key)
+
+  def build_survey_from_type_names(self, type_names):
+    """Returns a dict of SurveyInfo keyed by descriptor type_name.
+
+    Args:
+      type_names: [list of string]
+    """
+    num_threads = len(self.__op_methods)
+
+    pool = ThreadPool(num_threads)
+    process = lambda type_name: self.__survey_type(type_name)
+    survey = pool.map(process, type_names)
+    pool.close()
+    pool.join()
+    return {info.type_name: info for info in survey}
+
+  def __survey_type(self, type_name):
+    """Performs survey on a given descriptor type name.
+
+    Returns:
+      SurveyInfo
+    """
+    method = self.__op_methods.pop()
+    op = method(filter='metric.type="%s"' % type_name, **self.__op_params)
+    try:
+      # Stackdriver likes to return random 500 errors,
+      # especially when clients hammer it, so retry.
+      attempt = 1
+      while True:
+        info, can_retry = self.__attempt_op(op, type_name)
+        if not info.error or not can_retry:
+          return info
+        if attempt == self.__max_attempts:
+          return info
+
+        logging.error('Retryable error processing %s...', type_name)
+        time.sleep(self.__secs_between_attempts)
+        attempt += 1
+        continue
+    finally:
+      # put back
+      self.__op_methods.append(method)
+
+  def __attempt_op(self, op, type_name):
+    """Return SurveyInfo, can_retry."""
+
+    try:
+      result = op.execute()
+      if not result:
+        return SurveyInfo.make_unknown(type_name), False
+
+      if 'timeSeries' not in result:
+        logging.error('Unexpected result surveying "%s": %s',
+                      type_name, result)
+        return SurveyInfo.make_error(type_name, result), True
+
+      last_iso = result['timeSeries'][0]['points'][0]['interval']['endTime']
+      last_time = datetime.datetime.strptime(last_iso, self.__date_format)
+      days_ago = (self.__today - last_time).days
+      return SurveyInfo.make_seen(type_name, last_iso, days_ago), True
+
+    except HttpError as err:
+      retryable = err.resp.status >= 500
+      logging.error('Error processing %s: %s', type_name, str(err))
+      error = 'HTTP [%d]: %s ' % (err.resp.status, err.resp.reason)
+      return SurveyInfo.make_error(type_name, error), retryable
+
+    except Exception as e:
+      logging.error('Error processing %s: %s', type_name, str(e))
+      return SurveyInfo.make_error(type_name, str(e)), False
+
+
+class AuditCustomDescriptorsHandler(BaseStackdriverCommandHandler):
+  """Administrative handler to distinguish in-use from unused descriptors."""
+
+  def delete_unused(self, options, surveyor, survey):
+    descriptor_name_prefix = 'projects/{project}/metricDescriptors/'.format(
+        project=surveyor.project)
+    to_delete = []
+    for info in survey.values():
+      if info.days_ago == info.UNKNOWN_DAYS_AGO:
+        to_delete.append({'name': descriptor_name_prefix + info.type_name,
+                          'type': info.type_name})
+
+    processor = ClearCustomDescriptorsHandler.clear_descriptors(
+        options, to_delete)
+    batch_response = processor.batch_response
+    for index, response in enumerate(batch_response):
+      type_name = to_delete[index]['type']
+      # The response and 'OK' here are our own batch response strings,
+      # not the original http response from the server.
+      if response.startswith('OK'):
+        survey[type_name] = SurveyInfo.make_deleted(type_name)
+      else:
+        survey[type_name] = SurveyInfo.make_error(response)
+
+  def add_argparser(self, subparsers):
+    parser = super(AuditCustomDescriptorsHandler, self).add_argparser(
+        subparsers)
+    parser.add_argument('--delete_unused', default=False, action='store_true',
+                        help='Delete the unused spinnaker metric descriptors.')
+    parser.add_argument('--days_since', default=1, type=int,
+                        help='How many days back to look for metric activity.')
+
+  def process_commandline_request(self, options):
+    surveyor = StackdriverSurveyor(options)
+    descriptor_list = get_descriptor_list(options)
+    survey = surveyor.build_survey_from_descriptor_list(descriptor_list)
+    if str(options.get('delete_unused')).lower() == 'true':
+      self.delete_unused(options, surveyor, survey)
+    info_list = surveyor.survey_to_sorted_list(survey)
+    json_text = json.JSONEncoder(indent=2).encode(info_list)
+    self.output(options, json_text)
+
+  def process_web_request(self, request, path, params, fragment):
+    options = dict(get_global_options())
+    options.update(params)
+
+    surveyor = StackdriverSurveyor(options)
+    descriptor_list = get_descriptor_list(options)
+
+    begin_time = time.time()
+    survey = surveyor.build_survey_from_descriptor_list(descriptor_list)
+    survey_secs = time.time() - begin_time
+    if str(params.get('delete_unused')).lower() == 'true':
+      self.delete_unused(options, surveyor, survey)
+    info_list = surveyor.survey_to_sorted_list(survey)
+
+    footer = 'Survey Time = %.1f s' % survey_secs
+    header = 'Activity during %s ... %s (%s)' % (
+        surveyor.start_time, surveyor.end_time,
+        SurveyInfo.to_days_since(surveyor.days_since))
+
+    if self.accepts_content_type(request, 'text/html'):
+      html = header + '<p>'
+      html += self.survey_to_html(surveyor, info_list)
+      html += '<br/>' + footer
+      html_doc = http_server.build_html_document(
+          html, title='Last Custom Descriptor Use')
+      request.respond(200, {'ContentType': 'text/html'}, html_doc)
+    elif self.accepts_content_type(request, 'application/json'):
+      json_doc = json.JSONEncoder(indent=2).encode(info_list)
+      request.respond(200, {'ContentType': 'application/json'}, json_doc)
+    else:
+      text = self.survey_to_text(info_list)
+      text += '\n\n' + footer
+      request.respond(200, {'ContentType': 'text/plain'}, text)
+
+  def survey_to_html(self, surveyor, info_list):
+    survey_html = ['<table><tr>'
+                   '<th>Last Time</th>'
+                   '<th>Days</th>'
+                   '<th>Type Name</th></tr>']
+    num_ok = 0
+    num_warning = 0
+    num_deleted = 0
+    num_error = 0
+
+    for info in info_list:
+      literal_str = info.iso_time if info.iso_time else ''
+      if info.deleted:
+        literal_str = 'DELETED'
+        css = 'deleted'
+        num_deleted += 1
+      elif info.error:
+        literal_str = info.error
+        css = 'error'
+        num_error += 1
+      elif info.iso_time:
+        css = 'ok'
+        num_ok += 1
+      else:
+        css = 'warning'
+        num_warning += 1
+
+      survey_html.append(
+          '<tr><td{css}>{literal}</td>'
+          '<td{css}>{days}</td>'
+          '<td{css}>{what}</td></tr>'.format(
+              css=' class="%s"' % css,
+              literal=literal_str,
+              days=info.days_ago_str(),
+              what=info.type_name))
+    survey_html.append('</table>\n')
+
+    # pylint: disable=bad-whitespace
+    table = [('In Use',     'ok',      num_ok),
+             ('Not In Use', 'warning', num_warning),
+             ('Deleted',    'deleted', num_deleted),
+             ('Error',      'error',   num_error)]
+    html = textwrap.dedent("""\
+       <h2>Summary</h2>
+       <table>
+       {summary}
+       <tr><th>Total</th><td>{total}</td></tr>
+       </table>
+       <h2>Survey</h2>
+       {survey}
+    """.format(
+        summary='\n'.join(
+            ['<tr><th>{title}</th><td class={css}>{count}</td></tr>'
+             .format(title=elem[0], css=elem[1], count=elem[2])
+             for elem in table if elem[2] > 0]),
+        total=num_ok + num_warning + num_deleted + num_error,
+        survey='\n'.join(survey_html)))
+    return html
+
+  def survey_to_text(self, info_list):
+    text = ['Found {0} Custom Metrics'.format(len(info_list))]
+    for info in info_list:
+      when = ('DELETED'
+              if info.deleted
+              else info.error if info.error
+              else info.iso_time)
+      text.append('{when}: {what}'.format(when=when, what=info.type_name))
+    return '\n\n'.join(text)
+
+
 class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   """Administrative handler to clear all the known descriptors.
 
   This clears all the TimeSeries history as well.
   """
 
-  def __do_clear(self, options):
-    """Deletes exsiting custom metric descriptors."""
+  @staticmethod
+  def clear_descriptors(options, descriptor_list):
     stackdriver = stackdriver_service.make_service(options)
     project = stackdriver.project
-
-    type_map = stackdriver.fetch_all_custom_descriptors(project)
     delete_method = (stackdriver.stub.projects().metricDescriptors().delete)
     def delete_invocation(descriptor):
       name = descriptor['name']
@@ -228,13 +589,20 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
 
     processor = BatchProcessor(
         project, stackdriver,
-        type_map.values(), delete_invocation, get_descriptor_name)
+        descriptor_list, delete_invocation, get_descriptor_name)
     processor.process()
-    return type_map, processor
+    return processor
+
+  def __do_clear(self, options):
+    """Deletes exsiting custom metric descriptors."""
+    descriptor_list = get_descriptor_list(options)
+    return descriptor_list, self.clear_descriptors(options, descriptor_list)
 
   def process_commandline_request(self, options):
     """Implements CommandHandler."""
-    type_map, processor = self.__do_clear(options)
+    copy_options = dict(options)
+    copy_options['clear_all'] = True
+    _, processor = self.__do_clear(copy_options)
     headers, body = processor.make_response(
         None, False,
         'Deleted', 'Cleared Time Series')
@@ -242,10 +610,23 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
 
   def process_web_request(self, request, path, params, fragment):
     """Implements CommandHandler."""
+    if str(params.get('clear_all')).lower() != 'true':
+      html = textwrap.dedent("""\
+          Clearing descriptors requires query parameter
+          <code>clear_all=true</code>.
+          <p/>
+          <a href="{path}?clear_all=true">Yes, delete everything!</a>
+      """)
+      html_doc = http_server.build_html_document(
+          html, title='Missing Parameters')
+      request.respond(
+          400, {'ContentType': 'text/html'}, html_doc)
+      return
+
     options = dict(get_global_options())
     options.update(params)
-    type_map, processor = self.__do_clear(options)
-    response_code = (httplib.OK if processor.num_ok == len(type_map)
+    descriptor_list, processor = self.__do_clear(options)
+    response_code = (httplib.OK if processor.num_ok == len(descriptor_list)
                      else httplib.INTERNAL_SERVER_ERROR)
     headers, body = processor.make_response(
         request, self.accepts_content_type(request, 'text/html'),
@@ -379,29 +760,30 @@ class UpsertCustomDescriptorsProcessor(object):
 
     if create_list:
       self.__do_batch_update_create_helper(
-        project, create_list, success_list, restore_list, create_errors)
+          project, create_list, success_list, restore_list, create_errors)
       restore_list = [original_type_map[elem['type']] for elem in restore_list]
 
     if restore_list:
       # If we successfully restore, we left it in the original unupdated state.
       # If we failed to restore, then we've lost the descriptor entirely.
       self.__do_batch_update_create_helper(
-        project, restore_list, not_updated_list, lost_list, restore_errors)
+          project, restore_list, not_updated_list, lost_list, restore_errors)
 
-    response_code = (httplib.OK if len(failed_list) + len(create_errors) == 0
+    response_code = (httplib.OK
+                     if len(failed_list) + len(create_errors) == 0
                      else httplib.INTERNAL_SERVER_ERROR)
     bodies = []
     for elem in success_list:
       bodies.append('Updated {0} to {1}'.format(elem['type'], elem))
     for index, elem in enumerate(failed_list):
       bodies.append('Failed to update {0} to {1}: {2}'.format(
-        elem['type'], elem, delete_errors[index]))
+          elem['type'], elem, delete_errors[index]))
     for index, elem in enumerate(restore_list):
       bodies.append('Failed to update {0} to {1}: {2}'.format(
-        elem['type'], elem, create_errors[index]))
+          elem['type'], elem, create_errors[index]))
     for index, elem in enumerate(lost_list):
       bodies.append('Lost {0}. It used to be {1}: {2}'.format(
-        elem['type'], elem, restore_errors[index]))
+          elem['type'], elem, restore_errors[index]))
 
     return response_code, {'Content-Type': 'text/plain'}, '\n'.join(bodies)
 
@@ -511,7 +893,7 @@ class GetDashboardHandler(BaseStackdriverCommandHandler):
     parser = super(GetDashboardHandler, self).add_argparser(subparsers)
     parser.add_argument(
         '--name', required=True,
-      help='The name of the dashboard to get.')
+        help='The name of the dashboard to get.')
     return parser
 
   def process_commandline_request(self, options):
@@ -539,7 +921,7 @@ class UploadDashboardHandler(BaseStackdriverCommandHandler):
                         help='The path to the json dashboard file.')
     parser.add_argument(
         '--update', default=False, action='store_true',
-      help='Update an existing dashboard rather than create a new one.')
+        help='Update an existing dashboard rather than create a new one.')
     return parser
 
   def process_commandline_request(self, options):
@@ -567,7 +949,7 @@ class UploadDashboardHandler(BaseStackdriverCommandHandler):
       action = 'Created'
 
     self.output(options, '{action} "{title}" with name {name}'.format(
-      action=action, title=response['displayName'], name=response['name']))
+        action=action, title=response['displayName'], name=response['name']))
 
 
 def add_handlers(handler_list, subparsers):
@@ -577,6 +959,10 @@ def add_handlers(handler_list, subparsers):
           '/stackdriver/list_descriptors',
           'list_stackdriver',
           'Get the JSON of all the Stackdriver Custom Metric Descriptors.'),
+      AuditCustomDescriptorsHandler(
+          '/stackdriver/audit_descriptors',
+          'audit_stackdriver',
+          'Determine which stackdriver descriptors are in use.'),
       ClearCustomDescriptorsHandler(
           '/stackdriver/clear_descriptors',
           'clear_stackdriver',
@@ -589,17 +975,17 @@ def add_handlers(handler_list, subparsers):
           ' WARNING: Historic time-series data may be lost on update.')
   ]
 
-  if os.environ.get('STACKDRIVER_API_KEY'):
+  if STACKDRIVER_AVAILABLE and os.environ.get('STACKDRIVER_API_KEY'):
     command_handlers.extend([
-      ListDashboardsHandler('/stackdriver/list_dashboards',
-                            'list_stackdriver_dashboards',
-                            'List the available Stackdriver Dashboards'),
-      GetDashboardHandler(None,
-                          'get_stackdriver_dashboard',
-                          'Get a specific dashboard by display name'),
-      UploadDashboardHandler(None,
-                            'upload_stackdriver_dashboard',
-                            'Create or update specific dashboard')
+        ListDashboardsHandler('/stackdriver/list_dashboards',
+                              'list_stackdriver_dashboards',
+                              'List the available Stackdriver Dashboards'),
+        GetDashboardHandler(None,
+                            'get_stackdriver_dashboard',
+                            'Get a specific dashboard by display name'),
+        UploadDashboardHandler(None,
+                               'upload_stackdriver_dashboard',
+                               'Create or update specific dashboard')
     ])
 
   for handler in command_handlers:

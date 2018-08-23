@@ -31,17 +31,20 @@ def build_html_document(body, title=None):
             body { font-size:10pt }
             table { font-size:10pt;border-width:none;
             border-spacing:0px;border-color:#F8F8F8;border-style:solid }
-            th, td { padding:2px;vertical-align:top;
+            th, td { padding:5px;vertical-align:top;
+              padding-left:10px;
               border-width:1px;border-color:#F8F8F8;border-style:solid; }
             th { font-weight:bold;text-align:left;font-family:times }
-            th { color:#666666 }
+            th { background-color:#666666; color:#FFFFFF }
 
             a:link, a:visited { background-color:#FFFFFF;color:#000099 }
             a:hover, a:active { color:#FFFFFF;background-color:#000099 }
-            a.warning, *.warning { background-color:#FFF8F8; color:#990033 }
-            td.warning, a.warning:hover { color:#FFF8F8; background-color:#990033 }
-            a.ok, *.ok { background-color:#EEFFEE; color:#006600 }
-            td.ok, a.ok:hover { color:#EEFFEE; background-color:#006600 }
+            td.warning, a.warning, *.warning {
+                background-color:#FFF8F8; color:#990033 }
+            *.error, td.error, a.warning:hover {
+                color:#FFF8F8; background-color:#990033 }
+            td.ok, a.ok, *.ok { background-color:#EEFFEE; color:#006600 }
+            a.ok:hover { color:#EEFFEE; background-color:#006600 }
           '''),
           '</style>'
           '</head>', '<body>',

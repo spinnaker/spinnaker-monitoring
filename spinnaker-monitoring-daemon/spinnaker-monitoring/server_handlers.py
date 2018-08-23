@@ -45,13 +45,18 @@ class HomePageHandler(command_processor.CommandHandler):
     query = self.params_to_query(params)
     rows = [(handler.url_path, handler.description)
             for handler in self.__all_handlers]
+    rows = sorted(rows)
     row_html = [('<tr>'
                  '<td><A href="{path}{params}">{path}</A></td>'
                  '<td>{info}</td>'
                  '</tr>'.format(path=row[0], params=query, info=row[1]))
                 for row in rows if row[0] is not None]
 
-    html_body = '<table>\n{0}\n</table>'.format('\n'.join(row_html))
+    html_body = ('<table>\n'
+                 '<tr><th>Path</th><th>Description</th></tr>'
+                 '{rows}\n'
+                 '</table>'
+                 .format(rows='\n'.join(row_html)))
     html_doc = http_server.build_html_document(
         html_body, title='Spinnaker Metrics Administration')
     request.respond(200, {'ContentType': 'application/html'}, html_doc)

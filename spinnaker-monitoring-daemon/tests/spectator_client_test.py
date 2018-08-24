@@ -239,7 +239,7 @@ class SpectatorClientTest(unittest.TestCase):
     temp_dir = mkdtemp()
     metric_path = os.path.join(temp_dir, 'filterTestService.yml')
     with open(metric_path, 'w') as fd:
-      fd.write(yaml.dump(spec))
+      fd.write(yaml.safe_dump(spec))
 
     options = {'prototype_path': None,
                'host': TEST_HOST,

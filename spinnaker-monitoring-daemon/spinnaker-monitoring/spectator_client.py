@@ -368,7 +368,7 @@ class SpectatorClient(object):
       if os.path.exists(path):
         # pylint: disable=invalid-name
         with open(path) as fd:
-          whole_spec = yaml.load(fd)
+          whole_spec = yaml.safe_load(fd)
           filter_spec = whole_spec.get('monitoring', {}).get('filters')
           if filter_spec is not None:
             logging.info('Loading metric filter from "%s"', path)

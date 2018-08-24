@@ -268,7 +268,7 @@ class MetricFilterTest(unittest.TestCase):
           byNameRegex: .*meterOne.*
           excludeNameRegex: .*meterOne.*
     """)
-    self._expect_all_without_meter_one(yaml.load(spec))
+    self._expect_all_without_meter_one(yaml.safe_load(spec))
       
   def test_remove_tag(self):
     spec = {

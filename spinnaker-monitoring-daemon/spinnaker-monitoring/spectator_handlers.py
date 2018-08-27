@@ -90,10 +90,19 @@ class DumpMetricsHandler(BaseSpectatorCommandHandler):
 class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
   """Show all the current descriptors in use, and who is using them."""
 
+  def __init__(self, *pos_args, **kwargs):
+    self.__service_map = None
+    self.__spectator = None
+    super(ExploreCustomDescriptorsHandler, self).__init__(*pos_args, **kwargs)
+
   def __get_type_and_tag_map_and_active_services(self, catalog, options):
     spectator = self.make_spectator_client(options)
+    self.__spectator = spectator
 
-    type_map = spectator.scan_by_type(catalog, params=options)
+    scan_options = dict(options)
+    scan_options['disable_metric_filter'] = True
+    self.__service_map = spectator.scan_by_service(catalog, params=scan_options)
+    type_map = spectator.service_map_to_type_map(self.__service_map)
     service_tag_map, active_services = self.to_service_tag_map(type_map)
     return type_map, service_tag_map, active_services
 
@@ -165,55 +174,185 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
         for tag_name, tag_value in tag_group.items():
           if tag_name not in tag_service_map:
             tag_service_map[tag_name] = [set() for ignore in columns]
+          # tag_value is None if there is no tag.
+          # This is still different from the service not having the meter.
+          # because above we added an empty set to every service column
+          # so that we have a square table. A None here means that we
+          # have a meter without any tags, as opposed to the empty set
+          # which means we dont even have a meter in that service.
           tag_service_map[tag_name][service_index].add(tag_value)
 
     return tag_service_map
 
+  def __determine_filtered_meters(self, service_name):
+    """Return set of filtered [discarded] meter names within service."""
+    filter = self.__spectator.determine_service_metric_filter(service_name)
+    missing_keys = set([])
+    service_map_list = self.__service_map[service_name]
+    for replica in service_map_list:
+      metrics = replica['metrics']
+      filtered = filter(metrics)
+      all_keys = set(metrics.keys())
+      filtered_keys = set(filtered.keys())
+      missing_keys.update(all_keys - filtered_keys)
+
+    return missing_keys
+
+  def __service_labels_to_html_td(self, is_filtered, service_labels):
+    """Given a meter name and list of label values, produce the cell html.
+
+    This is for an individual service column which contains the labels used.
+    """
+    row_html = []
+    if is_filtered and service_labels:
+      css = ' class=\"warning\"'
+    else:
+      css = ' class=\"ok\"'
+
+    # The [None] here means we have a meter but no tags.
+    if service_labels == set([None]):
+      row_html.append('<td><i{css}>no tags</i>'.format(css=css))
+    else:
+      row_html.append(
+          '<td>{values}</td>'.format(
+              values=', '.join(
+                  ['<A{css} href="/explore?tagValueRegex={v}">{v}</A>'.format(
+                      css=css, v=value)
+                   for value in sorted(service_labels)]))
+      )
+    return ''.join(row_html)
+
+  def __service_label_columns_html(
+      self, meter_name, service_values, service_filtered_metrics):
+    """Produce all columns html for each service and values for given label.
+
+    Returns:
+      (html for all the columns, num services used, num services unused)
+      where used indicates it is present and not filtered out
+            unused indicates it is present but being filtered out
+      services that do not used the labels are not included in any of the counts
+      and are rendered as empty columns.
+    """
+    num_used = 0
+    num_unused = 0
+    num_ignored = 0
+    html = []
+    for index, label_values in enumerate(service_values):
+      is_filtered = meter_name in service_filtered_metrics[index]
+      html_snippet = self.__service_labels_to_html_td(
+          is_filtered, label_values)
+      html.append(html_snippet)
+      if not label_values:
+        num_ignored += 1
+      elif is_filtered:
+        num_unused += 1
+      else:
+        num_used += 1
+    return ''.join(html), num_used, num_unused
+
+  def __all_label_columns_html(
+      self, meter_name, tag_service_map, service_filtered_metrics):
+    """Returns the html for all the label columns.
+
+    This includes the label column containing the label name
+    and each service column with the label values used by the service.
+
+    Note that if there are multiple labels, then there will be multiple rows
+    with one row per label. This assumes that the initial row had a rowspan.
+    In practice the initial row also contains a meter name column which is
+    rowspaned such that all the individual labels are enumerated within it.
+
+    Returns:
+       num used labels used, num unused labels, column html
+       where used and unused indicate filter activity only.
+    """
+    num_used_labels = 0
+    num_unused_labels = 0
+    result_html = []
+    row_html = []
+    for label_name, service_values in tag_service_map.items():
+      service_label_columns_html, num_used, num_unused = (
+          self.__service_label_columns_html(meter_name, service_values,
+                                            service_filtered_metrics))
+      if num_used:
+        if num_unused:
+          css = ''
+        else:
+          css = ' class="ok"'
+      else:
+        css = ' class="warning"'
+
+      if label_name is None:
+        row_html.append('<td{css}/>'.format(css=css))
+      else:
+        row_html.append(
+            '<td{css}>'
+            '<A href="/explore?tagNameRegex={label}"{css}>{label}</A>'
+            '</td>'.format(label=label_name, css=css))
+      row_html.append(service_label_columns_html)
+      num_used_labels += num_used
+      num_unused_labels += num_unused
+      row_html.append('</tr>')
+      result_html.append(''.join(row_html))
+      row_html = ['<tr>']  # prepare for next row if needed
+    return num_used_labels, num_unused_labels, '\n'.join(result_html)
+
   def to_html(self, type_map, service_tag_map, active_services, params=None):
+    """Produce HTML table with row per meter/label and column per service.
+
+    Cells will be colored ok or warning depending on whether the service
+    will store the meter values or not. The meters and labels themselves
+    are colored if all the services using the metric show or ignore them.
+    If some show but not others then the name wont be colored. If services
+    do not even report the metric, then they do not influence coloring and
+    their cells will be empty.
+    """
     header_html = ['<tr>', '<th>Metric</th>', '<th>Label</th>']
     columns = {}
+    service_filtered_metrics = []
+
     for service_name in sorted(active_services):
       columns[service_name] = len(columns)
       header_html.append('<th><A href="/show?services={0}">{0}</A></th>'.format(
           service_name))
+      service_filtered_metrics.append(
+          self.__determine_filtered_meters(service_name))
     header_html.append('</tr>')
 
     html = ['<table border=1>']
     html.extend(header_html)
 
-    for type_name, service_tag_map in sorted(service_tag_map.items()):
+    for meter_name, service_tag_map in sorted(service_tag_map.items()):
       tag_service_map = self.to_tag_service_map(columns, service_tag_map)
       num_labels = len(tag_service_map)
-      _, info = type_map[type_name].items()[0]
+      _, info = type_map[meter_name].items()[0]
       kind = info[0].get('kind')
       row_html = ['<tr>']
       row_span = ' rowspan={0}'.format(num_labels) if num_labels > 1 else ''
       query_params = dict(params or {})
-      query_params['meterNameRegex'] = type_name
+      query_params['meterNameRegex'] = meter_name
       metric_url = '/show{0}'.format(self.params_to_query(query_params))
-      row_html.append(
-          '<td{row_span}><A href="{url}">{type_name}</A><br/>{kind}</td>'.format(
-              row_span=row_span, url=metric_url, type_name=type_name, kind=kind))
 
-      for label_name, service_values in tag_service_map.items():
-        if label_name is None:
-          row_html.append('<td></td>')
+      num_used, num_unused, column_html = self.__all_label_columns_html(
+          meter_name, tag_service_map, service_filtered_metrics)
+
+      if num_used:
+        if num_unused:
+          css = ''
         else:
-          row_html.append(
-              '<td><A href="/explore?tagNameRegex={0}">{0}</A></td>'.format(
-                  label_name))
-        for value_set in service_values:
-          if value_set == set([None]):
-            row_html.append('<td>n/a</td>')
-          else:
-            row_html.append(
-                '<td>{0}</td>'.format(', '.join(
-                    ['<A href="/explore?tagValueRegex={v}">{v}</A>'.format(
-                        v=value)
-                     for value in sorted(value_set)])))
-        row_html.append('</tr>')
-        html.append(''.join(row_html))
-        row_html = ['<tr>']  # prepare for next row if needed
+          css = ' class="ok"'
+      else:
+        css = ' class="warning"'
+
+      row_html.append(
+          '<td{row_span}{css}>'
+          '<A href="{url}"{css}>{meter_name}</A>'
+          '<br/>{kind}</td>'.format(
+              row_span=row_span, css=css,
+              url=metric_url, meter_name=meter_name,
+              kind=kind))
+
+      html.append(''.join(row_html) + column_html)
 
     html.append('</table>')
     return '\n'.join(html)
@@ -294,14 +433,6 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
       return '<td>{time}</td><td>{value}</td>'.format(
           time=millis_to_time(point['t']), value=point['v'])
 
-      td_html = '<td colspan=2><table>'
-      for point in data_points:
-        td_html += '<tr><td>{time}</td><td>{value}</td></tr>'.format(
-            time=millis_to_time(point['t']),
-            value=point['v'])
-      td_html += '</tr></table></td>'
-      return td_html
-
   def data_points_to_text(self, data_points):
     text = []
     for point in data_points:
@@ -333,8 +464,6 @@ class ShowCurrentMetricsHandler(BaseSpectatorCommandHandler):
     return '\n\n'.join(lines)
 
   def service_map_to_html(self, service_map, params=None):
-    column_headers_html = ('<tr><th>Service</th><th>Key</th><th>Tags</th>'
-                           '<th>Timestamp</th><th>Value</th></tr>')
     result = ['<table>',
               '<tr><th>Service</th><th>Metric</th>'
               '<th>Timestamp</th><th>Values</th><th>Labels</th></tr>']

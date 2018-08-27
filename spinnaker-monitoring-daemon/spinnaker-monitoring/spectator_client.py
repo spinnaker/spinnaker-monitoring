@@ -121,8 +121,6 @@ class SpectatorClient(object):
 
   @staticmethod
   def add_standard_parser_arguments(parser):
-    parser.add_argument('--prototype_path', default='',
-                        help='Optional filter to restrict metrics of interest.')
     parser.add_argument('--metric_filter_dir', default='',
                         help='Optional filter to restrict metrics of interest.')
     parser.add_argument(
@@ -138,15 +136,9 @@ class SpectatorClient(object):
                              ' metrics from.')
 
   def __init__(self, options):
-    self.__prototype = None
     self.__default_scan_params = {'tagNameRegex': '.*'}
     self.__previous_scan_lock = threading.Lock()
     self.__previous_scan = {} if options.get('log_metric_diff') else None
-
-    if options['prototype_path']:
-      # pylint: disable=invalid-name
-      with open(options['prototype_path']) as fd:
-        self.__prototype = json.JSONDecoder().decode(fd.read())
 
     self.__filter_dir = options['metric_filter_dir']
     if self.__filter_dir:
@@ -292,12 +284,6 @@ class SpectatorClient(object):
         if host in ['localhost', '127.0.0.1', None, '']
         else host)
 
-    if self.__prototype:
-      logging.warn('--prototype_path is deprecated,.'
-                   ' Please migrate to --metric_filter_dir.')
-      spectator_response = self.filter_metrics(
-          spectator_response, self.__prototype)
-
     filtered_metrics = self.filter_response(
         service, base_url, spectator_response)
 
@@ -379,60 +365,6 @@ class SpectatorClient(object):
         metric_filter = self.determine_service_metric_filter(service)
 
     return metric_filter(spectator_response['metrics'])
-
-  def filter_metrics(self, instance, prototype):
-    """Filter metrics entries in |instance| to those that match |prototype|.
-
-    Only the names and tags are checked. The instance must contain a
-    tag binding found in the prototype, but may also contain additional tags.
-    The prototype is the same format as the json of the metrics returned.
-
-    DEPRECATED -- use MetricFilter instead
-    """
-    filtered = {}
-
-    metrics = instance.get('metrics') or {}
-    for key, expect in prototype.get('metrics', {}).items():
-      got = metrics.get(key)
-      if not got:
-        continue
-      expect_values = expect.get('values')
-      if not expect_values:
-        filtered[key] = got
-        continue
-
-      expect_tags = [elem.get('tags') for elem in expect_values]
-
-      # Clone the dict because we are going to modify it to remove values
-      # we dont care about
-      keep_values = []
-      def have_tags(expect_tags, got_tags):
-        for wanted_set in expect_tags:
-          # pylint: disable=invalid-name
-          ok = True
-          for want in wanted_set:
-            if want not in got_tags:
-              ok = False
-              break
-          if ok:
-            return True
-
-        return expect_tags == []
-
-      for got_value in got.get('values', []):
-        got_tags = got_value.get('tags')
-        if have_tags(expect_tags, got_tags):
-          keep_values.append(got_value)
-      if not keep_values:
-        continue
-
-      keep = dict(got)
-      keep['values'] = keep_values
-      filtered[key] = keep
-
-    result = dict(instance)
-    result['metrics'] = filtered
-    return result
 
   def scan_by_service(self, service_catalog, params=None):
     result = {}

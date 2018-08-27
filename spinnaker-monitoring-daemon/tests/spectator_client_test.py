@@ -236,8 +236,7 @@ class SpectatorClientTest(unittest.TestCase):
     with open(metric_path, 'w') as fd:
       fd.write(yaml.safe_dump(spec))
 
-    options = {'prototype_path': None,
-               'host': TEST_HOST,
+    options = {'host': TEST_HOST,
                'metric_filter_dir': temp_dir}
     test_spectator = TestableSpectatorClient(options)
 
@@ -521,33 +520,6 @@ class SpectatorClientTest(unittest.TestCase):
         expect[key] = {'gate': [value]}
 
     self.assertEqual(expect, result)
-
-  def test_filter_name(self):
-    prototype = {'metrics': {'tasks': {}}}
-    expect = dict(CLOUDDRIVER_RESPONSE_OBJ)
-    expect['metrics'] = {
-        'tasks': CLOUDDRIVER_RESPONSE_OBJ['metrics']['tasks']
-    }
-    got = self.spectator.filter_metrics(CLOUDDRIVER_RESPONSE_OBJ, prototype)
-    self.assertEqual(expect, got)
-
-  def test_filter_tag(self):
-    prototype = {
-      'metrics': {
-        'jvm.buffer.memoryUsed': {
-          'values': [{
-            'tags': [{'key': 'id', 'value': 'direct'}]
-            }]
-          }
-        }
-      }
-
-    metric = dict(CLOUDDRIVER_RESPONSE_OBJ['metrics']['jvm.buffer.memoryUsed'])
-    metric['values'] = [metric['values'][1]]  # Keep just the one tag set value.
-    expect = dict(CLOUDDRIVER_RESPONSE_OBJ)
-    expect['metrics'] = {'jvm.buffer.memoryUsed': metric}
-    got = self.spectator.filter_metrics(CLOUDDRIVER_RESPONSE_OBJ, prototype)
-    self.assertEqual(expect, got)
 
 
 if __name__ == '__main__':

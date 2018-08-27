@@ -1133,21 +1133,6 @@
         }
       }, 
       "title": "Google Operation Waits by Phase"
-    }, 
-    {
-      "definition": {
-        "viz": "timeseries", 
-        "requests": [
-          {
-            "q": "avg:clouddriver.spectator.datapoints{*}, avg:echo.spectator.datapoints{*}, avg:fiat.spectator.datapoints{*}, avg:front50.spectator.datapoints{*}, avg:gate.spectator.datapoints{*}, avg:orca.spectator.datapoints{*}, avg:rosco.spectator.datapoints{*}", 
-            "aggregator": "avg", 
-            "conditional_formats": [], 
-            "type": "bars"
-          }
-        ], 
-        "autoscale": true
-      }, 
-      "title": "Spectator Time Series Streams"
     }
   ], 
   "description": "Contains graphs of various metrics within Spinnaker to illustrate what is available.", 

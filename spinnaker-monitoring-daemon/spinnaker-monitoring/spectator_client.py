@@ -134,6 +134,9 @@ class SpectatorClient(object):
                         help='The directory containing the *.yml files'
                              ' specifying each of the URLs to collect'
                              ' metrics from.')
+    parser.add_argument('--disable_metric_filter',
+                        default=False, action='store_true',
+                        help='Dont use configured metric filter.')
 
   def __init__(self, options):
     self.__default_scan_params = {'tagNameRegex': '.*'}
@@ -275,7 +278,7 @@ class SpectatorClient(object):
       self.__log_scan_diff(host, port + 1012,
                            spectator_response.get('metrics', {}))
     except:
-      extype, exvalue, ignore_tb = sys.exc_info()
+      extype, exvalue, _ = sys.exc_info()
       logging.error(traceback.format_exception_only(extype, exvalue))
 
     spectator_response['__port'] = port
@@ -284,8 +287,11 @@ class SpectatorClient(object):
         if host in ['localhost', '127.0.0.1', None, '']
         else host)
 
-    filtered_metrics = self.filter_response(
-        service, base_url, spectator_response)
+    if str(params.get('disable_metric_filter', False)).lower() == 'true':
+      filtered_metrics = spectator_response['metrics']
+    else:
+      filtered_metrics = self.filter_response(
+          service, base_url, spectator_response)
 
     # NOTE: 20180614
     # There have been occasional bugs in spinnaker
@@ -306,8 +312,10 @@ class SpectatorClient(object):
         # This will convert NaN or Inf into a float
         for elem in values_list['values']:
           if elem['v'] == 'NaN':
-            logging.warn('Removing illegal NaN from "%s.%s"', service, metric_name)
-            values_list['values'] = [e for e in values_list['values'] if e['v'] != 'NaN']
+            logging.warn('Removing illegal NaN from "%s.%s"',
+                         service, metric_name)
+            values_list['values'] = [e for e in values_list['values']
+                                     if e['v'] != 'NaN']
             if not values_list['values']:
               empty_value_list_indexes.append(index)
             break
@@ -348,7 +356,7 @@ class SpectatorClient(object):
     self.__service_metric_filter[service] = metric_filter
     return metric_filter
 
-  def filter_response(self, service, base_url, spectator_response):
+  def determine_response_filter(self, service, base_url, spectator_response):
     response_start_time = spectator_response['startTime']
     metric_filter, start_time = self.__base_url_metric_filter.get(
         base_url, (None, None))
@@ -363,7 +371,11 @@ class SpectatorClient(object):
                                                    response_start_time)
       else:
         metric_filter = self.determine_service_metric_filter(service)
+    return metric_filter
 
+  def filter_response(self, service, base_url, spectator_response):
+    metric_filter = self.determine_response_filter(
+        service, base_url, spectator_response)
     return metric_filter(spectator_response['metrics'])
 
   def scan_by_service(self, service_catalog, params=None):

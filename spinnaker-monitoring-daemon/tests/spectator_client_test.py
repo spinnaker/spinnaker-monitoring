@@ -209,11 +209,6 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
-    expect['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
@@ -253,11 +248,6 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
-    expect['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 1}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
     del expect['metrics']['jvm.buffer.memoryUsed']
     del expect['metrics']['jvm.gc.maxDataSize']
 
@@ -306,11 +296,6 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
-    expect['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
@@ -334,11 +319,6 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = 7002
-    expect['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
@@ -360,11 +340,6 @@ class SpectatorClientTest(unittest.TestCase):
     expect_one = copy.deepcopy(one_response)
     expect_one['__host'] = 'firsthost'
     expect_one['__port'] = 7002
-    expect_one['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
 
     url_two = 'http://SecondHost:7002/spectator/metrics'
     two_response = dict(one_response)
@@ -402,21 +377,12 @@ class SpectatorClientTest(unittest.TestCase):
     expect_clouddriver = copy.deepcopy(clouddriver_response)
     expect_clouddriver['__host'] = TEST_HOST
     expect_clouddriver['__port'] = 7002
-    expect_clouddriver['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]
-    }
 
     gate_url = 'http://{0}:8084/spectator/metrics'.format(TEST_HOST)
     gate_response = GATE_RESPONSE_OBJ
     expect_gate = copy.deepcopy(gate_response)
     expect_gate['__host'] = TEST_HOST
     expect_gate['__port'] = 8084
-    expect_gate['metrics']['spectator.datapoints'] = {
-      'kind': 'Gauge',
-      'values': [{'values': [{'t': int(now_time * 1000), 'v': 4}],
-                  'tags': [{'key': 'success', 'value': 'true'}]}]}
 
     clouddriver_text = json.JSONEncoder(encoding='utf-8').encode(
         clouddriver_response)
@@ -491,7 +457,6 @@ class SpectatorClientTest(unittest.TestCase):
         {'clouddriver': {'metrics_url': [url]}})
     self.assertEquals([(url + self.default_query_params, None)],
                       self.spectator.requests)
-    del response['spectator.datapoints']
     self.assertEqual(expect, response)
 
   @patch('spectator_client.urllib2.urlopen')
@@ -525,7 +490,6 @@ class SpectatorClientTest(unittest.TestCase):
                 (gate_url + '&tagNameRegex=.%2A', None)]),
         sorted(self.spectator.requests))
 
-    del response['spectator.datapoints']
     self.assertEqual(expect, response)
 
   def test_ingest_metrics_base_case(self):

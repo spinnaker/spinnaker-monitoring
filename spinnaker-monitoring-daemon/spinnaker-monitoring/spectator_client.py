@@ -292,18 +292,6 @@ class SpectatorClient(object):
         if host in ['localhost', '127.0.0.1', None, '']
         else host)
 
-    # Add a placeholder for spectator.datapoints.
-    # We'll compute the actual value later, but
-    # inject it here first so it can be filtered on.
-    # if it is filtered out then we dont need to compute it.
-    spectator_response['metrics']['spectator.datapoints'] = {
-        'kind': 'Gauge',
-        'values': [{
-            'tags': [{'key': 'success', 'value': "true"}],
-            'values': [{'v': 0, 't': int(time.time() * 1000)}]
-        }]
-    }
-
     if self.__prototype:
       logging.warn('--prototype_path is deprecated,.'
                    ' Please migrate to --metric_filter_dir.')
@@ -343,12 +331,6 @@ class SpectatorClient(object):
       # This could still leave meters with no metrics.
       while empty_value_list_indexes:
         del meter_values[empty_value_list_indexes.pop()]
-
-    # Now count the datapoints
-    datapoints = filtered_metrics.get('spectator.datapoints')
-    if datapoints:
-      # -1 so this counting all the metrics other than this one counting them.
-      datapoints['values'][0]['values'][0]['v'] = num_metrics - 1
 
     spectator_response['metrics'] = filtered_metrics
     return spectator_response

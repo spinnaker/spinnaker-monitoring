@@ -46,12 +46,10 @@ the gateway debian package. See prometheus.io.
 """
 
 import collections
-import os
 import time
 
 import command_processor
 import spectator_client
-import util
 
 try:
   from prometheus_client import (
@@ -64,14 +62,111 @@ try:
       REGISTRY)
 
   from prometheus_client.exposition import push_to_gateway
-  prometheus_available = True
+  PROMETHEUS_AVAILABLE = True
 except ImportError:
-  prometheus_available = False
+  PROMETHEUS_AVAILABLE = False
 
 
 InstanceRecord = collections.namedtuple(
     'InstanceRecord', ['service', 'netloc', 'tags', 'data'])
 MetricInfo = collections.namedtuple('MetricInfo', ['kind', 'tags', 'records'])
+
+
+class BaseMeterBuilder(object):
+  """Base class for populating prometheus data objects."""
+
+  def __init__(self, family, name, labels, documentation=''):
+    self.__meter = family(name, documentation, labels=labels)
+    self.__labels = labels
+
+    # These might be -1
+    self.__job_tag_index = labels.index('job')
+    self.__instance_tag_index = labels.index('instance')
+
+  def build(self):
+    """Return the prometheus client library object."""
+    return self.__meter
+
+  def add_instance(self, labels, instance):
+    """Add a new datapoint to the prometheus client data object."""
+    # Just use the first value. We arent controlling the timestamp
+    # so multiple values would be meaningless anyway.
+    self.__meter.add_metric(labels=labels, value=instance['values'][0]['v'])
+
+  def add_meter_info(self, info):
+    """Add all the datapoints to the prometheus client data object."""
+
+    # All the Prometheus metrics need to have the same sequence of tags.
+    # However the did not necessarily come this way from Spectator so we
+    # will normalize them. Fortunately it doesnt matter if the tags change
+    # from period to period (call to call). They only need to be consistent
+    # within the individual collection response.
+    label_names = self.__labels
+    for record in info.records:
+      instance = record.data
+      label_values = [''] * len(label_names)
+      for elem in record.tags:
+        index = label_names.index(elem['key'])
+        if index >= 0:
+          label_values[index] = elem['value']
+      if self.__job_tag_index >= 0:
+        label_values[self.__job_tag_index] = record.service
+      if self.__instance_tag_index >= 0:
+        label_values[self.__instance_tag_index] = record.netloc
+
+      self.add_instance(label_values, instance)
+
+
+class CounterBuilder(BaseMeterBuilder):
+  """Populate prometheus client library Counters."""
+  def __init__(self, name, labels):
+    super(CounterBuilder, self).__init__(
+        CounterMetricFamily, name, labels)
+
+
+class GaugeBuilder(BaseMeterBuilder):
+  """Populate prometheus client library Gauges."""
+  def __init__(self, name, labels):
+    super(GaugeBuilder, self).__init__(
+        GaugeMetricFamily, name, labels)
+
+
+class PrometheusMetricsCollection(object):
+  """Manage a collection of prometheus client library data objects."""
+  @property
+  def metrics(self):
+    """Return a list of prometheus client library data objects."""
+    return self.__metrics
+
+  def __init__(self, metalabels):
+    self.__metrics = []
+    self.__metalabels = metalabels
+
+  def add_info(self, service, name, info):
+    """Add a metric from a given service.
+
+    Args:
+       service: [string] The service name.
+       name: [string] The metric name.
+       info: All the scraped values for the metric.
+    """
+    metric_name = '{service}:{name}'.format(
+        service=service, name=name.replace('.', ':'))
+    builder = self.make_metric_builder(metric_name, info)
+    builder.add_meter_info(info)
+    self.__metrics.append(builder.build())
+
+  def make_metric_builder(self, metric_name, info):
+    """Return the type-specific builder for the given metric."""
+    if self.__metalabels:
+      all_tags = list(info.tags)
+      all_tags.extend(self.__metalabels)
+    else:
+      all_tags = info.tags
+
+    if info.kind in ('Counter', 'Timer'):
+      return CounterBuilder(metric_name, all_tags)
+    return GaugeBuilder(metric_name, all_tags)
 
 
 class PrometheusMetricsService(object):
@@ -82,15 +177,18 @@ class PrometheusMetricsService(object):
   """
 
   def __init__(self, options):
-    if not prometheus_available:
+    if not PROMETHEUS_AVAILABLE:
       raise ImportError(
-           'You must "pip install prometheus-client" to get the prometheus client library.')
-    
+          'You must "pip install prometheus-client" to get'
+          ' the prometheus client library.')
+
     self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
-    self.__add_metalabels = options.get(
+
+    add_metalabels = options.get(
         'prometheus_add_source_metalabels',
         options.get('prometheus', {}).get('add_source_metalabels', True))
+    self.__metalabels = {'job', 'instance'} if add_metalabels else {}
 
     self.__push_gateway = options.get('prometheus', {}).get('push_gateway')
     if self.__push_gateway:
@@ -188,44 +286,12 @@ class PrometheusMetricsService(object):
         service_metric_map, self.__collect_instance_info,
         service_to_name_to_info)
 
-    all_members = []
+    metric_collection = PrometheusMetricsCollection(self.__metalabels)
     for service, name_to_info in service_to_name_to_info.items():
       for name, info in name_to_info.items():
-        family = (CounterMetricFamily
-                  if info.kind in ('Counter', 'Timer')
-                  else GaugeMetricFamily)
+        metric_collection.add_info(service, name, info)
 
-        member_name = '{service}:{name}'.format(
-            service=service, name=name.replace('.', ':'))
-
-        tags = list(info.tags)
-        all_tags = list(tags)
-        if self.__add_metalabels:
-          all_tags.extend(['job', 'instance'])
-        member = family(member_name, '', labels=all_tags)
-        all_members.append(member)
-
-        # All the Prometheus metrics need to have the same sequence of tags.
-        # However the did not necessarily come this way from Spectator so we
-        # will normalize them. Fortunately it doesnt matter if the tags change
-        # from period to period (call to call). They only need to be consistent
-        # within the individual collection response.
-        for record in info.records:
-          instance = record.data
-          labels = [''] * len(tags)
-          for elem in record.tags:
-            index = tags.index(elem['key'])
-            if index >= 0:
-              labels[index] = elem['value']
-          if self.__add_metalabels:
-            labels.append(record.service)
-            labels.append(record.netloc)
-
-          # Just use the first value. We arent controlling the timestamp
-          # so multiple values would be meaningless anyway.
-          member.add_metric(labels=labels, value=instance['values'][0]['v'])
-
-    return all_members
+    return metric_collection.metrics
 
 
 class ScrapeHandler(command_processor.CommandHandler):
@@ -247,15 +313,18 @@ class ScrapeHandler(command_processor.CommandHandler):
 
 
 class PrometheusServiceFactory(object):
+  """Factory for injecting prometheus integration."""
+
   def enabled(self, options):
     """Implements server_handlers.MonitorCommandHandler interface."""
     return 'prometheus' in options.get('monitor', {}).get('metric_store', [])
 
   def add_argparser(self, parser):
     """Implements server_handlers.MonitorCommandHandler interface."""
-    parser.add_argument('--prometheus', default=False,
-                        dest='monitor_prometheus', action='store_true',
-                        help='Enable endpoint for Prometheus to poll for metrics.')
+    parser.add_argument(
+        '--prometheus', default=False,
+        dest='monitor_prometheus', action='store_true',
+        help='Enable endpoint for Prometheus to poll for metrics.')
 
     # Client library has its own http server. Not sure what we need to
     # do to hook it into ours so we'll let the client library use its server

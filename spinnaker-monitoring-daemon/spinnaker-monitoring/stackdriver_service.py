@@ -269,9 +269,10 @@ class StackdriverMetricsService(object):
       found.append((self.add_label_and_retry,
                     label, metric_type, batch[ts_index]))
 
-    counter_to_gauge_pattern = (r'timeSeries\[(\d+?)\]\.metricKind'
-                                r' had an invalid value of \"(CUMULATIVE|GAUGE)\"'
-                                r'.* must be (CUMULATIVE|GAUGE).')
+    counter_to_gauge_pattern = (
+        r'timeSeries\[(\d+?)\]\.metricKind'
+        r' had an invalid value of \"(CUMULATIVE|GAUGE)\"'
+        r'.* must be (CUMULATIVE|GAUGE).')
     for match in re.finditer(counter_to_gauge_pattern, message):
       ts_index = int(match.group(1))
       metric = batch[ts_index]['metric']
@@ -401,13 +402,15 @@ class StackdriverMetricsService(object):
                'value': {'doubleValue': e['v']}}
               for e in instance['values']]
 
-    if metric_metadata['kind'] in ['Counter', 'Timer']:
-      start_time = self.millis_to_time(service_metadata.get('startTime', 0))
+    primitive_kind = spectator_client.determine_primitive_kind(
+        metric_metadata['kind'])
+    if primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND:
+      metric_kind = 'GAUGE'
+    else:
       metric_kind = 'CUMULATIVE'
+      start_time = self.millis_to_time(service_metadata.get('startTime', 0))
       for elem in points:
         elem['interval']['startTime'] = start_time
-    else:
-      metric_kind = 'GAUGE'
 
     result.append({
         'metric': metric,

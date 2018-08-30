@@ -39,6 +39,22 @@ DEFAULT_FILTER_DIR = '/opt/spinnaker-monitoring/filters'
 _cached_registry_catalog = None
 _cached_registry_timestamp = None
 
+# Spinnaker has lots of different kinds, but they all boil down
+# to either a gauge or type of counter. Ultimately when these are
+# written to an external storage system, the adaptor will want to
+# know if it is dealing with a counter or a gauge.
+COUNTER_PRIMITIVE_KIND = 'Counter'
+GAUGE_PRIMITIVE_KIND = 'Gauge'
+
+def determine_primitive_kind(kind):
+  if kind in (
+      'Counter', 'Timer', 'Distribution', 'DistributionSummary',
+      'PercentileCounter', 'PercentileTimer',
+      'PercentileDistributionSummary'
+  ):
+    return COUNTER_PRIMITIVE_KIND
+  return GAUGE_PRIMITIVE_KIND
+
 
 def get_source_catalog(options):
   """Returns a dictionary of metric source name to configuration document.
@@ -104,15 +120,12 @@ def foreach_metric_in_service_map(
 
 
 def normalize_name_and_tags(name, metric_instance, metric_metadata):
-  tags = metric_instance.get('tags', [])
-  is_timer = metric_metadata['kind'] == 'Timer'
-  if is_timer:
-    tags = list(tags)
-    for index, tag in enumerate(tags):
-      if tag['key'] == 'statistic':
-        name = name + '__{0}'.format(tag['value'])
-        del tags[index]
-        break
+  tags = list(metric_instance.get('tags', []))
+  for index, tag in enumerate(tags):
+    if tag['key'] == 'statistic':
+      name = name + '__{0}'.format(tag['value'])
+      del tags[index]
+      break
   return name, tags
 
 

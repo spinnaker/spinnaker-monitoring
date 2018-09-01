@@ -31,9 +31,9 @@ try:
   from googleapiclient.errors import HttpError
   from oauth2client.client import GoogleCredentials
   from oauth2client.service_account import ServiceAccountCredentials
-  stackdriver_available = True
+  STACKDRIVER_AVAILABLE = True
 except ImportError:
-  stackdriver_available = False
+  STACKDRIVER_AVAILABLE = False
 
 
 # This doesnt belong here, but this library insists on logging
@@ -100,6 +100,9 @@ class StackdriverMetricsService(object):
       return self.__monitored_resource
 
     if self.__monitored_resource is None:
+      self.__monitored_resource = self.__gke_monitored_resource_or_none()
+
+    if self.__monitored_resource is None:
       self.__monitored_resource = self.__google_monitored_resource_or_none()
 
     if self.__monitored_resource is None:
@@ -153,6 +156,121 @@ class StackdriverMetricsService(object):
       }
     except IOError:
       return None
+
+  def __in_docker(self):
+    """Determine if we are in a docker container or not."""
+    return os.path.exists('/.dockerenv')
+
+  def __container_from_pod(self, pod_id):
+    """Determine a standard spinnaker container name from a given pod name.
+
+    Standard containers are "spin-<service>" and pods are <container>-.
+    """
+    prefix = 'spin-'
+    dash = pod_id.find('-', len(prefix))
+    if not (dash > len(prefix) and pod_id.startswith(prefix)):
+      logging.error('Cannot determine container_name from pod_id=%s',
+                    pod_id)
+      return None
+    return pod_id[:dash]
+
+  def __k8s_monitored_resource_or_none(self):
+    """If deployed in a Kubernetes, return the monitored resource, else None."""
+    if not self.__in_docker():
+      return None
+
+    cluster_name = self.__stackdriver_options.get(
+        'cluster_name', os.environ.get('CLUSTER_NAME'))
+    container_name = self.__stackdriver_options.get(
+        'container_name', os.environ.get('CONTIANER_NAME'))
+    location = self.__stackdriver_options.get(
+        'location', os.environ.get('LOCATION'))
+    namespace_id = self.__stackdriver_options.get(
+        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
+    pod_id = self.__stackdriver_options.get(
+        'pod_id', os.environ.get('POD_ID'))
+
+    def check(value, name):
+      if not value:
+        logging.error('Cannot determine Kubernetes %s attribute', name)
+        raise ValueError()
+
+    try:
+      if not container_name:
+        container_name = self.__container_from_pod(pod_id)
+      check(cluster_name, 'CLUSTER_NAME')
+      check(container_name, 'CONTAINER_NAME')
+      check(location, 'LOCATION')
+      check(pod_id, 'POD_ID')
+    except (IOError, KeyError, ValueError):
+      return None
+
+    return {
+        'type': 'k8s_container',
+        'labels': {
+            'cluster_name': cluster_name,
+            'container_name': container_name,
+            'location': location,
+            'namespace_name': namespace_id,
+            'pod_name': pod_id,
+            'project_id': self.__project
+        }
+    }
+
+  def __gke_monitored_resource_or_none(self):
+    """If deployed on GKE, return the monitored resource, else None."""
+    if not self.__in_docker():
+      return None
+
+    resource = self.__google_monitored_resource_or_none()
+    if resource is None:
+      return None
+
+    cluster_name = self.__stackdriver_options.get(
+        'cluster_name', os.environ.get('CLUSTER_NAME'))
+    container_name = self.__stackdriver_options.get(
+        'container_name', os.environ.get('CONTIANER_NAME'))
+    namespace_id = self.__stackdriver_options.get(
+        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
+    pod_id = self.__stackdriver_options.get(
+        'pod_id', os.environ.get('POD_ID'))
+
+    try:
+      def get_kube_env():
+        kube_env = {}
+        payload = get_google_metadata('instance/attributes/kube-env')
+        for line in payload.split('\n'):
+          colon = line.find(':')
+          if colon < 0:
+            continue
+          kube_env[line[:colon]] = line[colon + 1:]
+        return kube_env
+
+      if not cluster_name:
+        cluster_name = get_kube_env()['CLUSTER_NAME']
+
+      if not pod_id:
+        pod_id = os.environ['HOSTNAME']
+
+      if not container_name:
+        container_name = self.__container_from_pod(pod_id)
+
+    except (IOError, KeyError, ValueError):
+      return None
+
+    google_labels = resource['labels']
+    return {
+        'type': 'gke_container',
+        'labels': {
+            'cluster_name': cluster_name,
+            'container_name': container_name,
+            'instance_id': google_labels['instance_id'],
+            'namespace_id': namespace_id,
+            'pod_id': pod_id,
+            'project_id': google_labels['project_id'],
+            'zone': google_labels['zone']
+        }
+    }
 
   def __init__(self, stub_factory, options):
     """Constructor.
@@ -424,7 +542,7 @@ class StackdriverMetricsService(object):
 
 def make_stub(options):
   """Helper function for making a stub to talk to service."""
-  if not stackdriver_available:
+  if not STACKDRIVER_AVAILABLE:
     raise ImportError(
         'You must "pip install google-api-python-client oauth2client"'
         ' to get the stackdriver client library.')

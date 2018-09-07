@@ -285,8 +285,17 @@ class SpectatorClient(object):
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
     response = urllib2.urlopen(self.create_request(url, authorization))
 
-    spectator_response = json.JSONDecoder(encoding='utf-8').decode(
-        response.read())
+    json_text = response.read()
+    try:
+      spectator_response = json.JSONDecoder(encoding='utf-8').decode(json_text)
+    except ValueError:
+      if len(json_text) > 200:
+        snippet = '%s ... %s' % (json_text[:100], json_text[:-100])
+      else:
+        snippet = json_text
+      logging.error('Invalid JSON len=%d excerpt:\n%s', len(json_text), snippet)
+      raise
+
     try:
       self.__log_scan_diff(host, port + 1012,
                            spectator_response.get('metrics', {}))

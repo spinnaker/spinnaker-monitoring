@@ -185,7 +185,7 @@ class MonitorCommandHandler(WebserverCommandHandler):
                            for service in metric_service_list
                            if 'publish_metrics' in dir(service)]
 
-    logging.info('Starting Monitor')
+    logging.info('Starting Monitor with period=%d', period)
     time_offset = int(time.time())
     while True:
       if not publishing_services:

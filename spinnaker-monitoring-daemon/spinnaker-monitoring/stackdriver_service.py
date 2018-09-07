@@ -147,7 +147,8 @@ class StackdriverMetricsService(object):
           'type': 'gce_instance',
           'labels': {
               'zone': zone,
-              'instance_id': str(instance_id)
+              'instance_id': str(instance_id),
+              'project_id': project
           }
       }
     except IOError:

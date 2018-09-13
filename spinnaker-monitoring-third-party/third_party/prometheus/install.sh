@@ -26,11 +26,14 @@ DASHBOARDS=true
 # Variables for Server Configuration
 # explicit prometheus versions because its not available with apt-get
 # grafana will be latest version in apt-get
-PROMETHEUS_VERSION=prometheus-2.2.1.linux-amd64
-NODE_EXPORTER_VERSION=node_exporter-0.15.2.linux-amd64
-PUSHGATEWAY_VERSION=pushgateway-0.4.0.linux-amd64
+PROMETHEUS_VERSION=prometheus-2.6.0.linux-amd64
+NODE_EXPORTER_VERSION=node_exporter-0.17.0.linux-amd64
+PUSHGATEWAY_VERSION=pushgateway-0.7.0.linux-amd64
+PROMETHEUS_HOST=${PROMETHEUS_HOST:-localhost}
 PROMETHEUS_PORT=${PROMETHEUS_PORT:-9090}
 GRAFANA_PORT=${GRAFANA_PORT:-3000}
+GRAFANA_HOST=${GRAFANA_HOST:-localhost}
+
 GCE_CONFIG=false
 OVERWRITE=false
 
@@ -163,7 +166,7 @@ rule_files:
 scrape_configs:
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+      - targets: ['$PROMETHEUS_HOST:$PROMETHEUS_PORT']
 
 EOF
 )
@@ -328,7 +331,7 @@ function configure_gateway_prometheus() {
   - job_name: 'pushgateway'
     honor_labels: true
     static_configs:
-      - targets: ['localhost:9091']
+      - targets: ['$PROMETHEUS_HOST:9091']
 EOF
 )
 
@@ -471,9 +474,9 @@ function install_grafana() {
 
 function add_grafana_userdata() {
   echo "Adding datasource"
-  PAYLOAD="{'name':'Spinnaker','type':'prometheus','url':'http://localhost:${PROMETHEUS_PORT}','access':'direct','isDefault':true}"
+  PAYLOAD="{'name':'Spinnaker','type':'prometheus','url':'http://${PROMETHEUS_HOST}:${PROMETHEUS_PORT}','access':'direct','isDefault':true}"
   curl -s -S -u "$GRAFANA_USER:$GRAFANA_PASSWORD" \
-       http://localhost:${GRAFANA_PORT}/api/datasources \
+       http://$GRAFANA_HOST:${GRAFANA_PORT}/api/datasources \
        -H "Content-Type: application/json" \
        -X POST \
        -d "${PAYLOAD//\'/\"}"
@@ -486,7 +489,7 @@ function add_grafana_userdata() {
     temp_file=$(mktemp)
     echo "{ \"dashboard\": $x, \"overwrite\": $OVERWRITE }" > $temp_file
     curl -s -S -u "$GRAFANA_USER:$GRAFANA_PASSWORD" \
-         http://localhost:${GRAFANA_PORT}/api/dashboards/import \
+         http://$GRAFANA_HOST:${GRAFANA_PORT}/api/dashboards/import \
          -H "Content-Type: application/json" \
          -X POST \
          -d @${temp_file}
@@ -541,7 +544,7 @@ fi
 
 if $DASHBOARDS; then
   TRIES=0
-  until nc -z localhost $GRAFANA_PORT || [[ $TRIES -gt 5 ]]; do
+  until nc -z $GRAFANA_HOST $GRAFANA_PORT || [[ $TRIES -gt 5 ]]; do
     sleep 1
     let TRIES+=1
   done

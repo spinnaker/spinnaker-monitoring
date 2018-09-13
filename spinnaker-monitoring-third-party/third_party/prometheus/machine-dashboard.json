@@ -81,8 +81,8 @@
           "steppedLine": false,
           "targets": [
             {
-              "EXPR": "sum($Function(node_cpu{mode!=\"idle\",instance~\"$Instance\"}[$SamplePeriod])) / sum($Function(node_cpu[$SamplePeriod])) ",
-              "expr": "sum($Function(node_cpu{mode!=\"idle\"}[$SamplePeriod])) by (job) / sum($Function(node_cpu[$SamplePeriod])) by (job)",
+              "EXPR": "sum($Function(node_cpu_seconds_total{mode!=\"idle\",instance~\"$Instance\"}[$SamplePeriod])) / sum($Function(node_cpu_seconds_total[$SamplePeriod])) ",
+              "expr": "sum($Function(node_cpu_seconds_total{mode!=\"idle\"}[$SamplePeriod])) by (job) / sum($Function(node_cpu[$SamplePeriod])) by (job)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -93,7 +93,7 @@
               "step": 10
             },
             {
-              "expr": "sum($Function(node_cpu{mode!=\"idle\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum($Function(node_cpu{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(node_cpu_seconds_total{mode!=\"idle\",instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum($Function(node_cpu_seconds_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -171,7 +171,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum((node_memory_MemTotal{instance=~\"$Instance\"}  - node_memory_MemAvailable{instance=~\"$Instance\"}) / node_memory_MemTotal{instance=~\"$Instance\"}) by (instance)",
+              "expr": "sum((node_memory_MemTotal_bytes{instance=~\"$Instance\"}  - node_memory_MemAvailable_bytes{instance=~\"$Instance\"}) / node_memory_MemTotal_bytes{instance=~\"$Instance\"}) by (instance)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -259,7 +259,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum((node_filesystem_size{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"} -\n node_filesystem_avail{mountpoint!~\"/var/lib/docker.*/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) / node_filesystem_size{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device) , \"device\", \"$1\", \"device\", \"/dev(.*)\")",
+              "expr": "label_replace(sum((node_filesystem_size_bytes{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"} -\n node_filesystem_avail_bytes{mountpoint!~\"/var/lib/docker.*/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) / node_filesystem_size_bytes{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device) , \"device\", \"$1\", \"device\", \"/dev(.*)\")",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -357,7 +357,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_receive_bytes_total{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -368,7 +368,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_transmit_bytes_total{device=~\"eth.*\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -453,7 +453,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_network_receive_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_receive_bytes_total{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -463,7 +463,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(node_network_transmit_bytes{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_transmit_bytes_total{device=\"lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -559,7 +559,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_disk_bytes_written{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_disk_written_bytes_total{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -569,7 +569,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(node_disk_bytes_read{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_disk_read_bytes_total{instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{device}}/READ",
@@ -653,7 +653,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(node_filesystem_free{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device), \"device\", \"$1\", \"device\", \"/dev(.*)\")",
+              "expr": "label_replace(sum(node_filesystem_free_bytes{mountpoint!~\"/var/lib/docker.*|/run.*\",device=~\"/dev/.*\",instance=~\"$Instance\"}) by (instance, device), \"device\", \"$1\", \"device\", \"/dev(.*)\")",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -753,7 +753,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(node_memory_MemFree{instance=~\"$Instance\"})",
+              "expr": "sum(node_memory_MemFree_bytes{instance=~\"$Instance\"})",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -764,7 +764,7 @@
               "step": 4
             },
             {
-              "expr": "sum(node_memory_Committed_AS{instance=~\"$Instance\"})",
+              "expr": "sum(node_memory_Committed_AS_bytes{instance=~\"$Instance\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -774,7 +774,7 @@
               "step": 4
             },
             {
-              "expr": "sum(node_memory_Dirty{instance=~\"$Instance\"})",
+              "expr": "sum(node_memory_Dirty_bytes{instance=~\"$Instance\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -784,7 +784,7 @@
               "step": 4
             },
             {
-              "expr": "sum(node_memory_MemTotal{instance=~\"$Instance\"})",
+              "expr": "sum(node_memory_MemTotal_bytes{instance=~\"$Instance\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -794,7 +794,7 @@
               "step": 4
             },
             {
-              "expr": "sum(node_memory_MemAvailable{instance=~\"$Instance\"})",
+              "expr": "sum(node_memory_MemAvailable_bytes{instance=~\"$Instance\"})",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -872,7 +872,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_network_receive_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_receive_bytes_total{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -883,7 +883,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(node_network_transmit_bytes{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
+              "expr": "sum($Function(node_network_transmit_bytes_total{device=~\"eth.*|lo\",instance=~\"$Instance\"}[$SamplePeriod])) by (device)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -974,7 +974,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu) / sum($Function(node_cpu{instance=~\"$Instance\"}[$SamplePeriod])) by (cpu)",
+              "expr": "sum($Function(node_cpu_seconds_total{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu) / sum($Function(node_cpu_seconds_total{instance=~\"$Instance\"}[$SamplePeriod])) by (cpu)",
               "format": "time_series",
               "hide": true,
               "interval": "",
@@ -985,7 +985,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu)",
+              "expr": "sum($Function(node_cpu_seconds_total{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (cpu)",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1064,7 +1064,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(node_cpu{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (mode) ",
+              "expr": "sum($Function(node_cpu_seconds_total{instance=~\"$Instance\",mode!=\"idle\"}[$SamplePeriod])) by (mode) ",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -1135,7 +1135,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "label_values(node_cpu, instance)",
+        "query": "label_values(node_cpu_seconds_total, instance)",
         "refresh": 2,
         "regex": "",
         "sort": 1,
@@ -1262,6 +1262,6 @@
     ]
   },
   "timezone": "browser",
-  "title": "Machine Stats",
-  "version": 4
+  "title": "VM Platform Stats",
+  "version": 5
 }

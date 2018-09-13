@@ -21,6 +21,8 @@ import argparse
 import logging
 import logging.config
 import os
+import signal
+import sys
 
 import command_processor
 import datadog_service
@@ -36,6 +38,14 @@ import util
 
 
 DEFAULT_CONFIG_PATH = '/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml'
+
+
+def handle_sigterm(signalnum, stackframe):
+  logging.info('Shutting down from SIGTERM')
+  sys.exit(0)
+
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 
 def init_logging(options):

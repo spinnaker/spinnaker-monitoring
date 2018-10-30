@@ -243,7 +243,7 @@ class StackdriverMetricsService(object):
           colon = line.find(':')
           if colon < 0:
             continue
-          kube_env[line[:colon]] = line[colon + 1:]
+          kube_env[line[:colon]] = line[colon + 1:].strip()
         return kube_env
 
       if not cluster_name:

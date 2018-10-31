@@ -616,7 +616,7 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
           <code>clear_all=true</code>.
           <p/>
           <a href="{path}?clear_all=true">Yes, delete everything!</a>
-      """)
+      """.format(path=path))
       html_doc = http_server.build_html_document(
           html, title='Missing Parameters')
       request.respond(

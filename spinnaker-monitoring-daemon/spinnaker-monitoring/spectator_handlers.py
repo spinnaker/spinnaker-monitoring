@@ -96,13 +96,17 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     super(ExploreCustomDescriptorsHandler, self).__init__(*pos_args, **kwargs)
 
   def __get_type_and_tag_map_and_active_services(self, catalog, options):
-    spectator = self.make_spectator_client(options)
-    self.__spectator = spectator
+    self.__filtering_spectator = self.make_spectator_client(options)
 
     scan_options = dict(options)
     scan_options['disable_metric_filter'] = True
-    self.__service_map = spectator.scan_by_service(catalog, params=scan_options)
-    type_map = spectator.service_map_to_type_map(self.__service_map)
+    raw_spectator = self.make_spectator_client(scan_options)
+
+    self.__spectator = raw_spectator
+    self.__service_map = raw_spectator.scan_by_service(
+        catalog, params=scan_options)
+
+    type_map = raw_spectator.service_map_to_type_map(self.__service_map)
     service_tag_map, active_services = self.to_service_tag_map(type_map)
     return type_map, service_tag_map, active_services
 
@@ -143,7 +147,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
       tagged_data = values.get('values', [])
       for tagged_point in tagged_data:
         tag_map = {tag['key']: tag['value']
-                   for tag in tagged_point.get('tags')}
+                   for tag in tagged_point.get('tags', [])}
         if not tag_map:
           tag_map = {None: None}
         if key not in service_tag_map:
@@ -186,12 +190,15 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
 
   def __determine_filtered_meters(self, service_name):
     """Return set of filtered [discarded] meter names within service."""
-    filter = self.__spectator.determine_service_metric_filter(service_name)
+    processor = self.__spectator.response_processor
+
+    params = {}
     missing_keys = set([])
     service_map_list = self.__service_map[service_name]
     for replica in service_map_list:
       metrics = replica['metrics']
-      filtered = filter(metrics)
+      filtered = processor.extract_spectator_response_metrics(
+          params, service_name, replica)
       all_keys = set(metrics.keys())
       filtered_keys = set(filtered.keys())
       missing_keys.update(all_keys - filtered_keys)
@@ -216,8 +223,9 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
       row_html.append(
           '<td>{values}</td>'.format(
               values=', '.join(
-                  ['<A{css} href="/explore?tagValueRegex={v}">{v}</A>'.format(
-                      css=css, v=value)
+                  ['<A{css} href="/explore?tagValueRegex={v}">{d}</A>'.format(
+                      css=css, v=value,
+                      d=value if value != '' else '<i>empty</i>')
                    for value in sorted(service_labels)]))
       )
     return ''.join(row_html)
@@ -322,7 +330,19 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     html = ['<table border=1>']
     html.extend(header_html)
 
-    for meter_name, service_tag_map in sorted(service_tag_map.items()):
+    for meter_name, meter_service_tag_map in sorted(service_tag_map.items()):
+      html.append(
+        self.__to_row_html(
+            params, columns, meter_name,
+            type_map, meter_service_tag_map,
+            service_filtered_metrics))
+
+    html.append('</table>')
+    return '\n'.join(html)
+
+  def __to_row_html(self, params, columns, meter_name,
+                    type_map, service_tag_map,
+                    service_filtered_metrics):
       tag_service_map = self.to_tag_service_map(columns, service_tag_map)
       num_labels = len(tag_service_map)
       _, info = type_map[meter_name].items()[0]
@@ -352,10 +372,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
               url=metric_url, meter_name=meter_name,
               kind=kind))
 
-      html.append(''.join(row_html) + column_html)
-
-    html.append('</table>')
-    return '\n'.join(html)
+      return ''.join(row_html) + column_html
 
 
 class TagValue(object):

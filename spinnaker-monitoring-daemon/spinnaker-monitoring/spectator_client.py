@@ -32,12 +32,15 @@ import yaml
 
 from metric_filter import MetricFilter
 
+
 DEFAULT_REGISTRY_DIR = '/opt/spinnaker-monitoring/registry'
 DEFAULT_FILTER_DIR = '/opt/spinnaker-monitoring/filters'
+
 
 # pylint: disable=invalid-name
 _cached_registry_catalog = None
 _cached_registry_timestamp = None
+
 
 # Spinnaker has lots of different kinds, but they all boil down
 # to either a gauge or type of counter. Ultimately when these are
@@ -45,6 +48,69 @@ _cached_registry_timestamp = None
 # know if it is dealing with a counter or a gauge.
 COUNTER_PRIMITIVE_KIND = 'Counter'
 GAUGE_PRIMITIVE_KIND = 'Gauge'
+
+
+class ResponseProcessor(object):
+  def __init__(self, options):
+    self.__disable_filter = options.get('disable_metric_filter', False)
+    self.__filter_dir = options['metric_filter_dir']
+    if self.__filter_dir:
+      logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
+    else:
+      path = os.path.abspath(
+          os.path.join(os.path.dirname(os.path.dirname(__file__)), 'filters'))
+      if os.path.exists(path):
+        self.__filter_dir = path
+        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
+      elif os.path.exists(DEFAULT_FILTER_DIR):
+        self.__filter_dir = DEFAULT_FILTER_DIR
+        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
+    # responses are filtered with only highest precedence filter found.
+    #   service comes from daemon configuration for instrumented service
+    #   default comes from daemon global config
+    self.__service_metric_filter = {}
+    self.__default_metric_filter = lambda all: all
+    self.__default_metric_filter = self.determine_service_metric_filter(
+        'default')
+
+  def extract_spectator_response_metrics(
+      self, params, service, original_response):
+    if str(params.get('disable_metric_filter', False)).lower() != 'true':
+      result_metrics = self.__filter_response(service, original_response)
+    else:
+      result_metrics = original_response['metrics']
+
+    return result_metrics
+
+  def determine_service_metric_filter(self, service):
+    metric_filter = self.__service_metric_filter.get(service)
+    if metric_filter is not None:
+      return metric_filter
+
+    metric_filter = self.__default_metric_filter
+    if self.__filter_dir:
+      path = os.path.join(self.__filter_dir, service + '.yml')
+      if os.path.exists(path):
+        # pylint: disable=invalid-name
+        with open(path) as fd:
+          whole_spec = yaml.safe_load(fd)
+          filter_spec = whole_spec.get('monitoring', {}).get('filters')
+          if self.__disable_filter:
+            logging.info('Filtering is disabled -- no filter on %s.', service)
+          elif filter_spec is not None:
+            logging.info('Loading metric filter from "%s"', path)
+            metric_filter = MetricFilter(service, filter_spec)
+          else:
+            logging.info('"%s" has no monitoring.filters entry -- ignoring',
+                         path)
+
+    self.__service_metric_filter[service] = metric_filter
+    return metric_filter
+
+  def __filter_response(self, service, spectator_response):
+    metric_filter = self.determine_service_metric_filter(service)
+    return metric_filter(spectator_response['metrics'])
+
 
 def determine_primitive_kind(kind):
   if kind in (
@@ -132,6 +198,10 @@ def normalize_name_and_tags(name, metric_instance, metric_metadata):
 class SpectatorClient(object):
   """Helper class for pulling data from Spectator servers."""
 
+  @property
+  def response_processor(self):
+    return self.__response_processor
+
   @staticmethod
   def add_standard_parser_arguments(parser):
     parser.add_argument('--metric_filter_dir', default='',
@@ -152,32 +222,10 @@ class SpectatorClient(object):
                         help='Dont use configured metric filter.')
 
   def __init__(self, options):
+    self.__response_processor = ResponseProcessor(options)
     self.__default_scan_params = {'tagNameRegex': '.*'}
     self.__previous_scan_lock = threading.Lock()
     self.__previous_scan = {} if options.get('log_metric_diff') else None
-
-    self.__filter_dir = options['metric_filter_dir']
-    if self.__filter_dir:
-      logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
-    else:
-      path = os.path.abspath(
-          os.path.join(os.path.dirname(os.path.dirname(__file__)), 'filters'))
-      if os.path.exists(path):
-        self.__filter_dir = path
-        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
-      elif os.path.exists(DEFAULT_FILTER_DIR):
-        self.__filter_dir = DEFAULT_FILTER_DIR
-        logging.info('Using implicit --metric_filter_dir=%s', self.__filter_dir)
-
-    # responses are filtered with only highest precedence filter found.
-    #   base_url comes from instrumented process itself
-    #   service comes from daemon configuration for instrumented service
-    #   default comes from daemon global config
-    self.__base_url_metric_filter = {}  # highest precedence
-    self.__service_metric_filter = {}   # next precedence
-    self.__default_metric_filter = lambda all: all
-    self.__default_metric_filter = self.determine_service_metric_filter(
-        'default')
 
   def __log_scan_diff(self, host, port, metrics):
     """Diff this scan with the previous one for debugging purposes."""
@@ -309,11 +357,10 @@ class SpectatorClient(object):
         if host in ['localhost', '127.0.0.1', None, '']
         else host)
 
-    if str(params.get('disable_metric_filter', False)).lower() == 'true':
-      filtered_metrics = spectator_response['metrics']
-    else:
-      filtered_metrics = self.filter_response(
-          service, base_url, spectator_response)
+    available_metrics = (
+        self.__response_processor.extract_spectator_response_metrics(
+            params, service, spectator_response)
+    )
 
     # NOTE: 20180614
     # There have been occasional bugs in spinnaker
@@ -322,7 +369,7 @@ class SpectatorClient(object):
     # This string value is causing prometheus errors
     # which prevent any metrics from being stored.
     num_metrics = 0
-    for metric_name, metric_data in filtered_metrics.items():
+    for metric_name, metric_data in available_metrics.items():
       meter_values = metric_data.get('values', [])
       num_metrics += len(meter_values)
       empty_value_list_indexes = []
@@ -348,57 +395,8 @@ class SpectatorClient(object):
       while empty_value_list_indexes:
         del meter_values[empty_value_list_indexes.pop()]
 
-    spectator_response['metrics'] = filtered_metrics
+    spectator_response['metrics'] = available_metrics
     return spectator_response
-
-  def make_base_url_metric_filter_or_none(self, base_url):
-    # Not yet implemented.
-    return None
-
-  def determine_service_metric_filter(self, service):
-    metric_filter = self.__service_metric_filter.get(service)
-    if metric_filter is not None:
-      return metric_filter
-
-    metric_filter = self.__default_metric_filter
-    if self.__filter_dir:
-      path = os.path.join(self.__filter_dir, service + '.yml')
-      if os.path.exists(path):
-        # pylint: disable=invalid-name
-        with open(path) as fd:
-          whole_spec = yaml.safe_load(fd)
-          filter_spec = whole_spec.get('monitoring', {}).get('filters')
-          if filter_spec is not None:
-            logging.info('Loading metric filter from "%s"', path)
-            metric_filter = MetricFilter(service, filter_spec)
-          else:
-            logging.info('"%s" has no monitoring.filters entry -- ignoring',
-                         path)
-
-    self.__service_metric_filter[service] = metric_filter
-    return metric_filter
-
-  def determine_response_filter(self, service, base_url, spectator_response):
-    response_start_time = spectator_response['startTime']
-    metric_filter, start_time = self.__base_url_metric_filter.get(
-        base_url, (None, None))
-    if start_time and start_time != response_start_time:
-      del self.__base_url_metric_filter[base_url]
-      metric_filter = None
-
-    if metric_filter is None:
-      metric_filter = self.make_base_url_metric_filter_or_none(base_url)
-      if metric_filter is not None:
-        self.__base_url_metric_filter[base_url] = (metric_filter,
-                                                   response_start_time)
-      else:
-        metric_filter = self.determine_service_metric_filter(service)
-    return metric_filter
-
-  def filter_response(self, service, base_url, spectator_response):
-    metric_filter = self.determine_response_filter(
-        service, base_url, spectator_response)
-    return metric_filter(spectator_response['metrics'])
 
   def scan_by_service(self, service_catalog, params=None):
     result = {}

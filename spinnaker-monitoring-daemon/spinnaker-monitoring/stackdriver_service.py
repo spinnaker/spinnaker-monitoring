@@ -94,183 +94,18 @@ class StackdriverMetricsService(object):
       self.__stub = self.__stub_factory()
     return self.__stub
 
-  @property
-  def monitored_resource(self):
-    if self.__monitored_resource is not None:
-      return self.__monitored_resource
+  def __update_monitored_deployment_resources(self, service_map):
+    template = self.__monitored_resource.get('template')
+    if not template:
+      template, self.__add_source_tag = (
+          DeployedMonitoredResourceBuilder(
+              self.__stackdriver_options, self.__project).build())
+      self.__monitored_resource['template'] = template
+    for service in service_map.keys():
+      self.__monitored_resource[service] = template
 
-    if self.__monitored_resource is None:
-      self.__monitored_resource = self.__gke_monitored_resource_or_none()
-
-    if self.__monitored_resource is None:
-      self.__monitored_resource = self.__google_monitored_resource_or_none()
-
-    if self.__monitored_resource is None:
-      self.__monitored_resource = self.__ec2_monitored_resource_or_none()
-
-    if self.__monitored_resource is None:
-      self.__add_source_tag = True
-      self.__monitored_resource = {
-          'type': 'global',
-          'project_id': self.__project
-      }
-
-    logging.info('Monitoring %s', self.__monitored_resource)
-    return self.__monitored_resource
-
-  def __ec2_monitored_resource_or_none(self):
-    """If deployed on EC2, return the monitored resource, else None."""
-    try:
-      doc = get_aws_identity_document()
-
-      return {
-          'instance_id': doc['instanceId'],
-          'region': doc['region'],
-          'aws_account': doc['accountId'],
-          'project_id': self.__project
-      }
-    except (IOError, ValueError, KeyError):
-      return None
-
-  def __google_monitored_resource_or_none(self):
-    """If deployed on GCE, return the monitored resource, else None."""
-    project = self.__project
-    zone = self.__stackdriver_options.get('zone')
-    instance_id = self.__stackdriver_options.get('instance_id')
-
-    try:
-      if not project:
-        project = get_google_metadata('project/project-id')
-      if not zone:
-        zone = os.path.basename(get_google_metadata('instance/zone'))
-      if not instance_id:
-        instance_id = int(get_google_metadata('instance/id'))
-
-      return {
-          'type': 'gce_instance',
-          'labels': {
-              'zone': zone,
-              'instance_id': str(instance_id),
-              'project_id': project
-          }
-      }
-    except IOError:
-      return None
-
-  def __in_docker(self):
-    """Determine if we are in a docker container or not."""
-    return os.path.exists('/.dockerenv')
-
-  def __container_from_pod(self, pod_id):
-    """Determine a standard spinnaker container name from a given pod name.
-
-    Standard containers are "spin-<service>" and pods are <container>-.
-    """
-    prefix = 'spin-'
-    dash = pod_id.find('-', len(prefix))
-    if not (dash > len(prefix) and pod_id.startswith(prefix)):
-      logging.error('Cannot determine container_name from pod_id=%s',
-                    pod_id)
-      return None
-    return pod_id[:dash]
-
-  def __k8s_monitored_resource_or_none(self):
-    """If deployed in a Kubernetes, return the monitored resource, else None."""
-    if not self.__in_docker():
-      return None
-
-    cluster_name = self.__stackdriver_options.get(
-        'cluster_name', os.environ.get('CLUSTER_NAME'))
-    container_name = self.__stackdriver_options.get(
-        'container_name', os.environ.get('CONTIANER_NAME'))
-    location = self.__stackdriver_options.get(
-        'location', os.environ.get('LOCATION'))
-    namespace_id = self.__stackdriver_options.get(
-        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
-    pod_id = self.__stackdriver_options.get(
-        'pod_id', os.environ.get('POD_ID'))
-
-    def check(value, name):
-      if not value:
-        logging.error('Cannot determine Kubernetes %s attribute', name)
-        raise ValueError()
-
-    try:
-      if not container_name:
-        container_name = self.__container_from_pod(pod_id)
-      check(cluster_name, 'CLUSTER_NAME')
-      check(container_name, 'CONTAINER_NAME')
-      check(location, 'LOCATION')
-      check(pod_id, 'POD_ID')
-    except (IOError, KeyError, ValueError):
-      return None
-
-    return {
-        'type': 'k8s_container',
-        'labels': {
-            'cluster_name': cluster_name,
-            'container_name': container_name,
-            'location': location,
-            'namespace_name': namespace_id,
-            'pod_name': pod_id,
-            'project_id': self.__project
-        }
-    }
-
-  def __gke_monitored_resource_or_none(self):
-    """If deployed on GKE, return the monitored resource, else None."""
-    if not self.__in_docker():
-      return None
-
-    resource = self.__google_monitored_resource_or_none()
-    if resource is None:
-      return None
-
-    cluster_name = self.__stackdriver_options.get(
-        'cluster_name', os.environ.get('CLUSTER_NAME'))
-    container_name = self.__stackdriver_options.get(
-        'container_name', os.environ.get('CONTIANER_NAME'))
-    namespace_id = self.__stackdriver_options.get(
-        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
-    pod_id = self.__stackdriver_options.get(
-        'pod_id', os.environ.get('POD_ID'))
-
-    try:
-      def get_kube_env():
-        kube_env = {}
-        payload = get_google_metadata('instance/attributes/kube-env')
-        for line in payload.split('\n'):
-          colon = line.find(':')
-          if colon < 0:
-            continue
-          kube_env[line[:colon]] = line[colon + 1:].strip()
-        return kube_env
-
-      if not cluster_name:
-        cluster_name = get_kube_env()['CLUSTER_NAME']
-
-      if not pod_id:
-        pod_id = os.environ['HOSTNAME']
-
-      if not container_name:
-        container_name = self.__container_from_pod(pod_id)
-
-    except (IOError, KeyError, ValueError):
-      return None
-
-    google_labels = resource['labels']
-    return {
-        'type': 'gke_container',
-        'labels': {
-            'cluster_name': cluster_name,
-            'container_name': container_name,
-            'instance_id': google_labels['instance_id'],
-            'namespace_id': namespace_id,
-            'pod_id': pod_id,
-            'project_id': google_labels['project_id'],
-            'zone': google_labels['zone']
-        }
-    }
+  def get_monitored_resource(self, service, service_metadata):
+    return self.__monitored_resource[service]
 
   def __init__(self, stub_factory, options):
     """Constructor.
@@ -282,7 +117,9 @@ class StackdriverMetricsService(object):
     """
     self.logger = logging.getLogger(__name__)
 
-    self.__stackdriver_options = options.get('stackdriver', {})
+    self.__stackdriver_options = dict(options)
+    # Override options in "stackdriver" stanza if any were present.
+    self.__stackdriver_options.update(options.get('stackdriver', {}))
     self.__stub_factory = stub_factory
     self.__stub = None
     self.__project = options.get('project',
@@ -297,7 +134,7 @@ class StackdriverMetricsService(object):
 
     self.__fix_stackdriver_labels_unsafe = options.get(
         'fix_stackdriver_labels_unsafe', True)
-    self.__monitored_resource = None
+    self.__monitored_resource = {}
     self.__add_source_tag = False
 
 
@@ -352,6 +189,7 @@ class StackdriverMetricsService(object):
 
   def publish_metrics(self, service_metrics):
     time_series = []
+    self.__update_monitored_deployment_resources(service_metrics)
     spectator_client.foreach_metric_in_service_map(
         service_metrics, self.add_metric_to_timeseries, time_series)
     offset = 0
@@ -533,11 +371,10 @@ class StackdriverMetricsService(object):
 
     result.append({
         'metric': metric,
-        'resource': self.monitored_resource,
+        'resource': self.get_monitored_resource(service, service_metadata),
         'metricKind': metric_kind,
         'valueType': 'DOUBLE',
-        'points': points
-        })
+        'points': points})
 
 
 def make_stub(options):
@@ -612,3 +449,185 @@ class StackdriverServiceFactory(object):
   def __call__(self, options, command_handlers):
     """Create a datadog service instance for interacting with Datadog."""
     return make_service(options)
+
+
+class DeployedMonitoredResourceBuilder(object):
+  """Determine monitored resource based on deployment location."""
+
+  def __init__(self, stackdriver_options, project):
+    self.__project = project
+    self.__stackdriver_options = stackdriver_options
+
+  def build(self):
+    add_source_tag = False
+    monitored_resource = self.__gke_monitored_resource_or_none()
+
+    if monitored_resource is None:
+      monitored_resource = self.__google_monitored_resource_or_none()
+
+    if monitored_resource is None:
+      monitored_resource = self.__ec2_monitored_resource_or_none()
+
+    if monitored_resource is None:
+      add_source_tag = True
+      monitored_resource = {
+          'type': 'global',
+          'project_id': self.__project
+      }
+
+    logging.info('Monitoring %s', monitored_resource)
+    return monitored_resource, add_source_tag
+
+  def __ec2_monitored_resource_or_none(self):
+    """If deployed on EC2, return the monitored resource, else None."""
+    try:
+      doc = get_aws_identity_document()
+
+      return {
+          'instance_id': doc['instanceId'],
+          'region': doc['region'],
+          'aws_account': doc['accountId'],
+          'project_id': self.__project
+      }
+    except (IOError, ValueError, KeyError):
+      return None
+
+  def __google_monitored_resource_or_none(self):
+    """If deployed on GCE, return the monitored resource, else None."""
+    project = self.__project
+    zone = self.__stackdriver_options.get('zone')
+    instance_id = self.__stackdriver_options.get('instance_id')
+
+    try:
+      if not project:
+        project = get_google_metadata('project/project-id')
+      if not zone:
+        zone = os.path.basename(get_google_metadata('instance/zone'))
+      if not instance_id:
+        instance_id = int(get_google_metadata('instance/id'))
+
+      return {
+          'type': 'gce_instance',
+          'labels': {
+              'zone': zone,
+              'instance_id': str(instance_id),
+              'project_id': project
+          }
+      }
+    except IOError:
+      return None
+
+  def __in_docker(self):
+    """Determine if we are in a docker container or not."""
+    return os.path.exists('/.dockerenv')
+
+  def __container_from_pod(self, pod_id):
+    """Determine a standard spinnaker container name from a given pod name.
+
+    Standard containers are "spin-<service>" and pods are <container>-.
+    """
+    prefix = 'spin-'
+    dash = pod_id.find('-', len(prefix))
+    if not (dash > len(prefix) and pod_id.startswith(prefix)):
+      logging.error('Cannot determine container_name from pod_id=%s',
+                    pod_id)
+      return None
+    return pod_id[:dash]
+
+  def __k8s_monitored_resource_or_none(self):
+    """If deployed in a Kubernetes, return the monitored resource, else None."""
+    if not self.__in_docker():
+      return None
+
+    cluster_name = self.__stackdriver_options.get(
+        'cluster_name', os.environ.get('CLUSTER_NAME'))
+    container_name = self.__stackdriver_options.get(
+        'container_name', os.environ.get('CONTIANER_NAME'))
+    location = self.__stackdriver_options.get(
+        'location', os.environ.get('LOCATION'))
+    namespace_id = self.__stackdriver_options.get(
+        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
+    pod_id = self.__stackdriver_options.get(
+        'pod_id', os.environ.get('POD_ID'))
+
+    def check(value, name):
+      if not value:
+        logging.error('Cannot determine Kubernetes %s attribute', name)
+        raise ValueError()
+
+    try:
+      if not container_name:
+        container_name = self.__container_from_pod(pod_id)
+      check(cluster_name, 'CLUSTER_NAME')
+      check(container_name, 'CONTAINER_NAME')
+      check(location, 'LOCATION')
+      check(pod_id, 'POD_ID')
+    except (IOError, KeyError, ValueError):
+      return None
+
+    return {
+        'type': 'k8s_container',
+        'labels': {
+            'cluster_name': cluster_name,
+            'container_name': container_name,
+            'location': location,
+            'namespace_name': namespace_id,
+            'pod_name': pod_id,
+            'project_id': self.__project
+        }
+    }
+
+  def __gke_monitored_resource_or_none(self):
+    """If deployed on GKE, return the monitored resource, else None."""
+    if not self.__in_docker():
+      return None
+
+    resource = self.__google_monitored_resource_or_none()
+    if resource is None:
+      return None
+
+    cluster_name = self.__stackdriver_options.get(
+        'cluster_name', os.environ.get('CLUSTER_NAME'))
+    container_name = self.__stackdriver_options.get(
+        'container_name', os.environ.get('CONTIANER_NAME'))
+    namespace_id = self.__stackdriver_options.get(
+        'namespace', os.environ.get('NAMESPACE_ID', 'spinnaker'))
+    pod_id = self.__stackdriver_options.get(
+        'pod_id', os.environ.get('POD_ID'))
+
+    try:
+      def get_kube_env():
+        kube_env = {}
+        payload = get_google_metadata('instance/attributes/kube-env')
+        for line in payload.split('\n'):
+          colon = line.find(':')
+          if colon < 0:
+            continue
+          kube_env[line[:colon]] = line[colon + 1:].strip()
+        return kube_env
+
+      if not cluster_name:
+        cluster_name = get_kube_env()['CLUSTER_NAME']
+
+      if not pod_id:
+        pod_id = os.environ['HOSTNAME']
+
+      if not container_name:
+        container_name = self.__container_from_pod(pod_id)
+
+    except (IOError, KeyError, ValueError):
+      return None
+
+    google_labels = resource['labels']
+    return {
+        'type': 'gke_container',
+        'labels': {
+            'cluster_name': cluster_name,
+            'container_name': container_name,
+            'instance_id': google_labels['instance_id'],
+            'namespace_id': namespace_id,
+            'pod_id': pod_id,
+            'project_id': google_labels['project_id'],
+            'zone': google_labels['zone']
+        }
+    }

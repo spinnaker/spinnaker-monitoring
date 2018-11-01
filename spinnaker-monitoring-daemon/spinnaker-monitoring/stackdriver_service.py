@@ -15,6 +15,7 @@
 # pylint: disable=missing-docstring
 
 from datetime import datetime
+import collections
 import json
 import logging
 import os
@@ -40,6 +41,10 @@ except ImportError:
 # ImportError: file_cache is unavailable when using oauth2client >= 4.0.0
 # The maintainer wont fix or remove the warning so we'll force it to be disabled
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
+
+GenericTaskInfo = collections.namedtuple('GenericTaskInfo',
+                                         ['monitored_resource', 'start_time'])
 
 
 # http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html
@@ -94,6 +99,12 @@ class StackdriverMetricsService(object):
       self.__stub = self.__stub_factory()
     return self.__stub
 
+  def __update_monitored_resources(self, service_map):
+    if self.__stackdriver_options['stackdriver_generic_task_resources']:
+      self.__update_monitored_generic_task_resources(service_map)
+    else:
+      self.__update_monitored_deployment_resources(service_map)
+
   def __update_monitored_deployment_resources(self, service_map):
     template = self.__monitored_resource.get('template')
     if not template:
@@ -104,8 +115,34 @@ class StackdriverMetricsService(object):
     for service in service_map.keys():
       self.__monitored_resource[service] = template
 
+  def __service_metadata_to_task_id(self, service_metadata):
+    return '%s:%s' % (service_metadata['__host'], service_metadata['__port'])
+
+  def __update_monitored_generic_task_resources(self, service_map):
+    for service, service_metric_list in service_map.items():
+      service_resource = self.__monitored_resource.get(service)
+      if not service_resource:
+        service_resource = {}
+        self.__monitored_resource[service] = service_resource
+
+      for service_metrics in service_metric_list:
+        task_id = self.__service_metadata_to_task_id(service_metrics)
+        start_time = service_metrics['startTime']
+        info = service_resource.get(task_id)
+        if info and info.start_time != start_time:
+          info = None
+        if info is None:
+          resource = GenericTaskResourceBuilder(
+              self.__stackdriver_options, self.__project).build(
+                  service, task_id, service_metrics)
+          service_resource[task_id] = GenericTaskInfo(resource, start_time)
+
   def get_monitored_resource(self, service, service_metadata):
-    return self.__monitored_resource[service]
+    if not self.__stackdriver_options['stackdriver_generic_task_resources']:
+      return self.__monitored_resource[service]
+
+    task_id = self.__service_metadata_to_task_id(service_metadata)
+    return self.__monitored_resource[service][task_id].monitored_resource
 
   def __init__(self, stub_factory, options):
     """Constructor.
@@ -145,6 +182,12 @@ class StackdriverMetricsService(object):
     parser.add_argument('--zone', default='')
     parser.add_argument('--instance_id', default=0, type=int)
     parser.add_argument('--credentials_path', default=None)
+    parser.add_argument(
+        '--stackdriver_generic_task_resources',
+        default=False,
+        action='store_true',
+        help='Use stackdriver "generic_task" monitored resources'
+        ' rather than the container or VM.')
 
   def project_to_resource(self, project):
     if not project:
@@ -189,7 +232,7 @@ class StackdriverMetricsService(object):
 
   def publish_metrics(self, service_metrics):
     time_series = []
-    self.__update_monitored_deployment_resources(service_metrics)
+    self.__update_monitored_resources(service_metrics)
     spectator_client.foreach_metric_in_service_map(
         service_metrics, self.add_metric_to_timeseries, time_series)
     offset = 0
@@ -449,6 +492,45 @@ class StackdriverServiceFactory(object):
   def __call__(self, options, command_handlers):
     """Create a datadog service instance for interacting with Datadog."""
     return make_service(options)
+
+
+class GenericTaskResourceBuilder(object):
+  """Determine generic task resource."""
+  def __init__(self, options, project):
+    self.__options = options
+    self.__project = project
+
+  def determine_location(self):
+    try:
+      zone = self.__options.get('zone')
+      if not zone:
+        zone = os.path.basename(get_google_metadata('instance/zone'))
+      return zone
+    except IOError:
+      pass
+
+    try:
+      doc = get_aws_identity_document()
+      return doc['region']
+    except (IOError, ValueError, KeyError):
+      logging.error('Not running on GCP or EC2 -- cannot determine location.'
+                    ' Please provide an explicit --zone.')
+      raise ValueError('Unable to determine location or --zone.')
+
+  def build(self, service, task_id, service_metadata):
+    location = self.determine_location()
+    monitored_resource = {
+        'type': 'generic_task',
+        'labels': {
+            'project_id': self.__project,
+            'location': location,
+            'namespace': 'standard',  # eventually variant such as 'read-only'
+            'job': service,
+            'task_id': task_id
+        }
+    }
+    logging.info('Monitoring %s', monitored_resource)
+    return monitored_resource
 
 
 class DeployedMonitoredResourceBuilder(object):

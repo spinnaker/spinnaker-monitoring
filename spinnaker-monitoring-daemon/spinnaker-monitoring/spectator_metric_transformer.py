@@ -352,8 +352,6 @@ class SpectatorMetricTransformer(object):
         if matched_values:
           if not isinstance(matched_values, list):
             matched_values = [matched_values]
-          logging.error(error)
-          logging.warning('Using default value %r', matched_values)
         else:
           raise ValueError(error)
       else:

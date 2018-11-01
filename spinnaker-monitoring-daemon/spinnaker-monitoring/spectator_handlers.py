@@ -17,6 +17,7 @@ import json
 
 import command_processor
 import http_server
+import logging
 import spectator_client
 
 
@@ -38,9 +39,6 @@ def strip_non_html_params(options):
 
 
 class BaseSpectatorCommandHandler(command_processor.CommandHandler):
-  def make_spectator_client(self, options):
-    return spectator_client.SpectatorClient(options)
-
   def add_argparser(self, subparsers):
     parser = super(BaseSpectatorCommandHandler, self).add_argparser(subparsers)
     parser.add_argument('--by', default='service',
@@ -54,7 +52,7 @@ class BaseSpectatorCommandHandler(command_processor.CommandHandler):
       catalog = {service: config
                  for service, config in catalog.items()
                  if service in restrict_services.split(',')}
-    spectator = self.make_spectator_client(options)
+    spectator = spectator_client.SpectatorClient(options)
 
     by = options.get('by', 'service')
     if by == 'service':
@@ -92,17 +90,58 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
 
   def __init__(self, *pos_args, **kwargs):
     self.__service_map = None
-    self.__spectator = None
+    self.__raw_spectator = None
+    self.__filtering_spectator = None
+    self.__transforming_spectator = None
     super(ExploreCustomDescriptorsHandler, self).__init__(*pos_args, **kwargs)
 
+  def __get_xform_info(self, type_map):
+    """Derive transformation information from a type_map.
+
+    This is to take the original raw results and produce the transformed
+    results so that we can depict what the original was and what the final is.
+ 
+    Returns:
+      3-tuple:
+         dict mapping source names to transformed names,
+         type_map using transformation
+         service_tag_map using transformation
+    """
+    response_processor = self.__transforming_spectator.response_processor
+    xform_name_map = {}
+    xform_type_map = {}
+    for meter_name, service_map in type_map.items():
+      for service, meter_responses in service_map.items():
+        transformer = response_processor.determine_service_metric_transformer(
+            service)
+        if not transformer:
+          continue
+        for meter_response in meter_responses:
+          xform_response = transformer.process_response(
+              {meter_name: meter_response})
+          if not xform_response:
+            continue
+          for xform_name, response_part in xform_response.items():
+            xform_name_map[meter_name] = xform_name
+            if not xform_name in xform_type_map:
+              xform_type_map[xform_name] = {}
+            xform_type_map[xform_name].update({service: [response_part]})
+
+    return xform_name_map, xform_type_map, self.to_service_tag_map(xform_type_map)[0]
+
   def __get_type_and_tag_map_and_active_services(self, catalog, options):
-    self.__filtering_spectator = self.make_spectator_client(options)
+    self.__transforming_spectator = spectator_client.SpectatorClient(options)
 
-    scan_options = dict(options)
-    scan_options['disable_metric_filter'] = True
-    raw_spectator = self.make_spectator_client(scan_options)
+    filtering_options = dict(options)
+    filtering_options['disable_metric_filter'] = True
+    self.__filtering_spectator = spectator_client.SpectatorClient(
+        filtering_options)
 
-    self.__spectator = raw_spectator
+    scan_options = dict(filtering_options)
+    scan_options['disable_metric_transform'] = True
+    raw_spectator = spectator_client.SpectatorClient(scan_options)
+
+    self.__raw_spectator = raw_spectator
     self.__service_map = raw_spectator.scan_by_service(
         catalog, params=scan_options)
 
@@ -190,7 +229,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
 
   def __determine_filtered_meters(self, service_name):
     """Return set of filtered [discarded] meter names within service."""
-    processor = self.__spectator.response_processor
+    processor = self.__filtering_spectator.response_processor
 
     params = {}
     missing_keys = set([])
@@ -330,19 +369,40 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     html = ['<table border=1>']
     html.extend(header_html)
 
+    xform_name_map, xform_type_map, xform_service_tag_map = self.__get_xform_info(type_map)
+    xform_filtered_metrics = [set()] * len(service_filtered_metrics)
+
     for meter_name, meter_service_tag_map in sorted(service_tag_map.items()):
+      xform_name = xform_name_map.get(meter_name)
+      if xform_service_tag_map.get(xform_name) == meter_service_tag_map:
+        xform_name = None
+      elif xform_name:
+        # The transformed name was known outside our precomputed
+        # list of metrics so add it in since all transformed names
+        # are included.
+        for the_set in service_filtered_metrics:
+          the_set.add(meter_name)
+
       html.append(
         self.__to_row_html(
             params, columns, meter_name,
             type_map, meter_service_tag_map,
-            service_filtered_metrics))
+            service_filtered_metrics, transforms_to=xform_name))
+      if xform_name:
+        # Show the transformed name under the original for easier correlation.
+        html.append(
+            self.__to_row_html(
+                params, columns, xform_name,
+                xform_type_map, xform_service_tag_map[xform_name],
+                xform_filtered_metrics, transforms_from=meter_name))
 
     html.append('</table>')
     return '\n'.join(html)
 
   def __to_row_html(self, params, columns, meter_name,
                     type_map, service_tag_map,
-                    service_filtered_metrics):
+                    service_filtered_metrics,
+                    transforms_to=None, transforms_from=None):
       tag_service_map = self.to_tag_service_map(columns, service_tag_map)
       num_labels = len(tag_service_map)
       _, info = type_map[meter_name].items()[0]
@@ -364,13 +424,19 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
       else:
         css = ' class="warning"'
 
+      transform_info = ''
+      if transforms_to:
+        transform_info = '<br/><i>Transforms into "%s"<i>' % transforms_to
+      elif transforms_from:
+        transform_info = '<br/><i>Derived from "%s"<i>' % transforms_from
+
       row_html.append(
           '<td{row_span}{css}>'
           '<A href="{url}"{css}>{meter_name}</A>'
-          '<br/>{kind}</td>'.format(
+          '<br/>{kind}{transform_info}</td>'.format(
               row_span=row_span, css=css,
               url=metric_url, meter_name=meter_name,
-              kind=kind))
+              kind=kind, transform_info=transform_info))
 
       return ''.join(row_html) + column_html
 
@@ -583,7 +649,7 @@ def add_handlers(handler_list, subparsers):
           'Show current raw metric JSON from all the servers.'),
       ExploreCustomDescriptorsHandler(
           '/explore', 'explore',
-          'Explore metric type usage across Spinnaker microservices.')
+          'Explore metric type usage across Spinnaker microservices.'),
   ]
   for handler in command_handlers:
     handler.add_argparser(subparsers)

@@ -31,7 +31,7 @@ import urlparse
 import yaml
 
 from metric_filter import MetricFilter
-
+from spectator_metric_transformer import SpectatorMetricTransformer
 
 DEFAULT_REGISTRY_DIR = '/opt/spinnaker-monitoring/registry'
 DEFAULT_FILTER_DIR = '/opt/spinnaker-monitoring/filters'
@@ -53,6 +53,7 @@ GAUGE_PRIMITIVE_KIND = 'Gauge'
 class ResponseProcessor(object):
   def __init__(self, options):
     self.__disable_filter = options.get('disable_metric_filter', False)
+    self.__disable_transform = options.get('disable_metric_transform', False)
     self.__filter_dir = options['metric_filter_dir']
     if self.__filter_dir:
       logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
@@ -69,25 +70,47 @@ class ResponseProcessor(object):
     #   service comes from daemon configuration for instrumented service
     #   default comes from daemon global config
     self.__service_metric_filter = {}
-    self.__default_metric_filter = lambda all: all
-    self.__default_metric_filter = self.determine_service_metric_filter(
-        'default')
+    self.__service_metric_transformer = {}
+
+    # These are bootstrap values so we can reference them in the
+    # __load_service_filter_and_transform in general. We'll set
+    # these real values later after we load the 'default'.
+    self.__default_metric_filter = None
+    self.__default_metric_transformer = None
+
+    default_metric_filter, default_metric_transformer = (
+        self.__load_service_filter_and_transform('default'))
+    if default_metric_filter is None:
+      logging.info('default_metric_filter will be IDENTITY')
+      default_metric_filter = lambda all: all
+
+    if default_metric_transformer is None:
+      logging.info('default_metric_transformer will be IDENTITY')
+      default_metric_transformer = SpectatorMetricTransformer(
+          {}, default_is_identity=True)
+
+    self.__default_metric_filter = default_metric_filter
+    self.__default_metric_transformer = default_metric_transformer
 
   def extract_spectator_response_metrics(
       self, params, service, original_response):
-    if str(params.get('disable_metric_filter', False)).lower() != 'true':
-      result_metrics = self.__filter_response(service, original_response)
+    transformer = self.determine_service_metric_transformer(service)
+    if transformer:
+      result_metrics = transformer.process_response(
+          original_response['metrics'])
     else:
       result_metrics = original_response['metrics']
 
+    if str(params.get('disable_metric_filter', False)).lower() != 'true':
+      transformed_response = dict(original_response)
+      transformed_response['metrics'] = result_metrics
+      result_metrics = self.__filter_response(service, transformed_response)
+
     return result_metrics
 
-  def determine_service_metric_filter(self, service):
-    metric_filter = self.__service_metric_filter.get(service)
-    if metric_filter is not None:
-      return metric_filter
-
-    metric_filter = self.__default_metric_filter
+  def __load_service_filter_and_transform(self, service):
+    metric_filter = None
+    metric_transformer = None
     if self.__filter_dir:
       path = os.path.join(self.__filter_dir, service + '.yml')
       if os.path.exists(path):
@@ -104,8 +127,40 @@ class ResponseProcessor(object):
             logging.info('"%s" has no monitoring.filters entry -- ignoring',
                          path)
 
+          transform_spec = whole_spec.get('monitoring', {}).get('transforms')
+          if self.__disable_transform:
+            logging.info('Transforming is disabled -- no transform on %s.',
+                         service)
+          elif transform_spec is not None:
+            logging.info('Loading metric transformer from "%s"', path)
+            metric_transformer = SpectatorMetricTransformer(
+                transform_spec,
+                default_is_identity=False)
+          else:
+            logging.info('"%s" has no monitoring.transforms entry -- ignoring',
+                         path)
+    if metric_filter is None:
+      logging.info('Using default metric filter for "%s"', service)
+      metric_filter = self.__default_metric_filter
+
+    if metric_transformer is None:
+      logging.info('Using default metric transformer for "%s"', service)
+      metric_transformer = self.__default_metric_transformer
+
     self.__service_metric_filter[service] = metric_filter
-    return metric_filter
+    self.__service_metric_transformer[service] = metric_transformer
+
+    return metric_filter, metric_transformer
+
+  def determine_service_metric_transformer(self, service):
+    if service not in self.__service_metric_transformer:
+      self.__load_service_filter_and_transform(service)
+    return self.__service_metric_transformer[service]
+
+  def determine_service_metric_filter(self, service):
+    if service not in self.__service_metric_filter:
+      self.__load_service_filter_and_transform(service)
+    return self.__service_metric_filter[service]
 
   def __filter_response(self, service, spectator_response):
     metric_filter = self.determine_service_metric_filter(service)
@@ -221,7 +276,7 @@ class SpectatorClient(object):
                         default=False, action='store_true',
                         help='Dont use configured metric filter.')
 
-  def __init__(self, options):
+  def __init__(self, options, transformer=None):
     self.__response_processor = ResponseProcessor(options)
     self.__default_scan_params = {'tagNameRegex': '.*'}
     self.__previous_scan_lock = threading.Lock()

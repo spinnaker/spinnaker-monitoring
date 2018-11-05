@@ -83,6 +83,12 @@ class StackdriverMetricsService(object):
   CUSTOM_PREFIX = 'custom.googleapis.com/spinnaker/'
   MAX_BATCH = 200
 
+  # custom metrics must be strings because there isnt a way to specify the
+  # tag type when using automatic descriptor creation, and stackdriver
+  # doesnt bother trying to figure it out.
+  TAG_VALUE_FUNC = lambda self, value: str(value)
+
+
   @staticmethod
   def millis_to_time(millis):
     return datetime.fromtimestamp(millis / 1000).isoformat('T') + 'Z'
@@ -392,7 +398,8 @@ class StackdriverMetricsService(object):
 
     metric = {
         'type': self.metric_type(service, name),
-        'labels': {tag['key']: tag['value'] for tag in tags}
+        'labels': {tag['key']: self.TAG_VALUE_FUNC(tag['value'])
+                   for tag in tags}
     }
     if self.__add_source_tag:
       metric['labels']['InstanceSrc'] = '{host}:{port}'.format(
@@ -529,7 +536,7 @@ class GenericTaskResourceBuilder(object):
             'task_id': task_id
         }
     }
-    logging.info('Monitoring %s', monitored_resource)
+    logging.info('Monitoring resource=%r', monitored_resource)
     return monitored_resource
 
 
@@ -557,7 +564,7 @@ class DeployedMonitoredResourceBuilder(object):
           'project_id': self.__project
       }
 
-    logging.info('Monitoring %s', monitored_resource)
+    logging.info('Monitoring resource=%r', monitored_resource)
     return monitored_resource, add_source_tag
 
   def __ec2_monitored_resource_or_none(self):

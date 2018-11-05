@@ -114,6 +114,12 @@ class ResponseProcessor(object):
     if self.__filter_dir:
       path = os.path.join(self.__filter_dir, service + '.yml')
       if os.path.exists(path):
+        default_path = os.path.join(self.__filter_dir, 'default.yml')
+        default_spec = {}
+        if default_path != path and os.path.exists(default_path):
+          with open(default_path) as fd:
+            default_spec = yaml.safe_load(fd)
+
         # pylint: disable=invalid-name
         with open(path) as fd:
           whole_spec = yaml.safe_load(fd)
@@ -122,6 +128,10 @@ class ResponseProcessor(object):
             logging.info('Filtering is disabled -- no filter on %s.', service)
           elif filter_spec is not None:
             logging.info('Loading metric filter from "%s"', path)
+            if default_spec:
+              logging.info('Adding baseline filters from "default.yml"')
+              default_spec.update(filter_spec)  # filter_spec overwrites
+              filter_spec = default_spec
             metric_filter = MetricFilter(service, filter_spec)
           else:
             logging.info('"%s" has no monitoring.filters entry -- ignoring',

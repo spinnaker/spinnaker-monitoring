@@ -108,7 +108,7 @@ class BaseMeterBuilder(object):
       for elem in record.tags:
         index = label_names.index(elem['key'])
         if index >= 0:
-          label_values[index] = elem['value']
+          label_values[index] = str(elem['value'])  # tags must be string
       if self.__job_tag_index >= 0:
         label_values[self.__job_tag_index] = record.service
       if self.__instance_tag_index >= 0:
@@ -151,7 +151,7 @@ class PrometheusMetricsCollection(object):
        info: All the scraped values for the metric.
     """
     metric_name = '{service}:{name}'.format(
-        service=service, name=name.replace('.', ':'))
+        service=service, name=name.replace('.', ':').replace('/', ':'))
     builder = self.make_metric_builder(metric_name, info)
     builder.add_meter_info(info)
     self.__metrics.append(builder.build())

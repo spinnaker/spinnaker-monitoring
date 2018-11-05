@@ -236,6 +236,7 @@ class DatadogMetricsService(object):
     if tags is None and not self.__arguments['tags']:
       return  # ignore metrics that had no tags because these are bogus.
 
+    name = name.replace('/', '.')
     result.append({
         'metric': '{service}.{name}'.format(service=service, name=name),
         'host': service_metadata['__host'],

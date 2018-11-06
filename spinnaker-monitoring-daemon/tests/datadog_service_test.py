@@ -24,7 +24,8 @@ from datadog_service import DatadogMetricsService, DatadogArgumentsGenerator
 
 
 def service_generation_helper(config_data=[], datadog_options={},
-                              spinnaker_monitoring_options={}):
+                              spinnaker_monitoring_options={},
+                              use_types=False):
     """
     This utility lets you build a DatadogMetricsService in a DRY fashion
     for all the tests below. You can inject additional parameters anywhere.
@@ -38,6 +39,8 @@ def service_generation_helper(config_data=[], datadog_options={},
     data = ["[Main]", "api_key: FOUND_KEY"] + config_data
     options = {'datadog': datadog_options, 'dd_agent_config': ''}
     options.update(spinnaker_monitoring_options)
+    if use_types:
+      options['datadog_use_types'] = True
     with tempfile.NamedTemporaryFile() as config:
       config.write('\n'.join(data))
       config.flush()
@@ -72,7 +75,8 @@ class DatadogServiceTest(unittest.TestCase):
   @patch('datadog_service.datadog.initialize')
   def test_initialize_once(self, mock_initialize):
     spectator_helper = None #  dont care
-    service = DatadogMetricsService(spectator_helper,
+    options = {}
+    service = DatadogMetricsService(options, spectator_helper,
                                     api_key='testAPI', app_key='testAPP',
                                     host='testHOST', tags=[])
     first = service.api
@@ -261,6 +265,41 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
                           ['mytag', 'env:prod', 'role:database'])
 
   @patch('datadog_service.datadog.initialize')
+  def test_publish_metrics_with_type(self, mock_initialize):
+    tests = [('Gauge', 'gauge'),
+             ('Timer', 'count'),
+             ('Counter', 'count'),
+             ('DistributionSummary', 'count')]
+
+    service_with_types = service_generation_helper(use_types=True)
+    service_without_types = service_generation_helper()
+
+    with patch('datadog_service.datadog.api.Metric.send') as mock_send:
+      service_metrics = {
+        'clouddriver': [{
+          '__host': 'localhost',
+          'metrics': {
+            'jvm.buffer.memoryUsed': {
+              'values': [{
+                  'tags': [],
+                  'values': [{'t': 1471917869670, 'v': 0.0}]
+               }, {
+                  'tags': [],
+                  'values': [{'t': 1471917869671, 'v': 81920.0}]
+               }]
+            },
+          }
+        }]
+      }
+      metric = service_metrics['clouddriver'][0]['metrics']['jvm.buffer.memoryUsed']
+      for spectator_kind, datadog_type in tests:
+        metric['kind'] = spectator_kind
+        service_with_types.publish_metrics(service_metrics=service_metrics)
+        self.assertEquals(mock_send.call_args[0][0][0]['type'], datadog_type)
+        service_without_types.publish_metrics(service_metrics=service_metrics)
+        self.assertEquals(mock_send.call_args[0][0][0]['type'], 'gauge')
+
+  @patch('datadog_service.datadog.initialize')
   def test_publish_metrics_with_tags(self, mock_initialize):
     """ Does publish_metrics actually attach these tags? """
 
@@ -307,6 +346,7 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
 
       self.assertItemsEqual(mock_send.call_args[0][0][0]['tags'],
                             ['foo', 'bar', 'ham', 'spam', 'id:direct'])
+
 
 class DatadogArgumentsGeneratorTest(unittest.TestCase):
 

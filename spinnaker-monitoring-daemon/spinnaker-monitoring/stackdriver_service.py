@@ -167,6 +167,13 @@ class StackdriverMetricsService(object):
     self.__stub = None
     self.__project = options.get('project',
                                  self.__stackdriver_options.get('project'))
+    spectator_options = dict(options)
+    if options.get('stackdriver_generic_task_resources'):
+      spectator_options['inject_service_tag'] = False
+      spectator_options['decorate_service_name'] = False
+    self.__spectator_helper = spectator_client.SpectatorClientHelper(
+        spectator_options)
+
     if not self.__project:
       # Set default to our instance if we are on GCE.
       # Otherwise ignore since we might not actually need the project.
@@ -180,6 +187,8 @@ class StackdriverMetricsService(object):
     self.__monitored_resource = {}
     self.__add_source_tag = False
 
+    undecorated_metric_names = (options.get('stackdriver_generic_task_resources')
+                                or options.get('inject_service_tag'))
 
   @staticmethod
   def add_parser_arguments(parser):
@@ -199,10 +208,6 @@ class StackdriverMetricsService(object):
     if not project:
       raise ValueError('No project specified')
     return 'projects/' + project
-
-  def metric_type(self, service, name):
-    """Determine the basic metric name."""
-    return self.name_to_type('{0}/{1}'.format(service, name))
 
   def name_to_type(self, name):
     """Determine Custom Descriptor type name for the given metric type name."""
@@ -391,13 +396,10 @@ class StackdriverMetricsService(object):
 
   def add_metric_to_timeseries(self, service, name, instance,
                                metric_metadata, service_metadata, result):
-    name, tags = spectator_client.normalize_name_and_tags(
-        name, instance, metric_metadata)
-    if tags is None:
-      return
-
+    name, tags = self.__spectator_helper.normalize_name_and_tags(
+        service, name, instance, metric_metadata)
     metric = {
-        'type': self.metric_type(service, name),
+        'type': self.name_to_type(name),
         'labels': {tag['key']: self.TAG_VALUE_FUNC(tag['value'])
                    for tag in tags}
     }

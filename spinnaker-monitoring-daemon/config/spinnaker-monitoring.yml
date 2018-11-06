@@ -12,6 +12,27 @@ server:
   port: 8008
 
 
+spectator:
+  # Configures how to process ingested spectator metrics
+
+  # Determines whether a "spin_service" tag should be added to each
+  # metric identifying which service is reporting the metric.
+  # By default if this is off then the metric names themselves will
+  # be decorated to the service making them service-specific.
+  inject_service_tag: False
+
+  # Determines whether or not to decorate the spectator metric name
+  # with the service name reporting it. Normally the services report
+  # metrics using generic names. If this is turned on then the service
+  # name will be added to the metric name to make them unique to the
+  # service.
+  #
+  # If left unset this will be the opposite of "inject_service_tag"
+  # because the name is superfluous with the tags but needed to
+  # give context to the metric without the tags.
+  decorate_metric_name: 
+
+
 monitor:
   # The frequency to poll each of the metric sources in the <registry>
   period: 30

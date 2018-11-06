@@ -138,9 +138,10 @@ class PrometheusMetricsCollection(object):
     """Return a list of prometheus client library data objects."""
     return self.__metrics
 
-  def __init__(self, metalabels):
+  def __init__(self, spectator_helper, metalabels):
     self.__metrics = []
     self.__metalabels = metalabels
+    self.__spectator_helper = spectator_helper
 
   def add_info(self, service, name, info):
     """Add a metric from a given service.
@@ -150,9 +151,7 @@ class PrometheusMetricsCollection(object):
        name: [string] The metric name.
        info: All the scraped values for the metric.
     """
-    metric_name = '{service}:{name}'.format(
-        service=service, name=name.replace('.', ':').replace('/', ':'))
-    builder = self.make_metric_builder(metric_name, info)
+    builder = self.make_metric_builder(name, info)
     builder.add_meter_info(info)
     self.__metrics.append(builder.build())
 
@@ -187,6 +186,7 @@ class PrometheusMetricsService(object):
 
     self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
+    self.__spectator_helper = spectator_client.SpectatorClientHelper(options)
 
     add_metalabels = options.get(
         'prometheus_add_source_metalabels',
@@ -239,11 +239,9 @@ class PrometheusMetricsService(object):
     """
     # In practice this converts a Spinnaker Timer into either
     # <name>__count or <name>__totalTime and removes the "statistic" tag.
-    name, tags = spectator_client.normalize_name_and_tags(
-        name, instance, metric_metadata)
-    if tags is None:
-      return  # ignore metrics that had no tags because these are bogus.
-
+    name, tags = self.__spectator_helper.normalize_name_and_tags(
+        service, name, instance, metric_metadata)
+    name = name.replace('.', ':').replace('/', ':').replace('-', '_')
     record = InstanceRecord(service,
                             '{0}:{1}'.format(service_metadata['__host'],
                                              service_metadata['__port']),
@@ -289,7 +287,8 @@ class PrometheusMetricsService(object):
         service_metric_map, self.__collect_instance_info,
         service_to_name_to_info)
 
-    metric_collection = PrometheusMetricsCollection(self.__metalabels)
+    metric_collection = PrometheusMetricsCollection(
+        self.__spectator_helper, self.__metalabels)
     for service, name_to_info in service_to_name_to_info.items():
       for name, info in name_to_info.items():
         metric_collection.add_info(service, name, info)

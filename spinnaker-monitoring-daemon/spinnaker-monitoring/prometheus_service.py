@@ -151,10 +151,8 @@ class PrometheusMetricsCollection(object):
        name: [string] The metric name.
        info: All the scraped values for the metric.
     """
-
     name.replace('-', '_')
     builder = self.make_metric_builder(name, info)
-
     builder.add_meter_info(info)
     self.__metrics.append(builder.build())
 
@@ -255,6 +253,7 @@ class PrometheusMetricsService(object):
             .replace('.', self.__hierarchy_separator)
             .replace('/', self.__hierarchy_separator)
             .replace('-', '_'))
+
     record = InstanceRecord(service,
                             '{0}:{1}'.format(service_metadata['__host'],
                                              service_metadata['__port']),

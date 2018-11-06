@@ -50,6 +50,23 @@ COUNTER_PRIMITIVE_KIND = 'Counter'
 GAUGE_PRIMITIVE_KIND = 'Gauge'
 
 
+def merge_specifications(baseline, derived):
+  baseline_monitoring = dict(baseline.get('monitoring', {}))
+  result = dict(baseline)
+  result.update(derived) # normal merge of anything not "monitoring"
+
+  # For the monitoring section, we want to merge the transforms and filters
+  # sections, not just replace one or the other.
+  result_monitoring = result.get('monitoring', {})
+  for key in 'transforms', 'filters':
+    result_section = result_monitoring.get(key, {})
+    result_section.update(baseline_monitoring.get(key, {}))
+    if result_section:
+      result_monitoring[key] = result_section  # add if not already there.
+
+  return result
+
+
 class ResponseProcessor(object):
   def __init__(self, options):
     self.__disable_filter = options.get('disable_metric_filter', False)
@@ -112,6 +129,7 @@ class ResponseProcessor(object):
     metric_filter = None
     metric_transformer = None
     if self.__filter_dir:
+      logging.debug('Loading transform for service=%s', service)
       path = os.path.join(self.__filter_dir, service + '.yml')
       if os.path.exists(path):
         default_path = os.path.join(self.__filter_dir, 'default.yml')
@@ -123,15 +141,15 @@ class ResponseProcessor(object):
         # pylint: disable=invalid-name
         with open(path) as fd:
           whole_spec = yaml.safe_load(fd)
+          if default_spec:
+            logging.info('Adding baseline filters from "default.yml"')
+            whole_spec = merge_specifications(default_spec, whole_spec)
+
           filter_spec = whole_spec.get('monitoring', {}).get('filters')
           if self.__disable_filter:
             logging.info('Filtering is disabled -- no filter on %s.', service)
           elif filter_spec is not None:
             logging.info('Loading metric filter from "%s"', path)
-            if default_spec:
-              logging.info('Adding baseline filters from "default.yml"')
-              default_spec.update(filter_spec)  # filter_spec overwrites
-              filter_spec = default_spec
             metric_filter = MetricFilter(service, filter_spec)
           else:
             logging.info('"%s" has no monitoring.filters entry -- ignoring',

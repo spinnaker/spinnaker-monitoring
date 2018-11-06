@@ -263,8 +263,11 @@ class SpectatorMetricTransformer(object):
                            if default_is_identity
                            else None)              # discard
     self.__spec = spec
-    for rule in spec.values():
+    for meter_name, rule in spec.items():
       if rule is None:
+        logging.debug(
+            'Meter "%s" configured with None so will be explicitly discarded',
+            meter_name)
         continue
 
       # 'statistic' will always be kept implicitly

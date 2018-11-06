@@ -204,11 +204,12 @@ class DatadogMetricsService(object):
     return self.__api
 
 
-  def __init__(self, **arguments):
+  def __init__(self, spectator_helper, **arguments):
     """Constructs the object."""
     if not datadog_available:
       raise ImportError(
           'You must "pip install datadog" to get the datadog client library.')
+    self.__spectator_helper = spectator_helper
     self.__api = None
     self.__arguments = arguments
 
@@ -230,8 +231,8 @@ class DatadogMetricsService(object):
     """
     # In practice this converts a Spinnaker Timer into either
     # <name>__count or <name>__totalTime and removes the "statistic" tag.
-    name, tags = spectator_client.normalize_name_and_tags(
-        name, instance, metric_metadata)
+    name, tags = self.__spectator_helper.normalize_name_and_tags(
+        service, name, instance, metric_metadata)
 
     if tags is None and not self.__arguments['tags']:
       return  # ignore metrics that had no tags because these are bogus.
@@ -264,11 +265,13 @@ class DatadogMetricsService(object):
     return len(points)
 
 
-def make_datadog_service(options):
+def make_datadog_service(options, spectator_helper=None):
 
   arguments = DatadogArgumentsGenerator(options).generate_arguments()
+  spectator_helper = (spectator_helper
+                      or spectator_client.SpectatorClientHelper(options))
 
-  return DatadogMetricsService(**arguments)
+  return DatadogMetricsService(spectator_helper, **arguments)
 
 
 def add_standard_parser_arguments(parser):

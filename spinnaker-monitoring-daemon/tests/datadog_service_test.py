@@ -71,7 +71,9 @@ class DatadogServiceTest(unittest.TestCase):
 
   @patch('datadog_service.datadog.initialize')
   def test_initialize_once(self, mock_initialize):
-    service = DatadogMetricsService(api_key='testAPI', app_key='testAPP',
+    spectator_helper = None #  dont care
+    service = DatadogMetricsService(spectator_helper,
+                                    api_key='testAPI', app_key='testAPP',
                                     host='testHOST', tags=[])
     first = service.api
     second = service.api
@@ -258,12 +260,9 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
     self.assertItemsEqual(service._DatadogMetricsService__arguments['tags'],
                           ['mytag', 'env:prod', 'role:database'])
 
-  @patch('datadog_service.spectator_client.normalize_name_and_tags')
   @patch('datadog_service.datadog.initialize')
-  def test_publish_metrics_with_tags(self, mock_initialize, mock_normalise):
+  def test_publish_metrics_with_tags(self, mock_initialize):
     """ Does publish_metrics actually attach these tags? """
-
-    mock_normalise.return_value = 'foo', []
 
     service = service_generation_helper()
 
@@ -281,10 +280,10 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
           'metrics': {
             'jvm.buffer.memoryUsed': {
               'values': [{
-                  'tags': [],  # these will be overriden by mock_normalise anyway
+                  'tags': [],
                   'values': [{'t': 1471917869670, 'v': 0.0}]
                }, {
-                  'tags': [],  # these will be overridden by mock normalise
+                  'tags': [],
                   'values': [{'t': 1471917869671, 'v': 81920.0}]
                }]
             },
@@ -300,8 +299,10 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
       self.assertItemsEqual(mock_send.call_args[0][0][1]['tags'],
                             ['foo', 'bar', 'ham', 'spam'])
 
-      mock_normalise.return_value = 'foo', [{'key': 'id', 'value': 'direct'}]
-
+      # Now add tags into metrics
+      for entry in (service_metrics['clouddriver'][0]['metrics']
+                                   ['jvm.buffer.memoryUsed']['values']):
+          entry['tags'] = [{'key': 'id', 'value': 'direct'}]
       service.publish_metrics(service_metrics=service_metrics)
 
       self.assertItemsEqual(mock_send.call_args[0][0][0]['tags'],

@@ -250,14 +250,44 @@ def foreach_metric_in_service_map(
             visitor, visitor_pos_args, visitor_kwargs)
 
 
-def normalize_name_and_tags(name, metric_instance, metric_metadata):
-  tags = list(metric_instance.get('tags', []))
-  for index, tag in enumerate(tags):
-    if tag['key'] == 'statistic':
-      name = name + '__{0}'.format(tag['value'])
-      del tags[index]
-      break
-  return name, tags
+class SpectatorClientHelper(object):
+  """A helper class for using SpectatorClient
+
+  This is intended for individual adaptors to use to customize how
+  they interact with the shared SpectatorClient instance. The intent
+  is to have a single scrape of the services but if we are writing to
+  multiple metric services, allow each to have certain independent configuration
+  for how it interprets the data.
+
+  In practice this is not generally that practical to support multiple services.
+  However it is useful for development scenarios.
+  """
+
+  def __init__(self, options):
+    self.__options = options.get('spectator', {})
+    self.__inject_service_tag = self.__options.get('inject_service_tag')
+    self.__decorate_metric_name = (self.__options.get('decorate_metric_name')
+                                   if 'decorate_metric_name' in self.__options
+                                   else not self.__inject_service_tag)
+
+  def normalize_name_and_tags(self, service, name,
+                              metric_instance, metric_metadata):
+    tags = list(metric_instance.get('tags', []))
+    for index, tag in enumerate(tags):
+      if tag['key'] == 'statistic':
+        name = name + '__' + tag['value']
+        del tags[index]
+        break
+
+    if self.__inject_service_tag:
+      # The leading '__' is to disambiguate it with any "service" tag
+      # coming from spectator metric which likely has a different meaning.
+      tags.append({'key': 'spin_service', 'value': service})
+
+    if self.__decorate_metric_name:
+      name = '{service}.{name}'.format(service=service, name=name)
+
+    return name, tags
 
 
 class SpectatorClient(object):
@@ -282,6 +312,7 @@ class SpectatorClient(object):
                         help='The directory containing the *.yml files'
                              ' specifying each of the URLs to collect'
                              ' metrics from.')
+
     parser.add_argument('--disable_metric_filter',
                         default=False, action='store_true',
                         help='Dont use configured metric filter.')

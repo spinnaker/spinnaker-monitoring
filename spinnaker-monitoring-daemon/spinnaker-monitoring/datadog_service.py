@@ -204,7 +204,7 @@ class DatadogMetricsService(object):
     return self.__api
 
 
-  def __init__(self, spectator_helper, **arguments):
+  def __init__(self, options, spectator_helper, **arguments):
     """Constructs the object."""
     if not datadog_available:
       raise ImportError(
@@ -212,6 +212,7 @@ class DatadogMetricsService(object):
     self.__spectator_helper = spectator_helper
     self.__api = None
     self.__arguments = arguments
+    self.__use_types = options.get('datadog_use_types')
 
   def __append_timeseries_point(
       self, service, name,
@@ -237,10 +238,22 @@ class DatadogMetricsService(object):
     if tags is None and not self.__arguments['tags']:
       return  # ignore metrics that had no tags because these are bogus.
 
+    # counters, timers, distribution summaries, etc are counters.
+    # only "Gauge" is a gauge.
+    if self.__use_types:
+      primitive_kind = spectator_client.determine_primitive_kind(
+          metric_metadata['kind'])
+      metric_type = ('gauge'
+                     if primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND
+                     else 'count')
+    else:
+      metric_type = 'gauge'
+
     name = name.replace('/', '.')
     result.append({
         'metric': '{service}.{name}'.format(service=service, name=name),
         'host': service_metadata['__host'],
+        'type': metric_type,
         'points': [(elem['t'] / 1000, elem['v'])
                    for elem in instance['values']],
         'tags': (['{0}:{1}'.format(tag['key'], tag['value']) for tag in
@@ -271,7 +284,7 @@ def make_datadog_service(options, spectator_helper=None):
   spectator_helper = (spectator_helper
                       or spectator_client.SpectatorClientHelper(options))
 
-  return DatadogMetricsService(spectator_helper, **arguments)
+  return DatadogMetricsService(options, spectator_helper, **arguments)
 
 
 def add_standard_parser_arguments(parser):
@@ -300,6 +313,11 @@ class DatadogServiceFactory(object):
     parser.add_argument('--datadog', default=False, action='store_true',
                         dest='monitor_datadog',
                         help='Publish metrics to Datadog.')
+    parser.add_argument('--datadog_use_types',
+                        default=False, action='store_true',
+                        help='Add metric type information to metrics.'
+                        ' This is off by default for historic data compatability.'
+                        ' When off, all data is recorded as a gauge.')
 
     add_standard_parser_arguments(parser)
 

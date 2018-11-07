@@ -191,9 +191,16 @@ class PrometheusMetricsService(object):
     self.__spectator = spectator_client.SpectatorClient(options)
     self.__spectator_helper = spectator_client.SpectatorClientHelper(options)
 
+    prometheus_options = options.get('prometheus', {})
+    # '_' is preferred but ':' was used in earlier releases.
+    self.__hierarchy_separator = (
+        '_' if prometheus_options.get('use_standard_notation') == True
+        else ':'
+    )
+
     add_metalabels = options.get(
         'prometheus_add_source_metalabels',
-        options.get('prometheus', {}).get('add_source_metalabels', True))
+        prometheus_options.get('add_source_metalabels', True))
     self.__metalabels = {'job', 'instance'} if add_metalabels else {}
 
     self.__push_gateway = options.get('prometheus', {}).get('push_gateway')
@@ -244,7 +251,10 @@ class PrometheusMetricsService(object):
     # <name>__count or <name>__totalTime and removes the "statistic" tag.
     name, tags = self.__spectator_helper.normalize_name_and_tags(
         service, name, instance, metric_metadata)
-    name = name.replace('.', ':').replace('/', ':').replace('-', '_')
+    name = (name
+            .replace('.', self.__hierarchy_separator)
+            .replace('/', self.__hierarchy_separator)
+            .replace('-', '_'))
     record = InstanceRecord(service,
                             '{0}:{1}'.format(service_metadata['__host'],
                                              service_metadata['__port']),

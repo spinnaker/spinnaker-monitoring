@@ -55,6 +55,14 @@ datadog:
 prometheus:
   add_source_metalabels: True
 
+  # Set this to True to use standard prometheus naming conventions.
+  # Historically Spinnaker metrics contained ':' in their prometheus names
+  # as a replacement for '.' in spectator metric names to indicate hierarchy.
+  # However this is non-standard and ':' is intended to have other use.
+  # Set this value to False to use the old-style names for backward compatability
+  # with your existing data.
+  use_standard_notation: False
+
   # If the push_gateway is defined, then metrics will be pushed to the given url.
   # This could be something like "host:9091" or "http://host:9091".
   # If the gateway is empty then data will not be pushed and the server will

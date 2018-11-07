@@ -151,7 +151,10 @@ class PrometheusMetricsCollection(object):
        name: [string] The metric name.
        info: All the scraped values for the metric.
     """
+
+    name.replace('-', '_')
     builder = self.make_metric_builder(name, info)
+
     builder.add_meter_info(info)
     self.__metrics.append(builder.build())
 

@@ -79,7 +79,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -249,7 +249,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -419,7 +419,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method) / sum(rate(clouddriver:controller:invocations__count{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method) / sum(rate(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -1016,7 +1016,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "clouddriver:controller:invocations__count",
+        "query": "clouddriver:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -1036,7 +1036,7 @@
         "multi": false,
         "name": "Account",
         "options": [],
-        "query": "clouddriver:controller:invocations__count",
+        "query": "clouddriver:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/account=\"([^\"]+).*/",
         "sort": 1,
@@ -1163,5 +1163,5 @@
   },
   "timezone": "browser",
   "title": "Clouddriver Microservice",
-  "version": 4
+  "version": 5
 }

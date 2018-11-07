@@ -265,7 +265,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Clouddriver/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -273,7 +273,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(echo:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(echo:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Echo/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -281,7 +281,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(fiat:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(fiat:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Fiat/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -289,7 +289,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(front50:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(front50:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Front50/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -297,7 +297,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Gate/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -305,7 +305,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(igor:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(igor:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Igor/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -313,7 +313,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Orca/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -321,7 +321,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(rosco:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(rosco:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Rosco/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -1157,5 +1157,5 @@
   },
   "timezone": "browser",
   "title": "Spinnaker Minimalist",
-  "version": 4
+  "version": 5
 }

@@ -78,7 +78,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -249,7 +249,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -417,7 +417,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(orca:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(orca:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
               "refId": "A",
@@ -984,7 +984,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "orca:controller:invocations__count",
+        "query": "orca:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -1111,5 +1111,5 @@
   },
   "timezone": "browser",
   "title": "Orca Microservice",
-  "version": 3
+  "version": 4
 }

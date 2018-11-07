@@ -327,7 +327,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "expr": "sum($Function(front50:controller:invocations__count_total{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -514,7 +514,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum($Function(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -683,7 +683,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
               "refId": "A",
@@ -1270,7 +1270,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "front50:controller:invocations__count",
+        "query": "front50:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -1397,5 +1397,5 @@
   },
   "timezone": "browser",
   "title": "Front50 Microservice",
-  "version": 4
+  "version": 5
 }

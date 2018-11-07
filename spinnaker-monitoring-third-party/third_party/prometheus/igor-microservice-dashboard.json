@@ -323,7 +323,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(igor:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(igor:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
@@ -413,7 +413,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(igor:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(igor:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -503,7 +503,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(igor:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(igor:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -670,7 +670,7 @@
             "value": "$__all"
           }
         ],
-        "query": "igor:controller:invocations__count",
+        "query": "igor:controller:invocations__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -797,5 +797,5 @@
   },
   "timezone": "browser",
   "title": "Igor Microservice",
-  "version": 4
+  "version": 5
 }

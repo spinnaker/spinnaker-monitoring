@@ -78,7 +78,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(rosco:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "expr": "sum($Function(rosco:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
@@ -168,7 +168,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(rosco:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum($Function(rosco:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -258,7 +258,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(rosco:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(rosco:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum(rate(rosco:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(rosco:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -601,7 +601,7 @@
             "value": "$__all"
           }
         ],
-        "query": "rosco:controller:invocations__count",
+        "query": "rosco:controller:invocations__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -728,5 +728,5 @@
   },
   "timezone": "browser",
   "title": "Rosco Microservice",
-  "version": 3
+  "version": 4
 }

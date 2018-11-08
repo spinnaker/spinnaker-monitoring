@@ -212,7 +212,7 @@ class DatadogMetricsService(object):
     self.__spectator_helper = spectator_helper
     self.__api = None
     self.__arguments = arguments
-    self.__use_types = options.get('datadog_use_types')
+    self.__use_types = options.get('datadog', {}).get('use_types')
 
   def __append_timeseries_point(
       self, service, name,
@@ -313,11 +313,6 @@ class DatadogServiceFactory(object):
     parser.add_argument('--datadog', default=False, action='store_true',
                         dest='monitor_datadog',
                         help='Publish metrics to Datadog.')
-    parser.add_argument('--datadog_use_types',
-                        default=False, action='store_true',
-                        help='Add metric type information to metrics.'
-                        ' This is off by default for historic data compatability.'
-                        ' When off, all data is recorded as a gauge.')
 
     add_standard_parser_arguments(parser)
 

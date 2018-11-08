@@ -40,7 +40,7 @@ def service_generation_helper(config_data=[], datadog_options={},
     options = {'datadog': datadog_options, 'dd_agent_config': ''}
     options.update(spinnaker_monitoring_options)
     if use_types:
-      options['datadog_use_types'] = True
+      options['datadog'] = {'use_types': True}
     with tempfile.NamedTemporaryFile() as config:
       config.write('\n'.join(data))
       config.flush()

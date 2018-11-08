@@ -55,6 +55,12 @@ datadog:
   # if this file exists when the install is run with client install enabled.
   api_key:
 
+  # If set to true, then add type information with the datadog metrics.
+  # Otherwise all metrics are recorded as a gauge.
+  # Although this type information is desirable, it is off by default for
+  # historic data compatability.
+  use_types:
+
 
 prometheus:
   add_source_metalabels: True

@@ -211,11 +211,17 @@ def get_source_catalog(options):
   if _cached_registry_timestamp == timestamp:
     return _cached_registry_catalog
 
+  spectator_options = options.get('spectator', {})
   logging.info('Updating catalog from %s at %ld', registry_dir, timestamp)
   catalog = {}
   for source in glob.glob(os.path.join(registry_dir, '*.yml')):
     name = os.path.splitext(os.path.basename(source))[0]
-    logging.info('loading %s', source)
+    if spectator_options.get('use_base_service_name_only'):
+      index = name.find('-')
+      if index > 0:
+        name = name[:index]
+
+    logging.info('loading %s as %r', source, name)
     with open(source) as stream:
       doc = yaml.safe_load(stream)
       url = doc.get('metrics_url')
@@ -223,7 +229,11 @@ def get_source_catalog(options):
         logging.error('%s is missing "metrics_url"', source)
         continue
       doc['metrics_url'] = url if isinstance(url, list) else [url]
-      catalog[name] = doc
+      if name in catalog:
+        # We have different deployment variations for the same basename
+        catalog[name]['metrics_url'].extend(doc['metrics_url'])
+      else:
+        catalog[name] = doc
 
   _cached_registry_catalog = catalog
   _cached_registry_timestamp = timestamp

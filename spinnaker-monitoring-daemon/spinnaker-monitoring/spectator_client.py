@@ -309,7 +309,7 @@ class SpectatorClient(object):
 
   @staticmethod
   def add_standard_parser_arguments(parser):
-    parser.add_argument('--metric_filter_dir', default='',
+    parser.add_argument('--metric_filter_dir', default=None,
                         help='Optional filter to restrict metrics of interest.')
     parser.add_argument(
         '--log_metric_diff',

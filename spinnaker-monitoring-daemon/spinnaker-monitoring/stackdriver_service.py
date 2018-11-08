@@ -106,7 +106,7 @@ class StackdriverMetricsService(object):
     return self.__stub
 
   def __update_monitored_resources(self, service_map):
-    if self.__stackdriver_options['stackdriver_generic_task_resources']:
+    if self.__stackdriver_options.get('generic_task_resources'):
       self.__update_monitored_generic_task_resources(service_map)
     else:
       self.__update_monitored_deployment_resources(service_map)
@@ -144,7 +144,7 @@ class StackdriverMetricsService(object):
           service_resource[task_id] = GenericTaskInfo(resource, start_time)
 
   def get_monitored_resource(self, service, service_metadata):
-    if not self.__stackdriver_options['stackdriver_generic_task_resources']:
+    if not self.__stackdriver_options.get('generic_task_resources'):
       return self.__monitored_resource[service]
 
     task_id = self.__service_metadata_to_task_id(service_metadata)
@@ -160,19 +160,26 @@ class StackdriverMetricsService(object):
     """
     self.logger = logging.getLogger(__name__)
 
-    self.__stackdriver_options = dict(options)
+    self.__stackdriver_options = dict(options.get('stackdriver', {}))
+    for key in ['project', 'zone', 'instance_id', 'credentials_path']:
+      if options.get(key):
+        self.__stackdriver_options[key] = options[key]  # commandline override
+
     # Override options in "stackdriver" stanza if any were present.
     self.__stackdriver_options.update(options.get('stackdriver', {}))
     self.__stub_factory = stub_factory
     self.__stub = None
     self.__project = options.get('project',
                                  self.__stackdriver_options.get('project'))
-    spectator_options = dict(options)
-    if options.get('stackdriver_generic_task_resources'):
+
+    options_copy = dict(options)
+    spectator_options = options_copy.get('spectator', {})
+    if self.__stackdriver_options.get('generic_task_resources'):
       spectator_options['inject_service_tag'] = False
       spectator_options['decorate_service_name'] = False
-    self.__spectator_helper = spectator_client.SpectatorClientHelper(
-        spectator_options)
+    options_copy['spectator'] = spectator_options
+
+    self.__spectator_helper = spectator_client.SpectatorClientHelper(options_copy)
 
     if not self.__project:
       # Set default to our instance if we are on GCE.

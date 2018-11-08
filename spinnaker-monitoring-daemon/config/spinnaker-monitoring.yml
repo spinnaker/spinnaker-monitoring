@@ -6,6 +6,10 @@
 #    ../registry, ../registry.dev, /opt/spinnaker-monitoring/registry
 registry_dir:
 
+# If not specified the default will be the first of:
+#    ../filters, /opt/spinnaker-monitoring/filters
+metric_filter_dir:
+
 server:
   # This host and port to bind the embedded HTTP server on.
   host: localhost
@@ -90,3 +94,9 @@ stackdriver:
   # The instance id (is a number)
   # If left blank, and on GCP, this will populate from the metadata server.
   instance_id:
+
+  # This is EXPERIMENTAL
+  # If set to True then use "generic_task" as the monitored resource
+  # rather than the deployment environment. The task will be labeled
+  # with the service being monitored.
+  generic_task_resources:

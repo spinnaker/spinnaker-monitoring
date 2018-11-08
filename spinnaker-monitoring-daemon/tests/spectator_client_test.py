@@ -148,20 +148,33 @@ class SpectatorClientTest(unittest.TestCase):
 
   @patch('glob.glob')
   @patch('os.path.getmtime')
-  def test_get_source_catalog(self, mock_getmtime, mock_glob):
+  def do_test_get_source_catalog(self, options, mock_getmtime, mock_glob):
     mock_getmtime.return_value = 1234
-    mock_glob.return_value = ['one.yml', 'two.yml']
+    mock_glob.return_value = ['one.yml', 'two.yml',
+                              'multi-ro.yml', 'multi-rw.yml']
     mo = mock.mock_open(read_data='metrics_url: http://testhost:1122')
     mo.side_effect = (
         mo.return_value,
         mock.mock_open(
-            read_data='metrics_url: http://testhost:3344').return_value)
-    options = {'registry_dir': '/my/registry/path'}
+            read_data='metrics_url: http://testhost:3344').return_value,
+        mock.mock_open(
+            read_data='metrics_url: http://testhost:5555').return_value,
+        mock.mock_open(
+            read_data='metrics_url: http://testhost:6666').return_value,
+    )
+    options.update({'registry_dir': '/my/registry/path'})
     with patch('spectator_client.open', mo, create=True):
       catalog = spectator_client.get_source_catalog(options)
-    self.assertEqual({'one': {'metrics_url': ['http://testhost:1122']},
-                      'two': {'metrics_url': ['http://testhost:3344']}},
-                     catalog)
+    expect = {'one': {'metrics_url': ['http://testhost:1122']},
+              'two': {'metrics_url': ['http://testhost:3344']}}
+    if options.get('spectator', {}).get('use_base_service_name_only'):
+      expect['multi'] = {'metrics_url': ['http://testhost:5555',
+                                         'http://testhost:6666']}
+    else:
+      expect['multi-ro'] = {'metrics_url': ['http://testhost:5555']}
+      expect['multi-rw'] = {'metrics_url': ['http://testhost:6666']}
+
+    self.assertEqual(expect, catalog)
     mock_getmtime.assert_called_with('/my/registry/path')
     mock_glob.assert_called_with('/my/registry/path/*.yml')
     self.assertEquals(1, mock_getmtime.call_count)
@@ -180,6 +193,13 @@ class SpectatorClientTest(unittest.TestCase):
       retry = spectator_client.get_source_catalog(options)
     self.assertEqual({'three': {'metrics_url': ['http://testhost:3333']}},
                      retry)
+
+  def test_get_source_catalog_default(self):
+    self.do_test_get_source_catalog({})
+
+  def test_get_source_catalog_normalized(self):
+    options = {'spectator': {'use_base_service_name_only': True}}
+    self.do_test_get_source_catalog(options)
 
   def test_default_dev_endpoints(self):
     got_urls = {name: config['metrics_url']

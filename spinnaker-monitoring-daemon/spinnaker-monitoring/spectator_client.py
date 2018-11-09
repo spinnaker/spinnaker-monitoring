@@ -71,7 +71,7 @@ class ResponseProcessor(object):
   def __init__(self, options):
     self.__disable_filter = options.get('disable_metric_filter', False)
     self.__disable_transform = options.get('disable_metric_transform', False)
-    self.__filter_dir = options['metric_filter_dir']
+    self.__filter_dir = options.get('metric_filter_dir')
     if self.__filter_dir:
       logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
     else:

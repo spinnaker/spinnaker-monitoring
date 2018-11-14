@@ -291,6 +291,8 @@ class SpectatorClientHelper(object):
   However it is useful for development scenarios.
   """
 
+  STANDARD_VARIANT = ''  # Tag value for a 'Normal' / full mode deployment
+
   def __init__(self, options):
     self.__options = options.get('spectator', {})
     self.__inject_service_tag = self.__options.get('inject_service_tag')
@@ -308,12 +310,19 @@ class SpectatorClientHelper(object):
         break
 
     if self.__inject_service_tag:
-      # The leading '__' is to disambiguate it with any "service" tag
-      # coming from spectator metric which likely has a different meaning.
-      tags.append({'key': 'spin_service', 'value': service})
+      dash_index = service.find('-')
+      if dash_index > 0:
+        plain_service = service[:dash_index]
+        variant = service[dash_index + 1:]
+      else:
+        plain_service = service
+        variant = self.STANDARD_VARIANT
+
+      tags.append({'key': 'spin_service', 'value': plain_service})
+      tags.append({'key': 'spin_variant', 'value': variant})
 
     if self.__decorate_metric_name:
-      name = '{service}.{name}'.format(service=service, name=name)
+      name = '{service}/{name}'.format(service=service, name=name)
 
     return name, tags
 

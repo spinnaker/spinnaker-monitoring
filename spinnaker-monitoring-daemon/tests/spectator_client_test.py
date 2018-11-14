@@ -153,7 +153,7 @@ class SpectatorClientHelperTest(unittest.TestCase):
     helper = spectator_client.SpectatorClientHelper(options)
     name, tags = helper.normalize_name_and_tags(
         'myService', 'myMetric', self.SIMPLE_VALUE_DATA, self.METRIC_METADATA)
-    self.assertEquals('myService.myMetric', name)
+    self.assertEquals('myService/myMetric', name)
     self.assertEquals([{'key': 'myTag', 'value': 'myTagValue'}], tags)
 
   def test_normalize_name_and_tags_statistic_default(self):
@@ -161,7 +161,7 @@ class SpectatorClientHelperTest(unittest.TestCase):
     helper = spectator_client.SpectatorClientHelper(options)
     name, tags = helper.normalize_name_and_tags(
         'myService', 'myMetric', self.TIMER_TIME_VALUE_DATA, self.METRIC_METADATA)
-    self.assertEquals('myService.myMetric__totalTime', name)
+    self.assertEquals('myService/myMetric__totalTime', name)
     self.assertEquals([{'key': 'myTag', 'value': 'myTagValue'}], tags)
 
   def test_normalize_name_and_tags_tagless_default(self):
@@ -169,17 +169,18 @@ class SpectatorClientHelperTest(unittest.TestCase):
     helper = spectator_client.SpectatorClientHelper(options)
     name, tags = helper.normalize_name_and_tags(
         'myService', 'myMetric', self.TAGLESS_VALUE_DATA, self.METRIC_METADATA)
-    self.assertEquals('myService.myMetric', name)
+    self.assertEquals('myService/myMetric', name)
     self.assertEquals([], tags)
 
   def test_normalize_name_and_tags_simple_with_service_tag(self):
     options = {'spectator': {'inject_service_tag': True}}
     helper = spectator_client.SpectatorClientHelper(options)
     name, tags = helper.normalize_name_and_tags(
-        'myService', 'myMetric', self.SIMPLE_VALUE_DATA, self.METRIC_METADATA)
+        'myService-ro', 'myMetric', self.SIMPLE_VALUE_DATA, self.METRIC_METADATA)
     self.assertEquals('myMetric', name)
     self.assertEquals(sorted([{'key': 'myTag', 'value': 'myTagValue'},
-                              {'key': 'spin_service', 'value': 'myService'}]),
+                              {'key': 'spin_service', 'value': 'myService'},
+                              {'key': 'spin_variant', 'value': 'ro'}]),
                       sorted(tags))
 
   def test_normalize_name_and_tags_simple_with_service_tag_and_decoration(self):
@@ -187,10 +188,11 @@ class SpectatorClientHelperTest(unittest.TestCase):
                              'decorate_metric_name': True}}
     helper = spectator_client.SpectatorClientHelper(options)
     name, tags = helper.normalize_name_and_tags(
-        'myService', 'myMetric', self.SIMPLE_VALUE_DATA, self.METRIC_METADATA)
-    self.assertEquals('myService.myMetric', name)
+        'myService-ro', 'myMetric', self.SIMPLE_VALUE_DATA, self.METRIC_METADATA)
+    self.assertEquals('myService-ro/myMetric', name)
     self.assertEquals(sorted([{'key': 'myTag', 'value': 'myTagValue'},
-                              {'key': 'spin_service', 'value': 'myService'}]),
+                              {'key': 'spin_service', 'value': 'myService'},
+                              {'key': 'spin_variant', 'value': 'ro'}]),
                       sorted(tags))
 
 

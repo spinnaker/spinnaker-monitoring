@@ -78,7 +78,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "expr": "sum($Function(echo:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
@@ -168,7 +168,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum($Function(echo:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -258,7 +258,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(echo:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(echo:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum(rate(echo:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(echo:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -348,7 +348,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:pipelines:triggered{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
+              "expr": "sum($Function(echo:pipelines:triggered_total{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}",
@@ -507,7 +507,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "echo:controller:invocations__count",
+        "query": "echo:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

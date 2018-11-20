@@ -78,7 +78,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, status), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -157,7 +157,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations{instance=~\"$Instance\"}[$SamplePeriod])) by (cloudProvider, type)",
+              "expr": "sum($Function(orca:stage:invocations_total{instance=~\"$Instance\"}[$SamplePeriod])) by (cloudProvider, type)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -249,7 +249,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -327,7 +327,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations:duration{instance=~\"$Instance\"}[$SamplePeriod])) by (cloudProvider, stageType)",
+              "expr": "sum($Function(orca:stage:invocations:duration_total{instance=~\"$Instance\"}[$SamplePeriod])) by (cloudProvider, stageType)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -417,7 +417,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(orca:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(orca:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(orca:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
               "refId": "A",
@@ -492,7 +492,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations:duration{instance=~\"$Instance\",bucket!=\"lt5m\"}[$SamplePeriod])) by (stageType, cloudProvider, bucket)",
+              "expr": "sum($Function(orca:stage:invocations:duration_total{instance=~\"$Instance\",bucket!=\"lt5m\"}[$SamplePeriod])) by (stageType, cloudProvider, bucket)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -748,7 +748,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:queue:pushed:messages{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(orca:queue:pushed:messages_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
@@ -825,7 +825,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:queue:acknowledged:messages{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(orca:queue:acknowledged:messages_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
@@ -984,7 +984,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "orca:controller:invocations__count",
+        "query": "orca:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

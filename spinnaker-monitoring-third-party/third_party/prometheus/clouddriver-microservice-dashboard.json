@@ -79,7 +79,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -249,7 +249,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -328,7 +328,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:executionCount{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(clouddriver:executionCount_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -419,7 +419,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method) / sum(rate(clouddriver:controller:invocations__count{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method) / sum(rate(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -497,7 +497,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:executionTime__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum(rate(clouddriver:executionTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum(rate(clouddriver:executionTime__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum(rate(clouddriver:executionTime__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
               "refId": "A",
@@ -586,7 +586,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -668,7 +668,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -838,7 +838,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) / sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -847,7 +847,7 @@
               "step": 30
             },
             {
-              "expr": "sum((clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\"})) by (basePhase, scope) / sum((clouddriver:google:operationWaits__count{instance=~\"$Instance\"})) by (basePhase, scope) ",
+              "expr": "sum((clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\"})) by (basePhase, scope) / sum((clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"})) by (basePhase, scope) ",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -856,7 +856,7 @@
               "step": 10
             },
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\"}[$SamplePeriod]))",
+              "expr": "sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"}[$SamplePeriod]))",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "",
@@ -1016,7 +1016,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "clouddriver:controller:invocations__count",
+        "query": "clouddriver:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,
@@ -1036,7 +1036,7 @@
         "multi": false,
         "name": "Account",
         "options": [],
-        "query": "clouddriver:controller:invocations__count",
+        "query": "clouddriver:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/account=\"([^\"]+).*/",
         "sort": 1,

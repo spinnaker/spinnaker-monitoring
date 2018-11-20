@@ -75,7 +75,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
@@ -150,7 +150,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",success=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method) / sum(rate(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",success=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method) / sum(rate(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success=\"true\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "metric": "",
@@ -236,7 +236,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
@@ -311,7 +311,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",success!=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method) / sum(rate(clouddriver:kubernetes:api__count{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",success!=\"true\",account=~\"$KubernetesAccount\"}[$SamplePeriod])) by (method) / sum(rate(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",namespace=~\"$KubernetesNamespace\",account=~\"$KubernetesAccount\",success!=\"true\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "metric": "",
@@ -397,7 +397,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{resource}} ",
@@ -472,7 +472,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{account}} ",
@@ -547,7 +547,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{namespace}} ",
@@ -634,7 +634,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(label_replace(rate(clouddriver:kubernetes:api__totalTime{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]+).*\")) by (resource) / sum(label_replace(rate(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]+).*\"))  by (resource)",
+              "expr": "sum(label_replace(rate(clouddriver:kubernetes:api__totalTime_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]+).*\")) by (resource) / sum(label_replace(rate(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]+).*\"))  by (resource)",
               "intervalFactor": 2,
               "legendFormat": "{{resource}}",
               "metric": "",
@@ -708,7 +708,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account) / sum(rate(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
+              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account) / sum(rate(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (account)",
               "intervalFactor": 2,
               "legendFormat": "{{account}}",
               "metric": "",
@@ -782,7 +782,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace) / sum(rate(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
+              "expr": "sum(rate(clouddriver:kubernetes:api__totalTime_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace) / sum(rate(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success=\"true\"}[$SamplePeriod])) by (namespace)",
               "intervalFactor": 2,
               "legendFormat": "{{namespace}}",
               "metric": "",
@@ -868,7 +868,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod]), \"resource\", \"$1\", \"method\", \"([^\\\\.]*).*\")) by (resource)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{resource}} ",
@@ -943,7 +943,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (account)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (account)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{account}} ",
@@ -1018,7 +1018,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:kubernetes:api__count{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (namespace)",
+              "expr": "sum($Function(clouddriver:kubernetes:api__count_total{instance=~\"$Instance\",success!=\"true\"}[$SamplePeriod])) by (namespace)",
               "interval": "",
               "intervalFactor": 2,
               "legendFormat": "{{namespace}} ",
@@ -1089,7 +1089,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "clouddriver:kubernetes:api__count",
+        "query": "clouddriver:kubernetes:api__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 1,
@@ -1109,7 +1109,7 @@
         "multi": false,
         "name": "KubernetesAccount",
         "options": [],
-        "query": "clouddriver:kubernetes:api__count",
+        "query": "clouddriver:kubernetes:api__count_total",
         "refresh": 2,
         "regex": "/account=\"([^\"]+)/",
         "sort": 1,
@@ -1129,7 +1129,7 @@
         "multi": false,
         "name": "KubernetesNamespace",
         "options": [],
-        "query": "clouddriver:kubernetes:api__count",
+        "query": "clouddriver:kubernetes:api__count_total",
         "refresh": 2,
         "regex": "/namespace=\"([^\"]+)/",
         "sort": 1,

@@ -327,7 +327,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
+              "expr": "sum($Function(front50:controller:invocations__count_total{instance=~\"$Instance\", status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -415,7 +415,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:storageServiceSupport:autoRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:autoRefreshTime__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "force/{{objectType}}",
@@ -424,7 +424,7 @@
               "step": 40
             },
             {
-              "expr": "-1 * (sum($Function(front50:storageServiceSupport:scheduledRefreshTime__count{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType))",
+              "expr": "-1 * (sum($Function(front50:storageServiceSupport:scheduledRefreshTime__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType))",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
@@ -514,7 +514,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum($Function(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -683,7 +683,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
               "refId": "A",
@@ -769,7 +769,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:storageServiceSupport:numAdded{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:numAdded_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "add {{objectType}}",
               "metric": "",
@@ -777,7 +777,7 @@
               "step": 40
             },
             {
-              "expr": "-1 * sum($Function(front50:storageServiceSupport:numRemoved{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "-1 * sum($Function(front50:storageServiceSupport:numRemoved_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "del {{objectType}}",
               "refId": "B",
@@ -868,7 +868,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:google:storage:invocation__count{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(front50:google:storage:invocation__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -947,7 +947,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:storageServiceSupport:numUpdated{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:numUpdated_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "metric": "",
@@ -1036,7 +1036,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(front50:google:storage:invocation__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (method) / sum(rate(front50:google:storage:invocation__count{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(rate(front50:google:storage:invocation__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method) / sum(rate(front50:google:storage:invocation__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
@@ -1270,7 +1270,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "front50:controller:invocations__count",
+        "query": "front50:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

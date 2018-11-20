@@ -78,7 +78,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, statusCode)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",status!=\"2xx\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, statusCode)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -159,7 +159,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\", scope=\"regional\"}[$SamplePeriod])) by (region, statusCode)",
+              "expr": "sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",status!=\"2xx\", scope=\"regional\"}[$SamplePeriod])) by (region, statusCode)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -169,7 +169,7 @@
               "step": 30
             },
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion, statusCode)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",status!=\"2xx\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion, statusCode)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -179,7 +179,7 @@
               "step": 30
             },
             {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",status!=\"2xx\",scope=\"global\"}[$SamplePeriod])) by (zone, statusCode)",
+              "expr": "sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",status!=\"2xx\",scope=\"global\"}[$SamplePeriod])) by (zone, statusCode)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -272,7 +272,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count_total{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource)",
               "format": "time_series",
               "hide": true,
               "intervalFactor": 2,
@@ -282,7 +282,7 @@
               "step": 4
             },
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, status, statusCode)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count_total{instance=~\"$Instance\"}[$SamplePeriod]), \"resource\", \"$1\", \"api\", \"compute.(.*)\\\\..*\")) by (resource, status, statusCode)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -363,7 +363,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\"}[$SamplePeriod])) by (region)",
+              "expr": "sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"regional\"}[$SamplePeriod])) by (region)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -373,7 +373,7 @@
               "step": 30
             },
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
+              "expr": "sum(label_replace($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"zonal\"}[$SamplePeriod]), \"zoneRegion\", \"$1\", \"zone\", \"(.*)-.\")) by (zoneRegion)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -383,7 +383,7 @@
               "step": 30
             },
             {
-              "expr": "sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (zone)",
+              "expr": "sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (zone)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -476,7 +476,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -557,7 +557,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -650,7 +650,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -731,7 +731,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api) / sum(rate(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (api), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -824,7 +824,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (zone, api), \"api\", \"$1\", \"api\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -905,7 +905,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone) / sum(rate(clouddriver:google:api__count{instance=~\"$Instance\",scope=\"zonal\", zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(rate(clouddriver:google:api__totalTime_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone) / sum(rate(clouddriver:google:api__count_total{instance=~\"$Instance\",scope=\"zonal\", zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (api, zone), \"api\", \"$1\", \"api\", \"compute.(.*)\")",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1076,7 +1076,7 @@
           "steppedLine": true,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:batchExecute__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{context}}",
               "metric": "",
@@ -1154,7 +1154,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(rate(clouddriver:google:batchExecute__totalTime{instance=~\"$Instance\"}[$SamplePeriod]) / rate(clouddriver:google:batchExecute__count{instance=~\"$Instance\"}[$SamplePeriod]), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "expr": "label_replace(rate(clouddriver:google:batchExecute__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod]) / rate(clouddriver:google:batchExecute__count_total{instance=~\"$Instance\"}[$SamplePeriod]), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{context}}",
               "metric": "",
@@ -1244,7 +1244,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",status=\"DONE\"}[$SamplePeriod])) by (basePhase)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1326,7 +1326,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaits__count{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "expr": "sum($Function(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",status!=\"DONE\"}[$SamplePeriod])) by (basePhase, scope) ",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -1417,7 +1417,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) ",
+              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) / sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase) ",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1497,7 +1497,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) / sum(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) ",
+              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) / sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (region, basePhase) ",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1507,7 +1507,7 @@
               "step": 40
             },
             {
-              "expr": "rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])",
+              "expr": "rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])",
               "format": "time_series",
               "hide": true,
               "intervalFactor": 2,
@@ -1587,7 +1587,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(label_replace(rate(clouddriver:google:operationWaits__totalTime{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) / sum(label_replace(rate(clouddriver:google:operationWaits__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) ",
+              "expr": "sum(label_replace(rate(clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) / sum(label_replace(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod]), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (basePhase, cell) ",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -1926,7 +1926,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(label_replace($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")) by (operation, phase)",
+              "expr": "sum(label_replace($Function(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod]), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")) by (operation, phase)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
@@ -2005,7 +2005,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (instance, phase, operation), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (instance, phase, operation), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
@@ -2084,7 +2084,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (instance, phase, operation, cell), \"operation\", \"$1\", \"operation\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (instance, phase, operation, cell), \"operation\", \"$1\", \"operation\", \"compute.(.*)\"), \"cell\", \"$1\", \"zone\", \".*-(.)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}/{{cell}}",
@@ -2175,7 +2175,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:google:safeRetry__totalTime{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (operation, phase) / sum(rate(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (operation, phase), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(rate(clouddriver:google:safeRetry__totalTime_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (operation, phase) / sum(rate(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (operation, phase), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
@@ -2253,7 +2253,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:google:safeRetry__totalTime{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (operation, phase) / sum(rate(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (operation, phase), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(rate(clouddriver:google:safeRetry__totalTime_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (operation, phase) / sum(rate(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (operation, phase), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}",
               "metric": "",
@@ -2331,7 +2331,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(label_replace(sum(rate(clouddriver:google:safeRetry__totalTime{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (operation, phase, zone) / sum(rate(clouddriver:google:safeRetry__count{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (operation, phase, zone), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (phase, operation, cell), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
+              "expr": "label_replace(sum(label_replace(sum(rate(clouddriver:google:safeRetry__totalTime_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (operation, phase, zone) / sum(rate(clouddriver:google:safeRetry__count_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (operation, phase, zone), \"cell\", \"$1\", \"zone\", \".*-(.)\")) by (phase, operation, cell), \"operation\", \"$1\", \"operation\", \"compute.(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{phase}}.{{operation}}/{{cell}}",
               "metric": "",
@@ -2421,7 +2421,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:google:storage:invocation__count{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum($Function(front50:google:storage:invocation__count_total{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
@@ -2497,7 +2497,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(front50:google:storage:invocation__totalTime{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method) / sum(rate(front50:google:storage:invocation__count{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(rate(front50:google:storage:invocation__totalTime_total{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method) / sum(rate(front50:google:storage:invocation__count_total{instance=~\"$Front50Instance\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
@@ -2567,7 +2567,7 @@
         "multi": false,
         "name": "GcpRegion",
         "options": [],
-        "query": "clouddriver:google:api__count",
+        "query": "clouddriver:google:api__count_total",
         "refresh": 2,
         "regex": "/.*region=\"([^\"]+).*/",
         "sort": 1,
@@ -2587,7 +2587,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "clouddriver:google:api__count",
+        "query": "clouddriver:google:api__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 1,
@@ -2607,7 +2607,7 @@
         "multi": false,
         "name": "Front50Instance",
         "options": [],
-        "query": "front50:google:storage:invocation__count",
+        "query": "front50:google:storage:invocation__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 1,

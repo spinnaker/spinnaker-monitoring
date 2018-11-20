@@ -16,10 +16,11 @@
 
 
 import logging
+import os
 import yaml
 
 
-def load_yaml_options(config_path):
+def _log_and_load_yaml(config_path):
   """Load options from the YAML file at the specified path.
 
   Returns an empty dictionary and logs a warning on error.
@@ -31,6 +32,36 @@ def load_yaml_options(config_path):
       logging.info('Loaded config from %s', config_path)
   except IOError:
     logging.warn('Failed to load %s', config_path)
+  return config
+
+
+def update_with_overrides(baseline_config, override_config):
+  for key, value in override_config.items():
+    if key not in baseline_config or not isinstance(value, dict):
+      baseline_config[key] = value
+    else:
+      update_with_overrides(baseline_config[key], value)
+
+
+def load_yaml_options(config_path):
+  """Load options from the YAML file at the specified path.
+
+  Will attempt to apply override values from "-local.yml" file if present.
+  Returns an empty dictionary and logs a warning on error.
+  """
+
+  config = _log_and_load_yaml(config_path)
+
+  local_path = None
+  if config_path.endswith('.yml'):
+    local_path = config_path[:-4] + '-local.yml'
+  if not os.path.exists(local_path):
+    return config
+
+  local_config = _log_and_load_yaml(local_path)
+  logging.info('Overriding %s with values from %s', config_path, local_path)
+
+  update_with_overrides(config, local_config)
   return config
 
 

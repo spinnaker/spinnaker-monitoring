@@ -265,7 +265,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(clouddriver:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Clouddriver/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -273,7 +273,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(echo:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(echo:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Echo/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -281,7 +281,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(fiat:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(fiat:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Fiat/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -289,7 +289,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(front50:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(front50:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Front50/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -297,7 +297,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Gate/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -305,7 +305,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(igor:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(igor:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Igor/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -313,7 +313,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(orca:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(orca:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Orca/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -321,7 +321,7 @@
               "step": 4
             },
             {
-              "expr": "label_replace(sum($Function(rosco:controller:invocations__count{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(rosco:controller:invocations__count_total{status=\"5xx\"}[$SamplePeriod])) by (controller, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "Rosco/{{statusCode}}/{{controller}}",
               "metric": "",
@@ -407,7 +407,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations{isComplete=\"false\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations_total[$SamplePeriod])) by (instance, type, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -482,7 +482,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations{isComplete=\"true\"}[$SamplePeriod])) by (instance, executionType, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations_total[$SamplePeriod])) by (instance, type, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -567,7 +567,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations:duration{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
+              "expr": "sum($Function(orca:stage:invocations:duration_total{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}/{{cloudProvider}}",
               "metric": "",
@@ -743,7 +743,7 @@
               "step": 10
             },
             {
-              "expr": "-1 * sum($Function(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
+              "expr": "-1 * sum($Function(rosco:bakesCompleted__count_total{success=\"false\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Failed {{region}}",
@@ -906,7 +906,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:executionCount[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(clouddriver:executionCount_total[$SamplePeriod])) by (instance)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
@@ -981,7 +981,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:executionTime__totalTime[$SamplePeriod])) by (instance) / sum(rate(clouddriver:executionTime__count[$SamplePeriod])) by (instance)",
+              "expr": "sum(rate(clouddriver:executionTime__totalTime_total[$SamplePeriod])) by (instance) / sum(rate(clouddriver:executionTime__count_total[$SamplePeriod])) by (instance)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",

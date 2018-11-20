@@ -412,7 +412,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count_total{instance=~\"$Instance\",status=\"5xx\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
@@ -420,7 +420,7 @@
               "step": 10
             },
             {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{instance=~\"$Instance\",statusCode=\"429\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count_total{instance=~\"$Instance\",statusCode=\"429\"}[$SamplePeriod])) by (controller, method, statusCode), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{controller}}/{{method}}",
@@ -510,7 +510,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(gate:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum($Function(gate:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -600,7 +600,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(gate:controller:invocations__count{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(gate:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -758,7 +758,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "gate:controller:invocations__count",
+        "query": "gate:controller:invocations__count_total",
         "refresh": 1,
         "regex": "/instance=\"([^\"]+).*/",
         "sort": 1,

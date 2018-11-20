@@ -75,7 +75,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations{application=~\"$Application\"}[$SamplePeriod])) by (application, type)",
+              "expr": "sum($Function(orca:stage:invocations_total{application=~\"$Application\"}[$SamplePeriod])) by (application, type)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{application}}/{{type}}",
@@ -151,7 +151,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:queue:pushed:messages{application=~\"$Application\"}[$SamplePeriod])) by (application)",
+              "expr": "sum($Function(orca:queue:pushed:messages_total{application=~\"$Application\"}[$SamplePeriod])) by (application)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{application}}",
@@ -239,7 +239,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:pipelines:triggered{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
+              "expr": "sum($Function(echo:pipelines:triggered_total{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}({{application}})",
@@ -332,7 +332,7 @@
               "step": 20
             },
             {
-              "expr": "-1 * sum($Function(rosco:bakesCompleted__count{success=\"false\"}[$SamplePeriod])) by (region)",
+              "expr": "-1 * sum($Function(rosco:bakesCompleted__count_total{success=\"false\"}[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Failed {{region}}",
@@ -407,7 +407,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(rosco:bakesCompleted__totalTime[$SamplePeriod]) / 1000000000) by (region) / sum(rate(rosco:bakesCompleted__count[$SamplePeriod])) by (region)",
+              "expr": "sum(rate(rosco:bakesCompleted__totalTime_total[$SamplePeriod]) / 1000000000) by (region) / sum(rate(rosco:bakesCompleted__count_total[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
@@ -848,7 +848,7 @@
         "multi": false,
         "name": "Application",
         "options": [],
-        "query": "orca:stage:invocations",
+        "query": "orca:stage:invocations_total",
         "refresh": 2,
         "regex": "/application=\"([^\"]+)/",
         "sort": 1,

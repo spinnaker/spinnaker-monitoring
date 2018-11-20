@@ -251,7 +251,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (serviceEndpoint, statusCode), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (serviceEndpoint, statusCode), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}} / {{statusCode}}",
               "metric": "",
@@ -325,7 +325,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\"), \"serviceName\",  \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "expr": "label_replace(label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",error=\"true\"}[$SamplePeriod])) by (requestType, serviceName, statusCode, AWSErrorCode), \"requestType\", \"$1\", \"requestType\", \"(.*)Request(.*)\"), \"serviceName\",  \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
               "legendFormat": "{{statusCode}}/{{serviceName}}.{{requestType}}->{{AWSErrorCode}}",
               "metric": "",
@@ -411,7 +411,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
               "metric": "",
@@ -485,7 +485,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
               "intervalFactor": 2,
               "legendFormat": "{{requestType}}",
               "metric": "",
@@ -571,7 +571,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
               "metric": "",
@@ -645,7 +645,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:aws:request:httpRequestTime__totalTime{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName)",
+              "expr": "sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName)",
               "intervalFactor": 2,
               "legendFormat": "{{requestType}}",
               "metric": "",
@@ -731,7 +731,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceName, serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceName, serviceEndpoint), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / {{region}}",
               "metric": "",
@@ -805,7 +805,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "expr": "label_replace(sum($Function(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}}.{{requestType}}",
               "metric": "",
@@ -891,7 +891,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName)  / sum(rate(clouddriver:aws:request:httpRequestTime__count{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName)  / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / {{region}}",
               "metric": "",
@@ -965,7 +965,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
+              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}}.{{requestType}}",
               "metric": "",
@@ -1035,7 +1035,7 @@
         "multi": false,
         "name": "AwsRegion",
         "options": [],
-        "query": "clouddriver:aws:request:httpRequestTime__count",
+        "query": "clouddriver:aws:request:httpRequestTime__count_total",
         "refresh": 2,
         "regex": "/.*serviceEndpoint=\"[^\\.]+\\.([^\\.]+).*/",
         "sort": 1,
@@ -1055,7 +1055,7 @@
         "multi": false,
         "name": "Instance",
         "options": [],
-        "query": "clouddriver:aws:request:httpRequestTime__count",
+        "query": "clouddriver:aws:request:httpRequestTime__count_total",
         "refresh": 2,
         "regex": "/instance=\"([^\"]+)/",
         "sort": 1,

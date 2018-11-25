@@ -205,7 +205,7 @@ class SpectatorClientTest(unittest.TestCase):
   def setUp(self):
     options = {'prototype_path': None,
                'host': TEST_HOST,
-               'metric_filter_dir': None}
+               'metric_filter_dir': '/none'}
     self.spectator = TestableSpectatorClient(options)
     self.default_query_params = '?tagNameRegex=.%2A'  # tagNameRegex=.*
 

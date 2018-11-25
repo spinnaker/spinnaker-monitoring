@@ -79,9 +79,10 @@ class AggregatedMetricsBuilder(object):
   the individual partitions that went into the aggregate.
   """
 
-  def __init__(self, discard_tag_values):
+  def __init__(self, rule):
     self.__tags_to_metric = {}
-    self.__discard_tag_values = discard_tag_values
+    self.__rule = rule
+    self.__discard_tag_values = rule.discard_tag_value_expressions
 
   def add(self, value_json, tags):
     """Add a measurement to the builder."""
@@ -98,12 +99,13 @@ class AggregatedMetricsBuilder(object):
           # ignore this value because it has undesirable tag value.
           return
 
-    tags = sorted(tags) if tags else None
-    key = str(tags)
-    metric = self.__tags_to_metric.get(key)
+    sorted_tags = sorted(tags) if tags else None
+    normalized_key = str(sorted_tags)
+
+    metric = self.__tags_to_metric.get(normalized_key)
     if not metric:
-      metric = MetricInfo(value_json, tags)
-      self.__tags_to_metric[key] = metric
+      metric = MetricInfo(value_json, sorted_tags)
+      self.__tags_to_metric[normalized_key] = metric
     else:
       metric.aggregate_value(value_json)
 
@@ -113,26 +115,8 @@ class AggregatedMetricsBuilder(object):
             for info in self.__tags_to_metric.values()]
 
 
-class SpectatorMetricTransformer(object):
-  """Transform Spectator measurement responses.
-
-  This transforms responses so that the metrics appear to have different
-  definitions than they really did. Typically this means changing
-  the metric name and/or tags, perhaps adding or removing some.
-
-  The transformer applies rules to encoded spectator metrics to produce
-  alternative encodings as if the original spectator metric was the
-  intended metric produced by the rule. This allows the transformer to
-  be easily injected into the processing pipeline from the scrape.
-
-  Rules are keyed by the spectator meter name that they apply to. Therefore,
-  every kept meter needs a distinct rule entry even if the rule is otherwise
-  the same as another.
-
-  Each entry in a rule is optional. Missing entries means "the identity".
-  However the omission of a rule entirely means take the default action
-  on the transformer which is either to discard the metric (default)
-  or keep it as is.
+class TransformationRule(object):
+  """Encapsulates transformation rule.
 
   Transformation rules are as follows:
     'transform_name': <transform_name_map>
@@ -213,10 +197,6 @@ class SpectatorMetricTransformer(object):
    * If <per_application> is analogous to <per_account> but for the
      'application' tag if present.
 
-  When the rule is instantiated in the transformer, it is pre-processed
-  and some additional tags are entered into it for internal use. These
-  internal tags begin with '_'.
-
   Rules may have additional fields in them for purposes of specifying the
   target metrics. However these are ignored by the transformer. Some of these
   in practice are:
@@ -229,85 +209,20 @@ class SpectatorMetricTransformer(object):
          not be summed across replicas.
   """
 
-  @staticmethod
-  def new_from_yaml_path(path, **kwargs):
-    """Create new instance using specification in YAML file."""
-    with open(path, 'r') as stream:
-      transform_spec = yaml.load(stream)
-    return SpectatorMetricTransformer(transform_spec, **kwargs)
+  @property
+  def discard_tag_value_expressions(self):
+    """Map of tag name to value regex to discard when matching."""
+    return self.__discard_tag_values
 
   @property
-  def default_namespace(self):
-    """Returns the default namespace to use when transforming names."""
-    return self.__default_transform_key
+  def per_account(self):
+    """Should this rule break out "account" tags if present."""
+    return self.__per_account
 
   @property
-  def specification(self):
-    """Returns the specification used to derive the transformer."""
-    return self.__spec
-
-  def __init__(self, spec,
-               default_namespace=None,
-               default_is_identity=False):
-    """Constructor.
-
-    Args:
-      spec: [dict] Transformation specification entry from YAML.
-      default_namespace: [string] The default key to use for transform_name.
-      default_is_identity: [bool] If true and a spec is not
-          found when transforming a metric then assume the identity.
-          otherwise assume the metric should be discarded.
-    """
-    self.__default_transform_key = default_namespace
-    self.__default_rule = ({}                      # identity
-                           if default_is_identity
-                           else None)              # discard
-    self.__spec = spec
-    for meter_name, rule in spec.items():
-      if rule is None:
-        logging.debug(
-            'Meter "%s" configured with None so will be explicitly discarded',
-            meter_name)
-        continue
-
-      # 'statistic' will always be kept implicitly
-      # because it's value affects the semantics of the measurement.
-      # It will ultimately get stripped out when the metrics are
-      # exported into a monitoring system.
-      # Dont explicitly add it to avoid duplication of the implicit add.
-      rule_tags = rule.get('tags', [])
-      if rule_tags:
-        try:
-          del rule_tags[rule_tags.index('statistic')]
-        except ValueError:
-          pass
-
-        if rule.get('per_application'):
-          try:
-            del rule_tags[rule_tags.index('application')]
-          except ValueError:
-            pass
-        if rule.get('per_account'):
-          try:
-            del rule_tags[rule_tags.index('account')]
-          except ValueError:
-            pass
-
-      transform_tags = rule.get('transform_tags', [])
-      rule['_identity_tags'] = (
-          'tags' not in rule and 'transform_tags' not in rule)
-      rule['_added_tags'] = [
-          {'key': key, 'value': value}
-          for key, value in rule.get('add_tags', {}).items()
-      ]
-      for transformation in transform_tags:
-        self.__prepare_transformation(transformation)
-
-      discard_tag_values = rule.get('discard_tag_values', [])
-      if discard_tag_values:
-        rule['_discard_tag_values'] = {
-            key: re.compile(value) for key, value in discard_tag_values.items()
-        }
+  def per_application(self):
+    """Should this rule break out "application" tags if present."""
+    return self.__per_application
 
   def __prepare_transformation(self, transformation):
     """Update the transformation entry from the YAML to contain functions.
@@ -369,6 +284,209 @@ class SpectatorMetricTransformer(object):
       }
     transformation['_xform_func'] = composite_func
 
+  def __init__(self, rule_spec):
+    self.__rule_spec = rule_spec if rule_spec else None
+
+    if rule_spec is None:
+      rule_spec = {}
+
+    per_tags = []
+
+    # 'statistic' will always be kept implicitly
+    # because it's value affects the semantics of the measurement.
+    # It will ultimately get stripped out when the metrics are
+    # exported into a monitoring system.
+    # Dont explicitly add it to avoid duplication of the implicit add.
+    rule_tags = rule_spec.get('tags') or []
+    if rule_tags:
+      try:
+        del rule_tags[rule_tags.index('statistic')]
+      except ValueError:
+        pass
+
+    self.__per_application = rule_spec.get('per_application')
+    if self.__per_application:
+      per_tags.append('application')
+      try:
+        del rule_tags[rule_tags.index('application')]
+      except ValueError:
+        pass
+
+    self.__per_account = rule_spec.get('per_account')
+    if self.__per_account:
+      per_tags.append('account')
+      try:
+        del rule_tags[rule_tags.index('account')]
+      except ValueError:
+        pass
+
+    if per_tags:
+      self.is_per_tag = lambda t: t in per_tags
+    else:
+      self.is_per_tag = lambda t: False
+
+    transform_tags = rule_spec.get('transform_tags', [])
+    self.__identity_tags = (
+        'tags' not in rule_spec and 'transform_tags' not in rule_spec)
+    self.__added_tags = [
+        {'key': key, 'value': value}
+        for key, value in rule_spec.get('add_tags', {}).items()
+    ]
+    for transformation in transform_tags:
+      self.__prepare_transformation(transformation)
+
+    discard_tag_values = rule_spec.get('discard_tag_values', {})
+    self.__discard_tag_values = {
+        key: re.compile(value) for key, value in discard_tag_values.items()
+    }
+
+  def __nonzero__(self):
+    return self.__rule_spec is not None
+
+  def __bool__(self):
+    return self.__rule_spec is not None
+
+  def determine_meter_name(self, meter_name, transform_namespace):
+    """Get transformed meter name (or original).
+
+    Args:
+      meter_name: [string] The original meter name
+      transform_namespace: [string] The key for which naming system to use
+            or none for the default.
+
+    Returns:
+      The name, possibly original meter_name, or None to disregard this meter.
+    """
+    transformed_name = meter_name
+    name_transform_dict = self.__rule_spec.get('transform_name')
+    if name_transform_dict:
+      if transform_namespace not in name_transform_dict:
+        transform_namespace = 'default'
+      transformed_name = name_transform_dict.get(transform_namespace)
+    return transformed_name
+
+  def apply(self, spectator_metric):
+    """Apply the rule to the given metric instance."""
+    metric_builder = AggregatedMetricsBuilder(self)
+
+    for source_metric in spectator_metric.get('values', []):
+      source_tags = source_metric.get('tags', [])
+      target_metric = {'values': source_metric['values']}
+      if self.__identity_tags:
+        target_tags = source_tags + self.__added_tags
+      else:
+        per_tags = []
+        tag_dict = {entry['key']: entry['value'] for entry in source_tags}
+        target_tags = list(self.__added_tags)
+
+        def add_if_present(key, tag_dict, target_tags):
+          """Add if there is a tag_dict[key] then add it to target_tags."""
+          value = tag_dict.get(key)
+          if value is not None:
+            target_tags.append({'key': key, 'value': value})
+
+        # "statistic" is required to be preserved while transforming.
+        # It will be removed later when the metrics are exported.
+        add_if_present('statistic', tag_dict, target_tags)
+
+        # NOTE(ewiseblatt): 20181123
+        # We're not handling per-* attributes yet.
+        # It is quite complicated and probably high overhead
+        # plus still needs to be implemented in the writers.
+        #
+        # if self.__per_account:
+        #   add_if_present('account', tag_dict, per_tags)
+        # if self.__per_application:
+        #   add_if_present('application', tag_dict, per_tags)
+
+        for tag_name in self.__rule_spec.get('tags') or []:
+          target_tags.append({'key': tag_name,
+                              'value': tag_dict.get(tag_name, '')})
+
+        for transformation in self.__rule_spec.get('transform_tags', []):
+          from_tag = transformation['from']
+          value = tag_dict.get(from_tag, '')
+          xform_tags = transformation['_xform_func'](value)
+          for key, value in xform_tags.items():
+            encoded_tag = {'key': key, 'value': value}
+            if self.is_per_tag(key):
+              per_tags.append(encoded_tag)
+            else:
+              target_tags.append(encoded_tag)
+
+       # NOTE(ewiseblatt): 20181123
+       # We're currently disregarding the per_tags here.
+       # If you said "per_application" then specified an application
+       # extraction above, then that application tag will be dropped.
+
+      if target_tags:
+        target_metric['tags'] = sorted(target_tags)
+
+      metric_builder.add(target_metric['values'][-1],
+                         target_metric.get('tags'))
+    return metric_builder.build()
+
+
+class SpectatorMetricTransformer(object):
+  """Transform Spectator measurement responses.
+
+  This transforms responses so that the metrics appear to have different
+  definitions than they really did. Typically this means changing
+  the metric name and/or tags, perhaps adding or removing some.
+
+  The transformer applies rules to encoded spectator metrics to produce
+  alternative encodings as if the original spectator metric was the
+  intended metric produced by the rule. This allows the transformer to
+  be easily injected into the processing pipeline from the scrape.
+
+  Rules are keyed by the spectator meter name that they apply to. Therefore,
+  every kept meter needs a distinct rule entry even if the rule is otherwise
+  the same as another.
+
+  Each entry in a rule is optional. Missing entries means "the identity".
+  However the omission of a rule entirely means take the default action
+  on the transformer which is either to discard the metric (default)
+  or keep it as is.
+  """
+
+  @staticmethod
+  def new_from_yaml_path(path, **kwargs):
+    """Create new instance using specification in YAML file."""
+    with open(path, 'r') as stream:
+      transform_spec = yaml.load(stream)
+    return SpectatorMetricTransformer(transform_spec, **kwargs)
+
+  @property
+  def default_namespace(self):
+    """Returns the default namespace to use when transforming names."""
+    return self.__default_transform_key
+
+  def __init__(self, spec,
+               default_namespace=None,
+               default_is_identity=False):
+    """Constructor.
+
+    Args:
+      spec: [dict] Transformation specification entry from YAML.
+      default_namespace: [string] The default key to use for transform_name.
+      default_is_identity: [bool] If true and a spec is not
+          found when transforming a metric then assume the identity.
+          otherwise assume the metric should be discarded.
+    """
+    self.__default_transform_key = default_namespace
+    self.__default_rule = (TransformationRule(None)  # identity
+                           if default_is_identity
+                           else None)              # discard
+    self.__rulebase = {key: TransformationRule(value)
+                       for key, value in spec.items()}
+    for meter_name, rule in spec.items():
+      if not rule:
+        logging.debug(
+            'Meter "%s" configured with None so will be %s',
+            meter_name,
+            'the identity' if default_is_identity else 'discarded')
+        continue
+
   def process_response(self, metric_response, transform_namespace=None):
     """Transform the spectator response metrics per the spec."""
     result = {}
@@ -401,72 +519,22 @@ class SpectatorMetricTransformer(object):
       None if the meter should be ignored
       Otherwise the transformed metric instance from the spec.
     """
-    rule = self.__spec.get(meter_name, self.__default_rule)
+    rule = self.__rulebase.get(meter_name, self.__default_rule)
     if not rule:
-      if rule is None and not meter_name in self.__spec:
+      if rule is None:
         # discard if not mentioned and default rule was discard
         return None, None
       # identity if not mentioned and default rule was identity
       # or if was mentioned but no transformations given.
       return meter_name, spectator_metric
 
-    transformed_name = meter_name
-    name_transform_dict = rule.get('transform_name')
-    if name_transform_dict:
-      transform_namespace = transform_namespace or self.default_namespace
-      if transform_namespace not in name_transform_dict:
-        transform_namespace = 'default'
-      transformed_name = name_transform_dict.get(transform_namespace)
-      if not transformed_name:
-        return None, None
+    transformed_name = rule.determine_meter_name(
+        meter_name, transform_namespace or self.default_namespace)
+    if not transformed_name:
+      return None, None
 
     transformed = {
         'kind': spectator_metric['kind'],
-        'values': self.__apply_transform_rule(rule, spectator_metric)
+        'values': rule.apply(spectator_metric)
     }
     return transformed_name, transformed
-
-  def __apply_transform_rule(self, rule, spectator_metric):
-    metric_builder = AggregatedMetricsBuilder(
-        rule.get('_discard_tag_values', {}))
-
-    for source_metric in spectator_metric.get('values', []):
-      source_tags = source_metric.get('tags', [])
-      target_metric = {'values': source_metric['values']}
-      if rule.get('_identity_tags'):
-        target_tags = source_tags + rule['_added_tags']
-      else:
-        tag_dict = {entry['key']: entry['value'] for entry in source_tags}
-        target_tags = list(rule['_added_tags'])
-
-        def add_if_present(key, tag_dict, target_tags):
-          """Add if there is a tag_dict[key] then add it to target_tags."""
-          value = tag_dict.get(key)
-          if value is not None:
-            target_tags.append({'key': key, 'value': value})
-
-        # "statistic" is required to be preserved while transforming.
-        # It will be removed later when the metrics are exported.
-        add_if_present('statistic', tag_dict, target_tags)
-        if rule.get('per_account'):
-          add_if_present('account', tag_dict, target_tags)
-        if rule.get('per_application'):
-          add_if_present('application', tag_dict, target_tags)
-
-        for tag_name in rule.get('tags') or []:
-          target_tags.append({'key': tag_name,
-                              'value': tag_dict.get(tag_name, '')})
-
-        for transformation in rule.get('transform_tags', []):
-          from_tag = transformation['from']
-          value = tag_dict.get(from_tag, '')
-          target_tags.extend(
-              [{'key': key, 'value': value}
-               for key, value in transformation['_xform_func'](value).items()])
-
-      if target_tags:
-        target_metric['tags'] = sorted(target_tags)
-
-      metric_builder.add(target_metric['values'][-1],
-                         target_metric.get('tags'))
-    return metric_builder.build()

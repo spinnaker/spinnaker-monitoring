@@ -524,6 +524,51 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                              ])}
         })
 
+  def test_per_application_removed(self):
+    # Test is we transform into an application tag and have per_application
+    # then the application tag will be removed (and values aggregated).
+    self.do_test(
+        textwrap.dedent("""\
+            executions.started:
+              kind: Counter
+              per_application: true
+              transform_tags:
+                 - from: source
+                   to: application
+                   type: STRING
+              tags:
+                - executionType
+        """),
+
+        {'executions.started': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 12.0}],
+                'tags': [
+                    {'key': 'source', 'value': 'MyApplication'},
+                    {'key': 'executionType', 'value': 'Pipeline'},
+                ]
+            }, {
+                'values': [{'t': 1540224536923, 'v': 21.0}],
+                'tags': [
+                    {'key': 'source', 'value': 'YourApplication'},
+                    {'key': 'executionType', 'value': 'Pipeline'},
+                ]
+            },
+                             ])},
+        },
+
+        {'executions.started': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536923, 'v': 33.0}],
+                'tags': sorted([
+                    {'key': 'executionType', 'value': 'Pipeline'},
+                ])
+            },
+                             ])}
+        })
+
 
 if __name__ == '__main__':
   unittest.main()

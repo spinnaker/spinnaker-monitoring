@@ -329,13 +329,15 @@ class SpectatorMetricTransformer(object):
       if compare:
         transformation['_xform_func'] = lambda value: {to_tag: value == compare}
       else:
-        transformation['_xform_func'] = lambda value: {to_tag: value == 'true'}
+        transformation['_xform_func'] = lambda value: {
+            to_tag: value == 'true' or value == ''
+        }
       return
 
     extract_regex = transformation.get('extract_regex')
     if not extract_regex:
       if tag_type == 'INT':
-        transformation['_xform_func'] = lambda value: {to_tag: int(value)}
+        transformation['_xform_func'] = lambda value: {to_tag: int(value or 0)}
       elif tag_type == 'STRING':
         transformation['_xform_func'] = lambda value: {to_tag: value}
       else:

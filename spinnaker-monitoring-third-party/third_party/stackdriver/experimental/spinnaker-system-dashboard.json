@@ -1,0 +1,687 @@
+{
+  "revision": 0,
+  "displayName": "Spinnaker System Summary",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Service 5xx Errors",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.status=\"5xx\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service",
+                          "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Service Invocation Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service",
+                          "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Service Invocation Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Clouddriver Operation Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operations__count\" AND metric.label.success=\"true\"",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service",
+                        "metric.label.spin_variant"
+                    ],
+                    "unitOverride": "1"
+                    },
+                    "legendTemplate": "SUCCESS"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operations__count\" AND metric.label.success!=\"true\"",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service",
+                        "metric.label.spin_variant"
+                    ],
+                    "unitOverride": "1"
+                    },
+                    "legendTemplate": "FAILED"
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Failed Task Execution Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\" AND metric.label.success!=\"true\"",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service"
+                    ],
+                    "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Messages Orphaned or Dead",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/orphaned\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service"
+                    ],
+                    "unitOverride": "1"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/dead\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service"
+                    ],
+                    "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Completed Task Execution Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\"",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service"
+                    ],
+                    "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Completed Task Execution Time",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Lagging Message Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\"",
+                    "perSeriesAligner": "ALIGN_DELTA",
+                    "crossSeriesReducer": "REDUCE_SUM",
+                    "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                    "minAlignmentPeriod": "60s",
+                    "groupByFields": [
+                        "metric.label.spin_service"
+                    ],
+                    "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Lagging Message Time",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Platform API Failure Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completions__count\" AND metric.label.success!=\"true\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Kubernetes"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\" AND metric.label.status!=\"2xx\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Compute"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\" AND metric.label.status!=\"2xx\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Storage"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\" AND metric.label.success!=\"true\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Appengine"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.success!=\"true\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Amazon"
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "title": "Platform API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completions__count\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Kubernetes"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Compute"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Storage"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Appengine"
+                  },
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\"",
+                    "perSeriesAligner": "ALIGN_RATE",
+                    "crossSeriesReducer": "REDUCE_SUM"
+                    },
+                    "legendTemplate": "Amazon"
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "title": "Platform API Time",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
+
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  },
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\"",
+
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  },
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\"",
+
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  },
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\"",
+
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  },
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completions__totalTime\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completions__count\"",
+
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.spin_service",
+                                "metric.label.spin_variant"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory Usage",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.segment=\"PS Old Gen\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service",
+                          "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+

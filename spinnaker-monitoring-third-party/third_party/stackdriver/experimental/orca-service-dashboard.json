@@ -1,0 +1,556 @@
+{
+  "revision": 0,
+  "displayName": "Orca",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Active Threads",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/active_threads\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Blocked Thread Queues",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/blockedSize\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Threadpool Size",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/size\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Message Queue Depth",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/depth\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Ready Messages",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/ready\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Unacked Messages",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/unacked\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Message Pushed Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/pushed\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Message Acked Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/acked\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "title": "Message Lag",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__totalTime\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "title": "Dead Message Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/dead\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Orphaned Messages",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/orphaned\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Task Result Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/orca/task/finished\" AND metric.label.spin_service=\"orca\"",
+                        "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Active Executions",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/execution/activeThreads\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_SUM",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.executionType"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Started Executions",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/execution/calls\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.executionType"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Completed Task Execution",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__totalTime\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.executionType"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.executionType"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Individual Task Invocations",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/invocation/completions/withType__totalTime\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.executionType"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/invocation/completions/withType__count\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                                "metric.label.executionType"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Stage Invocation Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/stage/calls\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Stage Duration (bucketed)",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/stage/durationBucket\" AND metric.label.spin_service=\"orca\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "OkHttp Request Rate per Status Code",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__count\" AND metric.label.spin_service=\"gate\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant",
+                         "metric.label.statusCode"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "OkHttp Request Latency per Status Code",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__totalTime\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                               "metric.label.spin_variant",
+                               "metric.label.statusCode"
+                            ],
+                            "unitOverride": "1"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__count\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA",
+                            "crossSeriesReducer": "REDUCE_SUM",
+                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                            "minAlignmentPeriod": "60s",
+                            "groupByFields": [
+                               "metric.label.spin_variant",
+                               "metric.label.statusCode"
+                            ],
+                            "unitOverride": "1"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Invocation Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "numerator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA"
+                        },
+                        "denominator_filter": {
+                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"orca\"",
+                            "perSeriesAligner": "ALIGN_DELTA"
+                        }
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"orca\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+

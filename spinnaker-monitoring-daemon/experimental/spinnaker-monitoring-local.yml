@@ -1,0 +1,36 @@
+prometheus:
+  # By default, for historical reasons, spinnaker uses ':' as a hierarchical
+  # separator in prometheus metric names. This is non-0standard for prometheus
+  # and, in fact, unadvised.
+  #
+  # Setting this option to True will use standard notation ('_') instead of ':'.
+  # Note that this is incompmatible with the published dashboards however is
+  # required for the experimental dashboards.
+  use_standard_notation: True
+
+datadog:
+  # This is false by default for historical compatability.
+  # If/when new dashboards are written for datadog, have them based on this
+  # being true.
+  # Historically datadog metrics were written without types, meaning they were
+  # gauges. By setting this to true, meter type information will be reported so
+  # spectator counters will become datadog counters.
+  # use_types: true
+
+spectator:
+  # Do not decorate metric names with a service prefix.
+  # This is true by default for historic compatability, however
+  # is no longer needed/desired given the spin_* tags.
+  decorate_metric_name: false
+
+  # Do not alias service names to their base service names.
+  # When true this would turn "clouddriver-readonly" to "clouddriver"
+  # When false this leaves "clouddriver-readonly" as is.
+  # This is true by default for historic compatability, however
+  # is no longer needed/desired given the spin_* tags.
+  use_base_service_name_only: false
+
+  # Adds spin_service and spin_variant tags for each metric
+  # This also changes the defaults of
+  #    decorate_metric_name and use_base_service_name_only to "false"
+  inject_service_tag: true

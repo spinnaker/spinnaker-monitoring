@@ -425,9 +425,9 @@
             "value": "$__all"
           }
         ],
-        "query": "fiat:controller:invocations__count_total",
+        "query": "label_values(fiat:controller:invocations__count_total, instance)",
         "refresh": 2,
-        "regex": "/instance=\"([^\"]+).*/",
+        "regex": "",
         "sort": 1,
         "tagValuesQuery": "",
         "tags": [],

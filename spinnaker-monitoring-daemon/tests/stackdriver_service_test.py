@@ -140,7 +140,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
 
     self.service.add_label_and_retry('NewLabel', 'ExistingType', timeseries)
     self.assertEquals(0, self.mockStub.projects.list.call_count)
-    self.assertEquals(2, self.mockMetricDescriptors.get.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.get.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.create.call_count)
     self.assertEquals(1, self.mockTimeSeries.create.call_count)

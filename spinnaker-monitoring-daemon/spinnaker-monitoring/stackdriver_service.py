@@ -355,26 +355,39 @@ class StackdriverMetricsService(object):
     logging.info('Starting with metricDescriptors.get %s:', descriptor)
     labels.append({'key': label, 'valueType': 'STRING'})
     descriptor['labels'] = labels
-    try:
-      logging.info('Deleting existing descriptor %s', metric_name_param)
-      response = api.delete(name=metric_name_param).execute()
-      logging.info('Delete response: %s', repr(response))
-    except HttpError as err:
-      logging.error('Could not delete descriptor %s', err)
-      if err.resp.status != 404:
-        return False
-      else:
-        logging.info("Ignore error.")
+    return self.replace_custom_metric_descriptor(
+        metric_name_param, descriptor)
 
-    logging.info('Updating descriptor as %s', descriptor)
+  def replace_custom_metric_descriptor(self, metric_name, descriptor,
+                                       new_descriptor=False):
+    """Replace Stackdriver's custom metric descriptor definition.
+
+    Args:
+      metric_name: [String] The stackdriver metric name to replace.
+      descriptor:  [dict] The custom metric descriptor definition
+          payload.
+    """
+    api = self.stub.projects().metricDescriptors()
+    if new_descriptor:
+      logging.info('Creating descriptor %s', metric_name)
+    else:
+      try:
+        logging.info('Deleting existing descriptor %s', metric_name)
+        response = api.delete(name=metric_name).execute()
+        logging.info('Delete response: %s', repr(response))
+      except HttpError as err:
+        logging.error('Could not delete descriptor %s', err)
+        if err.resp.status != 404:
+          return False
+        else:
+          logging.info("Ignore error.")
+        logging.info('Updating descriptor as %s', descriptor)
+
     try:
       response = api.create(
           name=self.project_to_resource(self.__project),
           body=descriptor).execute()
       logging.info('Response from create: %s', response)
-
-      response = api.get(name=metric_name_param).execute()
-      logging.info('Now metricDescriptors.get returns %s:', response)
       return True
     except HttpError as err:
       logging.error('Failed: %s', err)

@@ -27,6 +27,7 @@ from command_processor import CommandHandler
 from command_processor import get_global_options
 import http_server
 import stackdriver_service
+from spectator_client import ResponseProcessor
 
 from stackdriver_service import StackdriverMetricsService
 try:
@@ -167,6 +168,236 @@ class BaseStackdriverCommandHandler(CommandHandler):
         subparsers)
     stackdriver_service.StackdriverMetricsService.add_parser_arguments(parser)
     return parser
+
+
+class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
+  """Create or update Stackdriver custom metric descriptors.
+  """
+
+  SERVICE_LIST = [
+      'clouddriver', 'deck', 'echo', 'fiat', 'front50',
+      'gate', 'halyard', 'igor', 'kayenta', 'monitoring-service',
+      'rosco'
+  ]
+
+  TAG_TYPE_MAP = {
+      ''.__class__: 'STRING',
+      True.__class__: 'BOOL',
+      int(0).__class__: 'INT64'
+  }
+
+  NON_CUMULATIVE_KIND_MAP = {
+      'GAUGE': 'GAUGE'
+  }
+
+  # Only recognize units stackdriver can handle.
+  # Other units (e.g. "requests") will be ignored.
+  UNIT_MAP = {
+      'bytes': 'By',
+      'nanoseconds': 'ns',
+      'milliseconds': 'ms'
+  }
+
+  def init_state(self, options):
+    """Helper function to initialize command state.
+
+    We'll add additional state rather than passing params around.
+    """
+    # Return value
+    self.lines = []
+
+    # Maps custom descriptor types refreshed and by whom
+    self.seen = {}
+
+    # For getting service meter specifications.
+    self.response_processor = ResponseProcessor(options)
+
+    # Definition as currently known to stackdriver.
+    self.descriptor_map = {
+        elem['type']: elem for elem in get_descriptor_list(options)
+    }
+
+    self.stackdriver = stackdriver_service.make_service(options)
+    self.name_prefix = ('projects/{project}/metricDescriptors/'
+                        .format(project=self.stackdriver.project))
+
+    self.warnings = 0
+    self.errors = 0
+    self.updates = 0
+    self.new = 0
+
+  def upsert_service(self, service):
+    """Update (or insert) metric descriptors for the given service.
+
+    Args:
+      service: [string] The name of the service whose metrics to update.
+    """
+    transform_namespace = 'default'
+    rulebase = self.response_processor.determine_service_metric_transformer(
+        service).rulebase
+
+    for key, rule in rulebase.items():
+      meter_name = rule.determine_meter_name(key, transform_namespace)
+      spec = rule.rule_specification
+      meter_kind = spec.get('kind')
+      want = {
+          'metricKind': self.NON_CUMULATIVE_KIND_MAP.get(meter_kind,
+                                                         'CUMULATIVE'),
+          'valueType': 'DOUBLE',
+          'labels': self.__derive_labels(spec),
+          'description': spec.get('docs'),
+      }
+      unit = self.UNIT_MAP.get(spec.get('unit'))
+      if unit:
+        want['unit'] = unit
+
+      variants = {}
+      if meter_kind in ['Timer', 'PercentileTimer']:
+        if not rule.discard_tag_value('statistic', 'count'):
+          variants['__count'] = {
+              'description': 'Number of measurements in {timer}.'.format(
+                  timer='%s__totalTime' % meter_name)
+          }
+        if not rule.discard_tag_value('statistic', 'totalTime'):
+          variants['__totalTime'] = {
+              'unit': 'ns'
+          }
+      elif meter_kind in ['DistrbutionSummary',
+                          'PercentileDistributionSummary']:
+        if not rule.discard_tag_value('statistic', 'count'):
+          variants['__count'] = {
+              'description': 'Number of measurements in {summary}.'.format(
+                  summary='%s__totalAmount' % meter_name)
+          }
+        if not rule.discard_tag_value('statistic', 'totalAmount'):
+          variants['__totalAmount'] = {
+          }
+
+      if meter_kind.startswith('Percentile'):
+        if not rule.discard_tag_value('statistic', 'percentile'):
+          variants['__percentile'] = {
+            'description':
+                'Percentile bucket time referenced by {summary}.'.format(
+                    summary='%s__count')
+           }
+      self.__do_upsert(meter_name, want, variants, service)
+
+  def __do_upsert(self, meter_name, want, variants, service):
+    if not variants:
+      variants = {'': {}}
+
+    for key, value in variants.items():
+      refined_name = meter_name + key
+      actual_type = 'custom.googleapis.com/spinnaker/%s' % refined_name
+      actual_name = self.name_prefix + actual_type
+      already_saw = self.seen.get(actual_type)
+
+      actual_want = dict(want)
+      actual_want.update(value)
+      actual_want['type'] = actual_type
+      actual_want['name'] = actual_name
+
+      if not self.__diff_descriptor(service, actual_want):
+        self.seen[actual_type] = service
+        continue
+
+      if already_saw:
+        self.warnings += 1
+        self.lines.append(
+            'WARNING: {name} conflicts with {service}\n'
+            '   want {want!r}\n'
+            '   have {have!r}\n'
+            .format(name=actual_name, service=service,
+                    want=actual_want,
+                    have=self.descriptor_map.get(actual_type)))
+        continue
+
+      is_new = actual_type not in self.descriptor_map
+      action = 'Create' if is_new else 'Update'
+      ok = self.stackdriver.replace_custom_metric_descriptor(
+          actual_name, actual_want, new_descriptor=is_new)
+      if ok:
+        self.descriptor_map[actual_type] = actual_want
+        self.updates += 1 if not is_new else 0
+        self.new += 1 if is_new else 0
+        status = 'OK'
+      else:
+        self.errors += 1
+        status = 'FAILED'
+      self.seen[actual_type] = service
+      self.lines.append(
+          '* {status}: {action} {name!r}: {value!r}'
+          .format(status=status, action=action,
+              name=actual_name, value=actual_want))
+
+  def __diff_descriptor(self, service, want):
+    descriptor = self.descriptor_map.get(want['type'])
+    if not descriptor:
+      self.lines.append('No known descriptor for %s' % want['type'])
+      return True
+    result = False
+    for key, expect in want.items():
+      value = descriptor.get(key)
+      if isinstance(expect, list):
+        expect = sorted(expect)
+        if isinstance(value, list):
+          value = sorted(value)
+      if value != expect:
+        logging.info('{service} expected {key!r} in {type!r}'
+                     ' to be {expect!r} not {found!r}\n'
+                     .format(service=service, key=key,
+                             type=want['type'], expect=expect,
+                             found=value))
+        result = True
+    return result
+
+  def __derive_labels(self, spec):
+    result = {'spin_service': 'STRING', 'spin_variant': 'STRING'}
+    for name in spec.get('tags') or []:
+      result[name] = 'STRING'
+    for name, value in spec.get('add_tags', {}).items():
+      result[name] = self.TAG_TYPE_MAP[value.__class__]
+    for info in spec.get('transform_tags', []):
+      to = info['to']
+      to_type = info['type']
+      if not isinstance(to, list):
+        to = [to]
+        to_type = [to_type]
+      for index, name in enumerate(to):
+        result[name] = {'INT': 'INT64'}.get(to_type[index],
+                                            to_type[index])
+
+    normalized_result = []
+    for key, valueType in result.items():
+      label_descriptor = {'key': key}
+      if valueType != 'STRING':
+        label_descriptor['valueType'] = valueType
+      normalized_result.append(label_descriptor)
+    return sorted(normalized_result)
+
+  def process_commandline_request(self, options):
+    """Implements CommandHandler."""
+    self.init_state(options)
+    for service in self.SERVICE_LIST:
+      self.upsert_service(service)
+
+    unused = 0
+    for key in self.descriptor_map.keys():
+      if not key in self.seen:
+        self.lines.append('Existing descriptor %r is no longer used.' % key)
+        unused += 1
+
+    self.lines.extend(['TOTALS:',
+                       '  New Descriptors: %d' % self.new,
+                       '  Updated Descriptors: %d' % self.updates])
+    if unused:
+      self.lines.append('  Unused Descriptors: %d' % unused)
+    if self.warnings:
+      self.lines.append('  Warnings: %d' % self.warnings)
+
+    self.output(options, '\n'.join(self.lines))
+    if self.errors:
+      raise ValueError('Encountered %d errors' % self.errors)
 
 
 class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
@@ -446,7 +677,7 @@ class AuditCustomDescriptorsHandler(BaseStackdriverCommandHandler):
       if response.startswith('OK'):
         survey[type_name] = SurveyInfo.make_deleted(type_name)
       else:
-        survey[type_name] = SurveyInfo.make_error(response)
+        survey[type_name] = SurveyInfo.make_error(type_name, response)
 
   def add_argparser(self, subparsers):
     parser = super(AuditCustomDescriptorsHandler, self).add_argparser(
@@ -634,223 +865,6 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     request.respond(response_code, headers, body)
 
 
-class UpsertCustomDescriptorsProcessor(object):
-  """Administrative helper to update/create new descriptors."""
-  def __init__(self, project, stackdriver):
-    self.__project = project
-    self.__stackdriver = stackdriver
-
-  def __do_batch_create(self, project, create_list):
-    """Create the new descriptors as a batch request."""
-    create_method = (self.__stackdriver.stub.projects()
-                     .metricDescriptors().create)
-
-    def create_invocation(descriptor):
-      name = descriptor['name']
-      logging.info('batch CREATE %s', name)
-      return create_method(
-          name='projects/{0}'.format(project), body=descriptor)
-    get_descriptor_name = lambda descriptor: descriptor['name']
-
-    processor = BatchProcessor(
-        project, self.__stackdriver,
-        create_list, create_invocation, get_descriptor_name)
-    processor.process()
-
-    response_code = (httplib.OK if processor.num_ok == len(create_list)
-                     else httplib.INTERNAL_SERVER_ERROR)
-    headers, body = processor.make_response(
-        None, False, 'Created', 'Added Descriptor')
-    return response_code, headers, body
-
-  def __do_batch_update_delete_helper(
-      self, project, delete_list, success_list, failed_list, failed_errors):
-    """Delete descriptors as a batch request.
-
-    We need to delete descriptors in order to update them.
-
-    Args:
-      project: [string] The project to delete from.
-      delete_list: [list of descriptor] The types to delete.
-      success_list: [list of descriptor] The types that were actually deleted.
-      failed_list: [list of descriptor] The types for which DELETE failed.
-      failed_errors: [list of string] The error messages from the failures.
-    """
-    get_descriptor_name = lambda descriptor: descriptor['name']
-    delete_method = (self.__stackdriver.stub.projects()
-                     .metricDescriptors().delete)
-    def delete_invocation(descriptor):
-      """Helper method tocreate the delete request."""
-      name = descriptor['name']
-      logging.info('batch DELETE %s', name)
-      return delete_method(name=name)
-
-    delete_processor = BatchProcessor(
-        project, self.__stackdriver,
-        delete_list, delete_invocation, get_descriptor_name)
-    delete_processor.process()
-
-    for index, ok in enumerate(delete_processor.was_ok):
-      if ok:
-        success_list.append(delete_list[index])
-      else:
-        failed_list.append(delete_list[index])
-        failed_errors.append(delete_processor.batch_response[index])
-
-  def __do_batch_update_create_helper(
-      self, project, create_list, success_list, failed_list, failed_errors):
-    """Create descriptors as a batch request.
-
-    We need to create new descriptors to update them.
-
-    Args:
-      project: [string] The project to create in.
-      delete_list: [list of descriptor] The types to create.
-      success_list: [list of descriptor] The types that were actually created.
-      failed_list: [list of descriptor] The types for which PUT failed.
-      failed_errors: [list of string] The error messages from the failures.
-    """
-    get_descriptor_name = lambda descriptor: descriptor['name']
-    create_method = (self.__stackdriver.stub.projects()
-                     .metricDescriptors().create)
-    def create_invocation(descriptor):
-      """Helper method to create the create request."""
-      name = descriptor['name']
-      logging.info('batch CREATE %s', name)
-      return create_method(
-          name='projects/{0}'.format(project), body=descriptor)
-
-    create_processor = BatchProcessor(
-        project, self.__stackdriver,
-        create_list, create_invocation, get_descriptor_name)
-    create_processor.process()
-
-    for index, ok in enumerate(create_processor.was_ok):
-      if ok:
-        success_list.append(create_list[index])
-      else:
-        failed_list.append(create_list[index])
-        failed_errors.append(create_processor.batch_response[index])
-
-  def __do_batch_update(self, project, update_list, original_type_map):
-    """Orchestrate updates of existing descriptors.
-
-    Args:
-      project: [string] The project we're updating in.
-      update_list: [list of descriptors] The new descriptor definitions.
-      original_type_map: [type to descriptor] The original definitions in
-       case we need to restore them.
-    """
-    get_descriptor_name = lambda descriptor: descriptor['name']
-
-    delete_errors = []
-    create_errors = []
-    restore_errors = []
-
-    failed_list = []
-    create_list = []
-    success_list = []
-    restore_list = []
-    not_updated_list = []
-    lost_list = []
-
-    if update_list:
-      self.__do_batch_update_delete_helper(
-          project, update_list, create_list, failed_list, delete_errors)
-
-    if create_list:
-      self.__do_batch_update_create_helper(
-          project, create_list, success_list, restore_list, create_errors)
-      restore_list = [original_type_map[elem['type']] for elem in restore_list]
-
-    if restore_list:
-      # If we successfully restore, we left it in the original unupdated state.
-      # If we failed to restore, then we've lost the descriptor entirely.
-      self.__do_batch_update_create_helper(
-          project, restore_list, not_updated_list, lost_list, restore_errors)
-
-    response_code = (httplib.OK
-                     if len(failed_list) + len(create_errors) == 0
-                     else httplib.INTERNAL_SERVER_ERROR)
-    bodies = []
-    for elem in success_list:
-      bodies.append('Updated {0} to {1}'.format(elem['type'], elem))
-    for index, elem in enumerate(failed_list):
-      bodies.append('Failed to update {0} to {1}: {2}'.format(
-          elem['type'], elem, delete_errors[index]))
-    for index, elem in enumerate(restore_list):
-      bodies.append('Failed to update {0} to {1}: {2}'.format(
-          elem['type'], elem, create_errors[index]))
-    for index, elem in enumerate(lost_list):
-      bodies.append('Lost {0}. It used to be {1}: {2}'.format(
-          elem['type'], elem, restore_errors[index]))
-
-    return response_code, {'Content-Type': 'text/plain'}, '\n'.join(bodies)
-
-  def upsert_descriptors(
-      self, project, upsert_descriptors, type_map, output_method):
-    create_list = []
-    update_list = []
-    for elem in upsert_descriptors:
-      elem_type = elem.get('type', '')
-      if not elem_type.startswith('custom.googleapis.com/spinnaker'):
-        raise ValueError('Invalid Metric Descriptor:\n{0}\n'.format(elem))
-      if elem_type in type_map:
-        if elem != type_map[elem_type]:
-          update_list.append(elem)
-      else:
-        create_list.append(elem)
-
-    headers = {}
-    response_code = httplib.OK
-    response_body = []
-
-    if create_list:
-      create_response_code, create_headers, create_response_body = (
-          self.__do_batch_create(project, create_list))
-      response_code = max(response_code, create_response_code)
-      response_body.append(create_response_body)
-      headers.update(create_headers)
-
-    if update_list:
-      update_response_code, update_headers, update_response_body = (
-          self.__do_batch_update(project, update_list, type_map))
-      response_code = max(response_code, update_response_code)
-      response_body.append(update_response_body)
-      headers.update(update_headers)
-
-    output_method({}, '\n'.join(response_body))
-
-
-class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
-  """Administrative handler to update/create new descriptors."""
-
-  def add_argparser(self, subparsers):
-    """Implements CommandHandler."""
-    parser = (super(UpsertCustomDescriptorsHandler, self)
-              .add_argparser(subparsers))
-    parser.add_argument('--source_path', required=True)
-    return parser
-
-  def load_descriptors(self, options):
-    """Loads existing descriptors to be uploaded."""
-    with open(options['source_path'], 'r') as f:
-      return json.JSONDecoder().decode(f.read())
-
-  def process_commandline_request(self, options, upsert_descriptors=None):
-    """Implements CommandHandler."""
-    if upsert_descriptors is None:
-      upsert_descriptors = self.load_descriptors(options)
-
-    stackdriver = stackdriver_service.make_service(options)
-    project = stackdriver.project
-    processor = UpsertCustomDescriptorsProcessor(project, stackdriver)
-    type_map = stackdriver.fetch_all_custom_descriptors(project)
-
-    processor.upsert_descriptors(
-        project, upsert_descriptors, type_map, self.output)
-
-
 class ListDashboardsHandler(BaseStackdriverCommandHandler):
   """Administrative handler to list all dashboards (not just spinnaker)."""
 
@@ -970,9 +984,9 @@ def add_handlers(handler_list, subparsers):
       UpsertCustomDescriptorsHandler(
           None,
           'upsert_stackdriver_descriptors',
-          'Given a file of Stackdriver Custom Metric Desciptors,'
-          ' update the existing ones and add the new ones.'
-          ' WARNING: Historic time-series data may be lost on update.')
+          'Update the custom Stackdriver Metric Descriptors'
+          ' from the Meter Specifications in the Spectator'
+          ' transform filters'),
   ]
 
   if STACKDRIVER_AVAILABLE and os.environ.get('STACKDRIVER_API_KEY'):

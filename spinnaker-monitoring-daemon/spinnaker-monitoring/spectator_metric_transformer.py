@@ -95,8 +95,7 @@ class AggregatedMetricsBuilder(object):
 
     if tags:
       for key, compiled_re in self.__discard_tag_values.items():
-        if compiled_re.match(str(find_tag_value(key))):
-          # ignore this value because it has undesirable tag value.
+        if self.__rule.discard_tag_value(key, find_tag_value(key)):
           return
 
     sorted_tags = sorted(tags) if tags else None
@@ -123,7 +122,7 @@ class TransformationRule(object):
     'tags': <tag_list>
     'transform_tags': <tag_transform_list>
     'add_tags' <added_tag_bindings>
-    'discard_values': <discard_tag_value_list>
+    'discard_tag_values': <discard_tag_value_list>
     'per_account': <per_account>
     'per_application': <per_application>
 
@@ -223,6 +222,11 @@ class TransformationRule(object):
   def per_application(self):
     """Should this rule break out "application" tags if present."""
     return self.__per_application
+
+  @property
+  def rule_specification(self):
+    """The underlying rule specification dict."""
+    return self.__rule_spec
 
   def __prepare_transformation(self, transformation):
     """Update the transformation entry from the YAML to contain functions.
@@ -348,6 +352,11 @@ class TransformationRule(object):
   def __bool__(self):
     return self.__rule_spec is not None
 
+  def discard_tag_value(self, tag, value):
+    """Determine if a given tag value should be discarded."""
+    compiled_re = self.__discard_tag_values.get(tag)
+    return compiled_re and compiled_re.match(str(value))
+
   def determine_meter_name(self, meter_name, transform_namespace):
     """Get transformed meter name (or original).
 
@@ -462,6 +471,11 @@ class SpectatorMetricTransformer(object):
   def default_namespace(self):
     """Returns the default namespace to use when transforming names."""
     return self.__default_transform_key
+
+  @property
+  def rulebase(self):
+    """The rulebase used."""
+    return self.__rulebase
 
   def __init__(self, spec,
                default_namespace=None,

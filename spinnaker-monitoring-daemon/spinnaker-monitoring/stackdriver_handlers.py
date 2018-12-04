@@ -367,6 +367,11 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
         result[name] = {'INT': 'INT64'}.get(to_type[index],
                                             to_type[index])
 
+    if spec.get('per_account', False) and 'account' in result:
+      del(result['account'])
+    if spec.get('per_application', False) and 'application' in result:
+      del(result['application'])
+
     normalized_result = []
     for key, valueType in result.items():
       label_descriptor = {'key': key}

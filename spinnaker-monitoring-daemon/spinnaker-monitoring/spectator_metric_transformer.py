@@ -52,6 +52,44 @@ class MetricInfo(object):
     self.__value = value_json['v']
     self.__tags = sorted_tags
 
+    # NOTE(20181203):
+    # This extra field here is experimental, but we're always going
+    # to incur the runtime overhead to maintain the data model for simplicity. 
+    #
+    # This is for another map 'per_tag_values' which is meant to capture
+    # the breakout (group by) of "per_<account|application>" tags that were
+    # dropped and aggregated to the tags list. The values here is a dictionary
+    # keyed by the tag name (e.g. account) with entries for each of the tag values
+    # along with the standard tags above (e.g. add 'account': 'MyAccount')
+    #
+    # This allows the standard interface using the tags to see the redacted view
+    # (remove the "per_*" tags) while having visibility to those extra tags using
+    # the "per_tag_values" view. The intent is to allow the metric store to handle
+    # these values with high cardinality tags differently. It isnt yet definitive
+    # how to do that or even if we want to.
+    self.__per_tag_values = {}
+
+  def add_per_tags(self, value_json, sorted_tags, per_tags):
+    if not per_tags:
+      return
+
+    for tag in per_tags:
+      tag_container = self.__per_tag_values.get(tag['key'])
+      if tag_container is None:
+        tag_container = {}
+        self.__per_tag_values[tag['key']] = tag_container
+
+      augmented_tags = list(sorted_tags)
+      augmented_tags.append(tag)
+      sorted_augmented_tags = sorted(augmented_tags)
+      normalized_key = str(sorted_augmented_tags)
+      info = tag_container.get(normalized_key)
+      if not info:
+        info = MetricInfo(value_json, sorted_augmented_tags)
+        tag_container[normalized_key] = info
+      else:
+        info.aggregate_value(json)
+
   def aggregate_value(self, value_json):
     """Aggregate another value into this metric."""
     self.__value += value_json['v']
@@ -62,6 +100,11 @@ class MetricInfo(object):
     response = {'values': [{'t': self.__timestamp, 'v': self.__value}]}
     if self.__tags:
       response['tags'] = self.__tags
+    if self.__per_tag_values:
+      response['__per_tag_values'] = {
+        key: sorted([v.encode_as_spectator_response() for v in value.values()])
+        for key, value in self.__per_tag_values.items()
+      }
     return response
 
 
@@ -84,7 +127,7 @@ class AggregatedMetricsBuilder(object):
     self.__rule = rule
     self.__discard_tag_values = rule.discard_tag_value_expressions
 
-  def add(self, value_json, tags):
+  def add(self, value_json, tags, per_tags=None):
     """Add a measurement to the builder."""
     def find_tag_value(tag):
       """Find value for the specified tag, or None."""
@@ -107,6 +150,8 @@ class AggregatedMetricsBuilder(object):
       self.__tags_to_metric[normalized_key] = metric
     else:
       metric.aggregate_value(value_json)
+    metric.add_per_tags(value_json, sorted_tags, per_tags)
+
 
   def build(self):
     """Encode all the measurements for the meter."""
@@ -362,10 +407,10 @@ class TransformationRule(object):
     for source_metric in spectator_metric.get('values', []):
       source_tags = source_metric.get('tags', [])
       target_metric = {'values': source_metric['values']}
+      per_tags = []
       if self.__identity_tags:
         target_tags = source_tags + self.__added_tags
       else:
-        per_tags = []
         tag_dict = {entry['key']: entry['value'] for entry in source_tags}
         target_tags = list(self.__added_tags)
 
@@ -413,7 +458,8 @@ class TransformationRule(object):
         target_metric['tags'] = sorted(target_tags)
 
       metric_builder.add(target_metric['values'][-1],
-                         target_metric.get('tags'))
+                         target_metric.get('tags'),
+                         per_tags=per_tags)
     return metric_builder.build()
 
 

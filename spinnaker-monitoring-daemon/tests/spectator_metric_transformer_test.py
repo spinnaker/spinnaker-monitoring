@@ -554,11 +554,27 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 'values': [{'t': 1540224536923, 'v': 33.0}],
                 'tags': sorted([
                     {'key': 'executionType', 'value': 'Pipeline'},
-                ])
-            },
-                             ])}
-        })
-
+                ]),
+                '__per_tag_values': {
+                    'application': sorted([
+                      {
+                         'values': [{'t': 1540224536922, 'v': 12.0}],
+                         'tags': [
+                             {'key': 'application', 'value': 'MyApplication'},
+                             {'key': 'executionType', 'value': 'Pipeline'}
+                         ]
+                      }, {
+                         'values': [{'t': 1540224536923, 'v': 21.0}],
+                         'tags': [
+                             {'key': 'application', 'value': 'YourApplication'},
+                             {'key': 'executionType', 'value': 'Pipeline'}
+                         ]
+                      }
+                    ]),
+                }}]),
+            }
+        }
+    )
 
 if __name__ == '__main__':
   unittest.main()

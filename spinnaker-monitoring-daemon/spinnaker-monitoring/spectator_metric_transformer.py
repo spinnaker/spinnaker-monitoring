@@ -118,33 +118,20 @@ class TransformationRule(object):
   """Encapsulates transformation rule.
 
   Transformation rules are as follows:
-    'transform_name': <transform_name_map>
+    'rename': <target_name>
     'tags': <tag_list>
-    'transform_tags': <tag_transform_list>
+    'change_tags': <tag_transform_list>
     'add_tags' <added_tag_bindings>
     'discard_tag_values': <discard_tag_value_list>
     'per_account': <per_account>
     'per_application': <per_application>
 
   where:
-    * <transform_name_map> is a map of <target>: <target_name>
-      which allows the rule to support multiple monitoring systems,
-      where each is given a different name to follow that particular
-      systems naming conventions. The rest of the transform is the same.
-      The <target> is an arbitrary key but should be the system name for
-      readability. The target will be specified by the caller as part of
-      the transform request.
-
-      If the <target_name> is not present but "default" is, then "default"
-      will be used. If a name key is present but empty then the metric will
-      be ignored for that name key. For example if the "default" value is
-      "my-metric" and a "stackdriver" key is empty and you ask for stackdriver,
-      the metric would be ignored, but if you ask for "prometheus" then the
-      name would become the default, "my-metric".
+    * <target_name> is the new metric name to use.
 
    * <tag_list> is a list of tag names to keep as is. An empty list
      means none of the tag names will be kept by default. If the
-     'tags' is not specified at all, and no 'transform_tags' are
+     'tags' is not specified at all, and no 'change_tags' are
      specified then all the tags will be kept by default.
      The 'statistic' tag is implicitly in this list if present because
      it is required to interpret the values.
@@ -331,14 +318,14 @@ class TransformationRule(object):
     else:
       self.is_per_tag = lambda t: False
 
-    transform_tags = rule_spec.get('transform_tags', [])
+    change_tags = rule_spec.get('change_tags', [])
     self.__identity_tags = (
-        'tags' not in rule_spec and 'transform_tags' not in rule_spec)
+        'tags' not in rule_spec and 'change_tags' not in rule_spec)
     self.__added_tags = [
         {'key': key, 'value': value}
         for key, value in rule_spec.get('add_tags', {}).items()
     ]
-    for transformation in transform_tags:
+    for transformation in change_tags:
       self.__prepare_transformation(transformation)
 
     discard_tag_values = rule_spec.get('discard_tag_values', {})
@@ -357,24 +344,16 @@ class TransformationRule(object):
     compiled_re = self.__discard_tag_values.get(tag)
     return compiled_re and compiled_re.match(str(value))
 
-  def determine_meter_name(self, meter_name, transform_namespace):
+  def determine_meter_name(self, meter_name):
     """Get transformed meter name (or original).
 
     Args:
       meter_name: [string] The original meter name
-      transform_namespace: [string] The key for which naming system to use
-            or none for the default.
 
     Returns:
       The name, possibly original meter_name, or None to disregard this meter.
     """
-    transformed_name = meter_name
-    name_transform_dict = self.__rule_spec.get('transform_name')
-    if name_transform_dict:
-      if transform_namespace not in name_transform_dict:
-        transform_namespace = 'default'
-      transformed_name = name_transform_dict.get(transform_namespace)
-    return transformed_name
+    return self.__rule_spec.get('rename', meter_name)
 
   def apply(self, spectator_metric):
     """Apply the rule to the given metric instance."""
@@ -414,7 +393,7 @@ class TransformationRule(object):
           target_tags.append({'key': tag_name,
                               'value': tag_dict.get(tag_name, '')})
 
-        for transformation in self.__rule_spec.get('transform_tags', []):
+        for transformation in self.__rule_spec.get('change_tags', []):
           from_tag = transformation['from']
           value = tag_dict.get(from_tag, '')
           xform_tags = transformation['_xform_func'](value)
@@ -468,28 +447,20 @@ class SpectatorMetricTransformer(object):
     return SpectatorMetricTransformer(transform_spec, **kwargs)
 
   @property
-  def default_namespace(self):
-    """Returns the default namespace to use when transforming names."""
-    return self.__default_transform_key
-
-  @property
   def rulebase(self):
     """The rulebase used."""
     return self.__rulebase
 
   def __init__(self, spec,
-               default_namespace=None,
                default_is_identity=False):
     """Constructor.
 
     Args:
       spec: [dict] Transformation specification entry from YAML.
-      default_namespace: [string] The default key to use for transform_name.
       default_is_identity: [bool] If true and a spec is not
           found when transforming a metric then assume the identity.
           otherwise assume the metric should be discarded.
     """
-    self.__default_transform_key = default_namespace
     self.__default_rule = (TransformationRule(None)  # identity
                            if default_is_identity
                            else None)              # discard
@@ -503,13 +474,11 @@ class SpectatorMetricTransformer(object):
             'the identity' if default_is_identity else 'discarded')
         continue
 
-  def process_response(self, metric_response, transform_namespace=None):
+  def process_response(self, metric_response):
     """Transform the spectator response metrics per the spec."""
     result = {}
     for meter_name, spectator_metric in metric_response.items():
-      to_name, to_value = self.process_metric(
-          meter_name, spectator_metric,
-          transform_namespace=transform_namespace)
+      to_name, to_value = self.process_metric(meter_name, spectator_metric)
       if to_name is None != to_value is None:
         raise ValueError('Metric "%s" transformed inconsistently'
                          ' name=%s, value=%s'
@@ -522,8 +491,7 @@ class SpectatorMetricTransformer(object):
           result[to_name] = to_value
     return result
 
-  def process_metric(self, meter_name, spectator_metric,
-                     transform_namespace=None):
+  def process_metric(self, meter_name, spectator_metric):
     """Produce the desired Spectator metric from existing one.
 
     Args:
@@ -544,8 +512,7 @@ class SpectatorMetricTransformer(object):
       # or if was mentioned but no transformations given.
       return meter_name, spectator_metric
 
-    transformed_name = rule.determine_meter_name(
-        meter_name, transform_namespace or self.default_namespace)
+    transformed_name = rule.determine_meter_name(meter_name)
     if not transformed_name:
       return None, None
 

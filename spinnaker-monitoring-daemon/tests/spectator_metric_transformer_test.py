@@ -46,8 +46,7 @@ EXAMPLE_MEMORY_USED_RESPONSE = {
 class SpectatorMetricTransformerTest(unittest.TestCase):
   def do_test(self, spec_yaml, spectator_response, expect_response):
     spec = yaml.load(spec_yaml)
-    transformer = SpectatorMetricTransformer(
-        spec, default_namespace='stackdriver')
+    transformer = SpectatorMetricTransformer(spec)
     got_response = transformer.process_response(spectator_response)
     for _, got_meter_data in got_response.items():
       values = got_meter_data.get('values')
@@ -87,13 +86,11 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
-              transform_name:
-                 stackdriver: spinnaker.googleapis.com/java/memory_used
-                 default: memory_used
+              rename: platform/java/memory
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
-        {'spinnaker.googleapis.com/java/memory_used':
+        {'platform/java/memory':
              EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used']}
     )
 
@@ -101,8 +98,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
-              transform_name:
-                 default: memory_used
+              rename: memory_used
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
@@ -113,9 +109,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
-              transform_name:
-                 stackdriver:
-                 default: memory_used
+              rename:
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
@@ -133,10 +127,8 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
-              transform_name:
-                stackdriver: spinnaker.googleapis.com/java/memory_used
-                default: memory_used
-              transform_tags:
+              rename: platform/java/memory
+              change_tags:
                 - from: memtype
                   to: scope
                   type: STRING
@@ -147,7 +139,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
-        {'spinnaker.googleapis.com/java/memory_used': transformed_value}
+        {'platform/java/memory': transformed_value}
     )
 
   def test_add_tags(self):
@@ -183,8 +175,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         textwrap.dedent("""\
           storageServiceSupport.autoRefreshTime:
             kind: Timer
-            transform_name:
-              stackdriver: spinnaker.googleapis.com/front50/cache/refresh
+            rename: front50/cache/refresh
             tags:
               - objectType
               - statistic
@@ -193,8 +184,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
           storageServiceSupport.scheduledRefreshTime:
             kind: Timer
-            transform_name:
-              stackdriver: spinnaker.googleapis.com/front50/cache/refresh
+            rename: front50/cache/refresh
             tags:
               - objectType
               - statistic
@@ -224,7 +214,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         },
 
 
-        {'spinnaker.googleapis.com/front50/cache/refresh': {
+        {'front50/cache/refresh': {
             'kind': 'Timer',
             'values': [{
                 'values': [{'t': 1540224536920, 'v': 10000.0}],
@@ -251,7 +241,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             jvm.memory.used:
               tags:
                 - id
-              transform_tags:
+              change_tags:
                 - from: memtype
                   to: heap
                   type: BOOL
@@ -300,7 +290,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 - statistic
                 - status
 
-              transform_tags:
+              change_tags:
                 - from: statusCode
                   to: statusCode
                   type: INT
@@ -342,7 +332,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
               tags:
                 - status
 
-              transform_tags:
+              change_tags:
                 - from: agent
                   to: [provider, account, region, agent]
                   type: [STRING, STRING, STRING, STRING]
@@ -485,7 +475,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             jvm.memory.used:
               tags:
                   - id
-              transform_tags:
+              change_tags:
                 - from: memtype
                   to: heap
                   type: BOOL
@@ -532,7 +522,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             executions.started:
               kind: Counter
               per_application: true
-              transform_tags:
+              change_tags:
                  - from: source
                    to: application
                    type: STRING

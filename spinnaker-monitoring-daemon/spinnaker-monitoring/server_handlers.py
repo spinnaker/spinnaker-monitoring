@@ -207,7 +207,7 @@ class MonitorCommandHandler(WebserverCommandHandler):
             count = 0
 
           done = time.time()
-          logging.info(
+          logging.debug(
               'Wrote %d metrics to %s in %d ms + %d ms',
               count, service.__class__.__name__,
               (collected - start) * 1000, (done - start_publish) * 1000)

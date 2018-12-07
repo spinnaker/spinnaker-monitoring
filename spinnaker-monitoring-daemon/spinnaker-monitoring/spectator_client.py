@@ -562,7 +562,7 @@ class SpectatorClient(object):
     for service in service_catalog.keys():
       threads[service].join()
 
-    logging.info('Collection times %d (ms): %s',
+    logging.debug('Collection times %d (ms): %s',
                  (time.time() - start) * 1000, service_time)
     return result
 

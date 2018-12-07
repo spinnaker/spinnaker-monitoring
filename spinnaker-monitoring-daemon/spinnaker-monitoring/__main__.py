@@ -59,7 +59,7 @@ def init_logging(options):
     'disable_existing_loggers':True,
     'formatters': {
       'timestamped':{
-        'format':'%(asctime)s %(message)s',
+        'format':'%(asctime)s %(levelname)s %(message)s',
         'datefmt':'%H:%M:%S'
       }
     },
@@ -98,7 +98,7 @@ def add_global_args(parser):
   parser.add_argument(
       '--log_dir', default=None,
       help='If specified, log to a --log_basename in this directory instead of console.')
-  parser.add_argument('--log_level', default='INFO', help='log level to console')
+  parser.add_argument('--log_level', default='ERROR', help='log level to console')
   parser.add_argument('--config', default=DEFAULT_CONFIG_PATH,
                       help='Path to base configuration directory.')
   parser.add_argument('--registry_dir',

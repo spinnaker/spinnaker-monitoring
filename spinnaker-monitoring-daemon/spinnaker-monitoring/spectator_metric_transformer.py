@@ -288,7 +288,11 @@ class TransformationRule(object):
     extract_regex = transformation.get('extract_regex')
     if not extract_regex:
       if tag_type == 'INT':
-        transformation['_xform_func'] = lambda value: {to_tag: int(value or 0)}
+        empty_if_unknown = lambda x: '' if x=='UNKNOWN' else x
+
+        transformation['_xform_func'] = lambda value: {
+            to_tag: int(0 if value in ('', 'UNKNOWN') else value)
+        }
       elif tag_type == 'STRING':
         transformation['_xform_func'] = lambda value: {to_tag: value}
       else:
@@ -441,7 +445,13 @@ class TransformationRule(object):
         for transformation in self.__rule_spec.get('change_tags', []):
           from_tag = transformation['from']
           value = tag_dict.get(from_tag, '')
-          xform_tags = transformation['_xform_func'](value)
+          try:
+            xform_tags = transformation['_xform_func'](value)
+          except Exception as ex:
+            logging.error('%s transforming value=%r with rule=%r',
+                          ex, value, self.__rule_spec)
+            continue
+
           for key, value in xform_tags.items():
             encoded_tag = {'key': key, 'value': value}
             if self.is_per_tag(key):

@@ -169,8 +169,7 @@ class StackdriverMetricsService(object):
     self.__stackdriver_options.update(options.get('stackdriver', {}))
     self.__stub_factory = stub_factory
     self.__stub = None
-    self.__project = options.get('project',
-                                 self.__stackdriver_options.get('project'))
+    self.__project = self.__stackdriver_options.get('project')
 
     options_copy = dict(options)
     spectator_options = options_copy.get('spectator', {})

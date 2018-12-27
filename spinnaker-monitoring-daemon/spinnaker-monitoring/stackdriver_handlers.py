@@ -232,12 +232,11 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     Args:
       service: [string] The name of the service whose metrics to update.
     """
-    transform_namespace = 'default'
     rulebase = self.response_processor.determine_service_metric_transformer(
         service).rulebase
 
     for key, rule in rulebase.items():
-      meter_name = rule.determine_meter_name(key, transform_namespace)
+      meter_name = rule.determine_meter_name(key)
       spec = rule.rule_specification
       meter_kind = spec.get('kind')
       want = {

@@ -160,16 +160,18 @@ class StackdriverMetricsService(object):
     """
     self.logger = logging.getLogger(__name__)
 
+    # Default options from "stackdriver" section, if present.
     self.__stackdriver_options = dict(options.get('stackdriver', {}))
+
+    # Use toplevel overrides (e.g. commandline) if any
     for key in ['project', 'zone', 'instance_id', 'credentials_path']:
       if options.get(key):
         self.__stackdriver_options[key] = options[key]  # commandline override
 
-    # Override options in "stackdriver" stanza if any were present.
-    self.__stackdriver_options.update(options.get('stackdriver', {}))
     self.__stub_factory = stub_factory
     self.__stub = None
     self.__project = self.__stackdriver_options.get('project')
+    logging.info('Using stackdriver project %r', self.__project)
 
     options_copy = dict(options)
     spectator_options = options_copy.get('spectator', {})

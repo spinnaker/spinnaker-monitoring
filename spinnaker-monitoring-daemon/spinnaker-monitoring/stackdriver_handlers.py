@@ -187,7 +187,7 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   }
 
   NON_CUMULATIVE_KIND_MAP = {
-      'GAUGE': 'GAUGE'
+      'Gauge': 'GAUGE'
   }
 
   # Only recognize units stackdriver can handle.

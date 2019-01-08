@@ -20,11 +20,13 @@ import json
 import logging
 import os
 import re
+import time
 import traceback
 import urllib2
 import httplib2
 
 import spectator_client
+import stackdriver_descriptors
 
 
 try:
@@ -45,6 +47,21 @@ logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
 GenericTaskInfo = collections.namedtuple('GenericTaskInfo',
                                          ['monitored_resource', 'start_time'])
+
+
+def normalize_options(options):
+  options_copy = dict(options)
+  stackdriver_options = options_copy.get('stackdriver', {})
+  options_copy['stackdriver'] = stackdriver_options
+
+  # Use toplevel overrides (e.g. commandline) if any
+  for key in ['project', 'zone', 'instance_id', 'credentials_path']:
+    if options_copy.get(key):
+      stackdriver_options[key] = options[key]  # commandline override
+  if options_copy.get('manage_stackdriver_descriptors'):
+    stackdriver_options['manage_descriptors'] = (
+        options_copy['manage_stackdriver_descriptors'])
+  return options_copy
 
 
 # http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html
@@ -80,8 +97,8 @@ def get_google_metadata(attribute):
 class StackdriverMetricsService(object):
   """Helper class for interacting with Stackdriver."""
   WRITE_SCOPE = 'https://www.googleapis.com/auth/monitoring'
-  CUSTOM_PREFIX = 'custom.googleapis.com/spinnaker/'
   MAX_BATCH = 200
+  JANITOR_PERIOD = 120
 
   # custom metrics must be strings because there isnt a way to specify the
   # tag type when using automatic descriptor creation, and stackdriver
@@ -104,6 +121,11 @@ class StackdriverMetricsService(object):
     if self.__stub is None:
       self.__stub = self.__stub_factory()
     return self.__stub
+
+  @property
+  def descriptor_manager(self):
+    """Return MetricDescriptorManager."""
+    return self.__descriptor_manager
 
   def __update_monitored_resources(self, service_map):
     if self.__stackdriver_options.get('generic_task_resources'):
@@ -160,20 +182,14 @@ class StackdriverMetricsService(object):
     """
     self.logger = logging.getLogger(__name__)
 
-    # Default options from "stackdriver" section, if present.
-    self.__stackdriver_options = dict(options.get('stackdriver', {}))
-
-    # Use toplevel overrides (e.g. commandline) if any
-    for key in ['project', 'zone', 'instance_id', 'credentials_path']:
-      if options.get(key):
-        self.__stackdriver_options[key] = options[key]  # commandline override
+    options_copy = normalize_options(options)
+    self.__stackdriver_options = options_copy['stackdriver']
 
     self.__stub_factory = stub_factory
     self.__stub = None
     self.__project = self.__stackdriver_options.get('project')
     logging.info('Using stackdriver project %r', self.__project)
 
-    options_copy = dict(options)
     spectator_options = options_copy.get('spectator', {})
     if self.__stackdriver_options.get('generic_task_resources'):
       spectator_options['inject_service_tag'] = False
@@ -190,17 +206,23 @@ class StackdriverMetricsService(object):
       except IOError:
         pass
 
+    manager = stackdriver_descriptors.MetricDescriptorManager(
+        self,
+        spectator_client.ResponseProcessor(options_copy))
+    self.__descriptor_manager = manager
+    # The janitor prepares metric descriptors before first write.
+    self.__janitor_func = lambda: self.__auto_audit_metric_descriptors(options_copy)
+    self.__next_janitor_time = time.time()
+    self.__good_janitor_count = 0
+
     self.__fix_stackdriver_labels_unsafe = options.get(
         'fix_stackdriver_labels_unsafe', True)
     self.__monitored_resource = {}
     self.__add_source_tag = False
 
-    undecorated_metric_names = (options.get('stackdriver_generic_task_resources')
-                                or options.get('inject_service_tag'))
-
   @staticmethod
   def add_parser_arguments(parser):
-    """Add arguments for coniguring stackdriver."""
+    """Add arguments for configuring stackdriver."""
     parser.add_argument('--project', default='')
     parser.add_argument('--zone', default='')
     parser.add_argument('--instance_id', default=0, type=int)
@@ -211,45 +233,76 @@ class StackdriverMetricsService(object):
         action='store_true',
         help='Use stackdriver "generic_task" monitored resources'
         ' rather than the container or VM.')
+    parser.add_argument(
+        '--manage_stackdriver_descriptors',
+        choices=['none', 'full', 'create', 'delete'],
+        help='Specifies how to maintain stackdriver descriptors on startup.'
+             '\n  none: Do nothing.'
+             '\n  create: Only create new descriptors seen in the'
+             ' metric filter default.yml'
+             '\n  delete: Only delete existing descriptors no longer'
+             ' mentioned in filter default.yml'
+             '\n  full: Both create and delete.')
 
   def project_to_resource(self, project):
     if not project:
       raise ValueError('No project specified')
     return 'projects/' + project
 
-  def name_to_type(self, name):
-    """Determine Custom Descriptor type name for the given metric type name."""
-    return self.CUSTOM_PREFIX + name
+  def __auto_audit_metric_descriptors(self, options):
+    """The janitor function attempts to bring Stackdriver into compliance.
 
-  def fetch_all_custom_descriptors(self, project):
-    """Get all the custom spinnaker descriptors already known in Stackdriver."""
-    project_name = 'projects/' + (project or self.__project)
-    found = {}
+    If the metric descriptors are already as expected then we'll disable
+    the janitor for the rest of the process' lifetime. Otherwise we'll
+    continue to call it and try again around every JANITOR_PERIOD seconds
+    to give time for the system to settle down.
 
-    def partition(descriptor):
-      descriptor_type = descriptor['type']
-      if descriptor_type.startswith(self.CUSTOM_PREFIX):
-        found[descriptor_type] = descriptor
+    The reason we expect to have problems is that old replicas are still
+    running and recreating the descriptors we are trying to delete when
+    stackdriver automatically creates metrics they are attempting to write.
+    If this is the case, we'll keep trying to clear them out until, eventually,
+    the old processes are no longer around to overwrite us.
 
-    self.foreach_custom_descriptor(partition, name=project_name)
-    return found
+    Should something re-emerge then we'll be messed up until the next restart.
+    Note that each replica of each service is probably trying to create all
+    the descriptors so there is a lot of activity here. Since the descriptors
+    are all the same, there should not be a problem with these replicas
+    conflicting or needing coordination.
 
-  def foreach_custom_descriptor(self, func, **args):
-    """Apply a function to each metric descriptor known to Stackdriver."""
-    request = self.stub.projects().metricDescriptors().list(**args)
+    Note if management is disabled then this will be in a stable state
+    though still inconsistent with stackdriver because there will not
+    be any errors or activity performed.
+    """
+    secs_remaining = self.__next_janitor_time - time.time()
+    if secs_remaining > 0:
+      logging.debug('Janitor skipping audit for at least another %d secs',
+                    secs_remaining)
+      return
 
-    count = 0
-    while request:
-      self.logger.info('Fetching metricDescriptors')
-      response = request.execute()
-      for elem in response.get('metricDescriptors', []):
-        count += 1
-        func(elem)
-      request = self.stub.projects().metricDescriptors().list_next(
-          request, response)
-    return count
+    logging.info('Janitor auditing metric descriptors...')
+    audit_results = self.__descriptor_manager.audit_descriptors(options)
+    stable = (audit_results.errors == 0
+              and audit_results.num_fixed_issues == 0)
+    now = time.time()
+    self.__next_janitor_time = now + self.JANITOR_PERIOD
+
+    if stable:
+      self.__good_janitor_count += 1
+      if self.__good_janitor_count > 1:
+        logging.info('Metric descriptors appear stable. Disabling janitor.')
+        self.__janitor_func = lambda: None
+      else:
+        logging.info('Keeping janitor around to build confidence.')
+    else:
+      self.__good_janitor_count = 0
+      logging.debug('Metric descriptors are not yet stable.'
+                    ' There may be some errors writing metrics.'
+                    ' Check again in %d secs.',
+                    self.JANITOR_PERIOD)
 
   def publish_metrics(self, service_metrics):
+    self.__janitor_func()
+
     time_series = []
     self.__update_monitored_resources(service_metrics)
     spectator_client.foreach_metric_in_service_map(
@@ -324,7 +377,6 @@ class StackdriverMetricsService(object):
         body={'timeSeries': ts_request})
      .execute())
 
-
   def add_label_and_retry(self, label, metric_type, ts_request):
     if self.add_label_to_metric(label, metric_type):
       # Try again to write time series data.
@@ -356,43 +408,8 @@ class StackdriverMetricsService(object):
     logging.info('Starting with metricDescriptors.get %s:', descriptor)
     labels.append({'key': label, 'valueType': 'STRING'})
     descriptor['labels'] = labels
-    return self.replace_custom_metric_descriptor(
+    return self.__descriptor_manager.replace_custom_metric_descriptor(
         metric_name_param, descriptor)
-
-  def replace_custom_metric_descriptor(self, metric_name, descriptor,
-                                       new_descriptor=False):
-    """Replace Stackdriver's custom metric descriptor definition.
-
-    Args:
-      metric_name: [String] The stackdriver metric name to replace.
-      descriptor:  [dict] The custom metric descriptor definition
-          payload.
-    """
-    api = self.stub.projects().metricDescriptors()
-    if new_descriptor:
-      logging.info('Creating descriptor %s', metric_name)
-    else:
-      try:
-        logging.info('Deleting existing descriptor %s', metric_name)
-        response = api.delete(name=metric_name).execute()
-        logging.info('Delete response: %s', repr(response))
-      except HttpError as err:
-        logging.error('Could not delete descriptor %s', err)
-        if err.resp.status != 404:
-          return False
-        else:
-          logging.info("Ignore error.")
-        logging.info('Updating descriptor as %s', descriptor)
-
-    try:
-      response = api.create(
-          name=self.project_to_resource(self.__project),
-          body=descriptor).execute()
-      logging.info('Response from create: %s', response)
-      return True
-    except HttpError as err:
-      logging.error('Failed: %s', err)
-      return False
 
   def handle_time_series_http_error(self, error, batch):
     logging.error('Caught %s', error)
@@ -420,7 +437,7 @@ class StackdriverMetricsService(object):
     name, tags = self.__spectator_helper.normalize_name_and_tags(
         service, name, instance, metric_metadata)
     metric = {
-        'type': self.name_to_type(name),
+        'type': self.__descriptor_manager.name_to_type(name),
         'labels': {tag['key']: self.TAG_VALUE_FUNC(tag['value'])
                    for tag in tags}
     }
@@ -520,7 +537,7 @@ class StackdriverServiceFactory(object):
         action='store_false')
 
   def __call__(self, options, command_handlers):
-    """Create a datadog service instance for interacting with Datadog."""
+    """Create a service instance for interacting with Stackdriver."""
     return make_service(options)
 
 

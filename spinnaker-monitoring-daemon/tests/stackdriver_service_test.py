@@ -19,10 +19,15 @@ from mock import Mock
 
 import collections
 import copy
+import logging
+import os
+import shutil
+import tempfile
 import unittest
+import yaml
 from googleapiclient.errors import HttpError
 
-from stackdriver_service import StackdriverMetricsService
+import stackdriver_service
 
 
 ResponseStatus = collections.namedtuple('ResponseStatus',
@@ -30,21 +35,50 @@ ResponseStatus = collections.namedtuple('ResponseStatus',
 StackdriverResponse = collections.namedtuple(
     'StackdriverResponse', ['resp', 'content'])
 
+
+def meter_name_to_descriptor_type(name):
+  """Return Stackdriver MetricDescriptor type for a given meter name."""
+  return 'custom.googleapis.com/spinnaker/' + name
+
+
+def meter_name_to_descriptor_name(name):
+  """Return Stackdriver MetricDescriptor name for a given meter name."""
+  return ('projects/test-project/metricDescriptors/'
+          + meter_name_to_descriptor_type(name))
+
+
 class StackdriverMetricsServiceTest(unittest.TestCase):
+  @classmethod
+  def setUpClass(cls):
+    cls.base_temp_dir = tempfile.mkdtemp(prefix='stackdriver_test')
+
+  @classmethod
+  def tearDownClass(cls):
+    shutil.rmtree(cls.base_temp_dir)
+
   def setUp(self):
+    self.maxDiff = None
+    self.filter_dir = os.path.join(
+        self.base_temp_dir, self._testMethodName, 'filters')
+    logging.debug('setUp %r', self._testMethodName)
+    self.__do_setup()
+
+  def __do_setup(self):
     project = 'test-project'
     instance = 'test-instance'
     options = {'project': project,
                'zone': 'us-central1-f',
                'instance_id': instance,
                'config_dir': '/notfound',
+               'metric_filter_dir': self.filter_dir,
                'fix_stackdriver_labels_unsafe': True}
 
+    self.options = options
     self.mockStub = mock.create_autospec(['projects'])
     self.mockProjects = mock.create_autospec(
         ['metricDescriptors', 'timeSeries'])
     self.mockMetricDescriptors = mock.create_autospec(
-        ['create', 'delete', 'get'])
+        ['create', 'delete', 'get', 'list', 'list_next'])
     self.mockTimeSeries = mock.create_autospec(['create'])
     self.mockStub.projects = Mock(return_value=self.mockProjects)
     self.mockProjects.metricDescriptors = Mock(
@@ -56,14 +90,21 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.mockCreateDescriptor = Mock(spec=['execute'])
     self.mockGetDescriptor = Mock(spec=['execute'])
     self.mockDeleteDescriptor = Mock(spec=['execute'])
+    self.mockListDescriptors = Mock(spec=['execute'])
+
     self.mockMetricDescriptors.create = Mock(
         return_value=self.mockCreateDescriptor)
     self.mockMetricDescriptors.delete = Mock(
         return_value=self.mockDeleteDescriptor)
     self.mockMetricDescriptors.get = Mock(
         return_value=self.mockGetDescriptor)
+    self.mockMetricDescriptors.list = Mock(
+        return_value=self.mockListDescriptors)
+    self.mockMetricDescriptors.list_next = Mock(return_value=None)
+
     self.mockTimeSeries.create = Mock(return_value=self.mockCreateTimeSeries)
-    self.service = StackdriverMetricsService(lambda: self.mockStub, options)
+    self.service = stackdriver_service.StackdriverMetricsService(
+        lambda: self.mockStub, options)
 
   def test_find_problematic_elements(self):
     content = """{
@@ -165,5 +206,312 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(1, self.mockMetricDescriptors.create.call_count)
     self.assertEquals(0, self.mockTimeSeries.create.call_count)
 
+  def __write_transforms(self, filename):
+    xforms = {'monitoring': {'transforms' : {
+        'spectator.timer': {
+            'rename': 'test_system/test_timer',
+            'kind': 'Timer',
+            'tags': ['tag_a', 'tag_b'],
+            'change_tags': [{
+                'from': 'success_orig',
+                'to': 'success',
+                'type': 'BOOL'
+            }]
+        },
+
+        'spectator.gauge': {
+            'rename': 'test_system/test_gauge',
+            'kind': 'Gauge',
+            'unit': 'bytes',
+            'docs': 'Sample documentation.'
+        },
+
+        'spectator.counter': {
+            'rename': 'test_system/test_counter',
+            'kind': 'Counter',
+            'docs': 'Counter documentation.'
+        },
+    }}}
+    os.makedirs(self.filter_dir)
+    with open(os.path.join(self.filter_dir, filename), 'w') as stream:
+      yaml.safe_dump(xforms, stream)
+
+    timer_type = meter_name_to_descriptor_type('test_system/test_timer')
+    timer_name = meter_name_to_descriptor_name('test_system/test_timer')
+
+    timer_descriptor = {
+        'valueType': 'DOUBLE',
+        'metricKind': 'CUMULATIVE',
+        'name': timer_name,
+        'type': timer_type,
+        'labels': [
+            {'key': 'spin_service'},
+            {'key': 'spin_variant'},
+            {'key': 'tag_a'},
+            {'key': 'tag_b'},
+            {'key': 'success', 'valueType': 'BOOL'}
+        ],
+    }
+
+    result = {}
+
+    descriptor = dict(timer_descriptor)
+    descriptor['name'] = timer_name + '__count'
+    descriptor['type'] = timer_type + '__count'
+    descriptor['description'] = (
+      'Number of measurements in test_system/test_timer__totalTime.')
+    result[descriptor['name']] = descriptor
+
+    descriptor = dict(timer_descriptor)
+    descriptor['name'] = timer_name + '__totalTime'
+    descriptor['type'] = timer_type + '__totalTime'
+    descriptor['unit'] = 'ns'
+    result[descriptor['name']] = descriptor
+
+    gauge = {
+        'valueType': 'DOUBLE',
+        'metricKind': 'GAUGE',
+        'name': meter_name_to_descriptor_name('test_system/test_gauge'),
+        'type': meter_name_to_descriptor_type('test_system/test_gauge'),
+        'description': 'Sample documentation.',
+        'unit': 'By',
+        'labels': [
+            {'key': 'spin_service'},
+            {'key': 'spin_variant'}
+        ]
+    }
+    result[gauge['name']] = gauge
+  
+    counter = {
+        'valueType': 'DOUBLE',
+        'metricKind': 'CUMULATIVE',
+        'name': meter_name_to_descriptor_name('test_system/test_counter'),
+        'type': meter_name_to_descriptor_type('test_system/test_counter'),
+        'description': 'Counter documentation.',
+        'labels': [
+            {'key': 'spin_service'},
+            {'key': 'spin_variant'}
+        ]
+    }
+    result[counter['name']] = counter
+  
+    unused = {
+        'valueType': 'DOUBLE',
+        'metricKind': 'CUMULATIVE',
+        'name': meter_name_to_descriptor_name('test_system/extra'),
+        'type': meter_name_to_descriptor_type('test_system/extra'),
+        'description': 'Unused Descriptor.',
+        'labels': [
+            {'key': 'spin_service'},
+            {'key': 'spin_variant'}
+        ]
+    }
+    result[unused['name']] = unused
+  
+    return result
+
+  def get_descriptor_subset(self, from_map, names):
+    result = {}
+    for name in names:
+      key = meter_name_to_descriptor_name(name)
+      result[key] = from_map[key]
+    return result
+
+  def prepare_audit_scenario(self):
+    expected_descriptors = self.__write_transforms('default.yml')
+
+    # Setup eagerly loads transforms, but we didnt create them 'til now
+    # so redo the setup.
+    self.__do_setup()
+
+    gauge_name = meter_name_to_descriptor_name('test_system/test_gauge')
+    old_gauge = dict(expected_descriptors[gauge_name])
+    expect_same = {gauge_name: dict(expected_descriptors[gauge_name])}
+
+    timer_name = meter_name_to_descriptor_name('test_system/test_timer')
+    timer_count = expected_descriptors[timer_name + '__count']
+    timer_total = expected_descriptors[timer_name + '__totalTime']
+    expect_new = {
+        timer_count['name']: timer_count,
+        timer_total['name']: timer_total
+    }
+
+    counter_name = meter_name_to_descriptor_name('test_system/test_counter')
+    old_counter = dict(expected_descriptors[counter_name])
+    del(old_counter['description'])
+    expect_changed = {counter_name: dict(expected_descriptors[counter_name])}
+
+    unused_name = meter_name_to_descriptor_name('test_system/extra')
+    unused = dict(expected_descriptors[unused_name])
+    expect_unused = {unused['type']: unused}
+
+    self.mockListDescriptors.execute.return_value = {
+        'metricDescriptors': [old_gauge, old_counter, unused]
+    }
+
+    return (expect_same, expect_new, expect_changed, expect_unused)
+
+  def test_audit_readonly(self):
+    expect_same, expect_new, expect_changed, expect_unused = (
+        self.prepare_audit_scenario()
+    )
+
+    manager = self.service.descriptor_manager
+    options = stackdriver_service.normalize_options({})
+    audit = manager.audit_descriptors(options)
+
+    self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
+    self.assertEquals(expect_new, audit.new_descriptors)
+    self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())
+    self.assertEquals(expect_changed, audit.changed_descriptors)
+    self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
+    self.assertEquals(expect_unused, audit.unused_descriptors)
+
+    self.assertEquals(0, audit.num_fixed_issues)
+    self.assertEquals(
+        set(expect_same.keys()), audit.unchanged_descriptor_names)
+    self.assertEquals(2, audit.missing_count)
+    self.assertEquals(0, audit.created_count)
+    self.assertEquals(1, audit.outdated_count)
+    self.assertEquals(0, audit.updated_count)
+    self.assertEquals(1, audit.obsoleted_count)
+    self.assertEquals(0, audit.deleted_count)
+    self.assertEquals(4, audit.num_unresolved_issues)
+    self.assertEquals(4, audit.warnings)
+    self.assertEquals(0, audit.errors)
+
+    self.assertEquals(0, self.mockStub.projects.list.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.delete.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.create.call_count)
+
+  def test_audit_create_only(self):
+    expect_same, expect_new, expect_changed, expect_unused = (
+        self.prepare_audit_scenario()
+    )
+
+    manager = self.service.descriptor_manager
+    options = stackdriver_service.normalize_options(
+        {'manage_stackdriver_descriptors': 'create'}
+    )
+    audit = manager.audit_descriptors(options)
+
+    self.mockCreateDescriptor.execute.return_value = [
+    ]
+
+    # This delete is part of an update
+    self.mockDeleteDescriptor.execute.return_value = [
+    ]
+
+    self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
+    self.assertEquals(expect_new, audit.new_descriptors)
+    self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())
+    self.assertEquals(expect_changed, audit.changed_descriptors)
+    self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
+    self.assertEquals(expect_unused, audit.unused_descriptors)
+
+    self.assertEquals(3, audit.num_fixed_issues)
+    self.assertEquals(
+        set(expect_same.keys()), audit.unchanged_descriptor_names)
+    self.assertEquals(0, audit.missing_count)
+    self.assertEquals(2, audit.created_count)
+    self.assertEquals(0, audit.outdated_count)
+    self.assertEquals(1, audit.updated_count)
+    self.assertEquals(1, audit.obsoleted_count)
+    self.assertEquals(0, audit.deleted_count)
+    self.assertEquals(1, audit.num_unresolved_issues)
+    self.assertEquals(1, audit.warnings)
+    self.assertEquals(0, audit.errors)
+
+    self.assertEquals(0, self.mockStub.projects.list.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
+    self.assertEquals(3, self.mockMetricDescriptors.create.call_count)
+
+  def test_audit_update_failure(self):
+    expect_same, expect_new, expect_changed, expect_unused = (
+        self.prepare_audit_scenario()
+    )
+    # This delete is part of an update
+    self.mockMetricDescriptors.delete.side_effect = HttpError(
+        ResponseStatus(400, 'Injected Error'), 'Injected Error')
+    self.mockCreateDescriptor.execute.return_value = []
+
+    manager = self.service.descriptor_manager
+    options = stackdriver_service.normalize_options(
+        {'manage_stackdriver_descriptors': 'create'}
+    )
+    audit = manager.audit_descriptors(options)
+
+    self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
+    self.assertEquals(expect_new, audit.new_descriptors)
+    self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())
+    self.assertEquals(expect_changed, audit.changed_descriptors)
+    self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
+    self.assertEquals(expect_unused, audit.unused_descriptors)
+
+    self.assertEquals(2, audit.num_fixed_issues)
+    self.assertEquals(
+        set(expect_same.keys()), audit.unchanged_descriptor_names)
+    self.assertEquals(0, audit.missing_count)
+    self.assertEquals(2, audit.created_count)
+    self.assertEquals(1, audit.outdated_count)
+    self.assertEquals(0, audit.updated_count)
+    self.assertEquals(1, audit.obsoleted_count)
+    self.assertEquals(0, audit.deleted_count)
+    self.assertEquals(2, audit.num_unresolved_issues) # update and delete
+    self.assertEquals(1, audit.warnings) # delete
+    self.assertEquals(1, audit.errors)   # update
+
+    self.assertEquals(0, self.mockStub.projects.list.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
+    self.assertEquals(2, self.mockMetricDescriptors.create.call_count)
+
+  def test_audit_create_failure(self):
+    expect_same, expect_new, expect_changed, expect_unused = (
+        self.prepare_audit_scenario()
+    )
+    # This delete is part of an update
+    self.mockMetricDescriptors.create.side_effect = HttpError(
+        ResponseStatus(400, 'Injected Error'), 'Injected Error')
+    self.mockDeleteDescriptor.execute.return_value = {}
+
+    manager = self.service.descriptor_manager
+    options = stackdriver_service.normalize_options(
+        {'manage_stackdriver_descriptors': 'create'}
+    )
+    audit = manager.audit_descriptors(options)
+
+    self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
+    self.assertEquals(expect_new, audit.new_descriptors)
+    self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())
+    self.assertEquals(expect_changed, audit.changed_descriptors)
+    self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
+    self.assertEquals(expect_unused, audit.unused_descriptors)
+
+    self.assertEquals(0, audit.num_fixed_issues)
+    self.assertEquals(
+        set(expect_same.keys()), audit.unchanged_descriptor_names)
+    self.assertEquals(2, audit.missing_count)
+    self.assertEquals(0, audit.created_count)
+    self.assertEquals(1, audit.outdated_count)
+    self.assertEquals(0, audit.updated_count)
+    self.assertEquals(1, audit.obsoleted_count)
+    self.assertEquals(0, audit.deleted_count)
+    self.assertEquals(4, audit.num_unresolved_issues)
+    self.assertEquals(1, audit.warnings) # delete
+    self.assertEquals(3, audit.errors)
+
+    self.assertEquals(0, self.mockStub.projects.list.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
+    self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
+    self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
+    self.assertEquals(3, self.mockMetricDescriptors.create.call_count)
+
+    
 if __name__ == '__main__':
   unittest.main()

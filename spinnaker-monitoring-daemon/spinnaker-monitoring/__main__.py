@@ -52,7 +52,7 @@ signal.signal(signal.SIGTERM, handle_sigterm)
 def init_logging(options):
   """Initialize logging within this tool."""
   log_file = options['log_basename'] + '.log'
-  log_dir = options['log_dir']
+  log_dir = options.get('log_dir')
 
   log_config = {
     'version':1,
@@ -65,7 +65,7 @@ def init_logging(options):
     },
     'handlers':{
       'console':{
-        'level': options['log_level'],
+        'level': options.get('log_level', 'WARNING'),
         'class':'logging.StreamHandler',
         'formatter':'timestamped'
       },
@@ -98,7 +98,7 @@ def add_global_args(parser):
   parser.add_argument(
       '--log_dir', default=None,
       help='If specified, log to a --log_basename in this directory instead of console.')
-  parser.add_argument('--log_level', default='ERROR', help='log level to console')
+  parser.add_argument('--log_level', default=None, help='log level to console')
   parser.add_argument('--config', default=DEFAULT_CONFIG_PATH,
                       help='Path to base configuration directory.')
   parser.add_argument('--registry_dir',
@@ -148,8 +148,8 @@ def main():
   all_command_handlers, parser = prepare_commands()
   opts = parser.parse_args()
   options = vars(opts)
-  init_logging(options)
   options = util.merge_options_and_yaml_from_path(options, opts.config)
+  init_logging(options)
 
   # TODO(ewiseblatt): decouple this so we dont need to know about this here.
   # Take the union of stores enabled on the command line or in the config file.

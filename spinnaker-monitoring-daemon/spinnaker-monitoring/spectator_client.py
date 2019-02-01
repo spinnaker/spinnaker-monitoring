@@ -48,6 +48,7 @@ _cached_registry_timestamp = None
 # know if it is dealing with a counter or a gauge.
 COUNTER_PRIMITIVE_KIND = 'Counter'
 GAUGE_PRIMITIVE_KIND = 'Gauge'
+SUMMARY_PRIMITIVE_KIND = 'Summary'
 
 
 def merge_specifications(baseline, derived):
@@ -292,6 +293,7 @@ class SpectatorClientHelper(object):
 
   def __init__(self, options):
     self.__options = options.get('spectator', {})
+    self.__summarize_timers = self.__options.get('summarize_timers')
     self.__inject_service_tag = self.__options.get('inject_service_tag')
     self.__decorate_metric_name = (self.__options.get('decorate_metric_name')
                                    if 'decorate_metric_name' in self.__options
@@ -303,6 +305,8 @@ class SpectatorClientHelper(object):
         'PercentileCounter', 'PercentileTimer',
         'PercentileDistributionSummary'
     ):
+      if self.__summarize_timers and kind.endswith('Timer'):
+        return SUMMARY_PRIMITIVE_KIND
       return COUNTER_PRIMITIVE_KIND
     return GAUGE_PRIMITIVE_KIND
 

@@ -23,6 +23,7 @@ import yaml
 
 from spectator_metric_transformer import (
     AggregatedMetricsBuilder,
+    MetricInfo,
     SpectatorMetricTransformer,
     TransformationRule)
 
@@ -117,6 +118,134 @@ class AggregatedBuilderTest(unittest.TestCase):
         ]),
         sorted(builder.build()))
 
+  def test_summary(self):
+    transformer = SpectatorMetricTransformer({}, {})
+    rule = TransformationRule(
+        transformer,
+        {
+            'rename': 'NewName',
+            'kind': 'Summary',
+            'tags': ['status'],
+        })
+    builder = AggregatedMetricsBuilder(rule)
+    for measurement in self._make_timer_measurements():
+      builder.add(measurement['values'][0], measurement['tags'])
+    self.assertEquals(
+        [{
+            'values': [{'v': {'count': 123, 'totalTime': 321},
+                        't': self.TIMESTAMP}],
+            'tags': [{'key': 'status', 'value': '2xx'}]
+        }],
+        sorted(builder.build())
+    )
+
+  def test_collate_one_measurement(self):
+    builder = self._make_simple_rule_builder()
+    output = {}
+    measurements = self._make_timer_measurements()
+    for measurement in measurements:
+      builder._collate_metric_info(
+          MetricInfo(measurement['values'][0], sorted(measurement['tags'])),
+          output)
+
+    self.assertEquals(
+        sorted([
+            MetricInfo({'t': self.TIMESTAMP,
+                        'v': {'count': 123, 'totalTime': 321}},
+                       self._determine_expected_tags(measurements[0]))
+        ]),
+        sorted(output.values()))
+
+  def test_collate_multiple_measurements(self):
+    builder = self._make_simple_rule_builder()
+    output = {}
+    measurements2xx = self._make_timer_measurements(status='2xx')
+    measurements4xx = self._make_timer_measurements(status='4xx')
+    measurements5xx = self._make_timer_measurements(status='5xx')
+    measurements = [
+        measurements2xx[0],
+        measurements4xx[1],
+        measurements5xx[0],
+        measurements4xx[0],
+        measurements2xx[1],
+        measurements5xx[1],
+    ]
+    for measurement in measurements:
+      builder._collate_metric_info(
+          MetricInfo(measurement['values'][0], sorted(measurement['tags'])),
+          output)
+
+    expect_values = [
+        MetricInfo({'t': self.TIMESTAMP,
+                    'v': {'count': 123, 'totalTime': 321}},
+                   self._determine_expected_tags(measurements2xx[0])),
+
+        # different value, same time
+        MetricInfo({'t': self.TIMESTAMP,
+                    'v': {'count': 123 + 400, 'totalTime': 321 + 400}},
+                   self._determine_expected_tags(measurements4xx[0])),
+
+        # different value, different time
+        MetricInfo({'t': self.TIMESTAMP + 500,
+                    'v': {'count': 123 + 500, 'totalTime': 321 + 500}},
+                   self._determine_expected_tags(measurements5xx[0]))
+    ]
+
+    for got in output.values():
+      found = False
+      for index, expect in enumerate(expect_values):
+        if got == expect:
+          del expect_values[index]
+          found = True
+          break
+      self.assertTrue(found, msg='Missing %r' % got)
+    self.assertEquals([], expect_values)
+
+  def test_summarize_timers_and_build(self):
+    options = {'summarize_timers': True}
+    builder = self._make_simple_rule_builder(options=options)
+    measurements2xx = self._make_timer_measurements(status='2xx')
+    measurements4xx = self._make_timer_measurements(status='4xx')
+    measurements5xx = self._make_timer_measurements(status='5xx')
+    measurements0xx = self._make_timer_measurements(status='0xx')
+    measurements = [
+        measurements2xx[0],
+        measurements4xx[1],
+        measurements5xx[0],
+        measurements0xx[0],
+        measurements4xx[0],
+        measurements2xx[1],
+        measurements0xx[1],
+        measurements5xx[1],
+    ]
+    for measurement in measurements:
+      builder.add(measurement['values'][0], measurement['tags'])
+
+    self.assertEquals(
+        sorted([
+            # 2xx and 0xx got combined together because tags are same
+            # timestamp is bumped to 0xx's which was later.
+            {
+                'values': [{'t': self.TIMESTAMP + 500,
+                            'v': {'count': 2 * 123, 'totalTime': 2 * 321}}],
+                'tags': self._determine_expected_tags(measurements2xx[0])
+            },
+            # different tags, same timestamp (from 2xx)
+            {
+                'values': [{'t': self.TIMESTAMP,
+                            'v': {'count': 123 + 400, 'totalTime': 321 + 400}}],
+                'tags': self._determine_expected_tags(measurements4xx[0])
+            },
+            # different tags, different timestamp (from 2xx)
+            {
+                'values': [{'t': self.TIMESTAMP + 500,
+                            'v': {'count': 123 + 500, 'totalTime': 321 + 500}}],
+                'tags': self._determine_expected_tags(measurements5xx[0])
+            }
+        ]),
+        sorted(builder.build())
+    )
+
 
 class SpectatorMetricTransformerTest(unittest.TestCase):
   def do_test(self, spec_yaml, spectator_response, expect_response,
@@ -125,6 +254,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     options = options or {}
     transformer = SpectatorMetricTransformer(options, spec)
     got_response = transformer.process_response(spectator_response)
+
     for _, got_meter_data in got_response.items():
       values = got_meter_data.get('values')
       if values:
@@ -199,7 +329,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
              EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used']}
     )
 
-  def test_change_meter_name_default(self):
+  def test_change_meter_name(self):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
@@ -349,7 +479,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             }
                       ]
-        }},
+        }}
     )
 
   def test_change_tag_to_type_bool(self):
@@ -394,8 +524,9 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                      {'key': 'id', 'value': 'Code Cache'},
                      {'key': 'heap', 'value': False},
                  ])},
-            ])}
-        })
+            ])},
+        }
+    )
 
   def test_change_tag_to_type_int(self):
     self.do_test(
@@ -439,7 +570,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                      {'key': 'statusCode', 'value': 200},
                  ]}
             ]},
-        },
+        }
     )
 
   def test_decompose_tag(self):
@@ -500,7 +631,8 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             }
                              ])}
-        })
+        }
+    )
 
   def test_remove_tag(self):
     self.do_test(
@@ -583,7 +715,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             },
                              ])},
-        },
+        }
     )
 
   def test_discard_tag_values(self):
@@ -629,7 +761,8 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             },
                              ])}
-        })
+        }
+    )
 
   def test_per_application_removed(self):
     # Test is we transform into an application tag and have per_application

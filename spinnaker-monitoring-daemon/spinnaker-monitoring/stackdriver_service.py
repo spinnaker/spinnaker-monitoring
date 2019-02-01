@@ -127,7 +127,8 @@ class StackdriverMetricsService(object):
     """Return MetricDescriptorManager."""
     return self.__descriptor_manager
 
-  def __update_monitored_resources(self, service_map):
+  def _update_monitored_resources(self, service_map):
+    """Exposed for testing."""
     if self.__stackdriver_options.get('generic_task_resources'):
       self.__update_monitored_generic_task_resources(service_map)
     else:
@@ -304,7 +305,7 @@ class StackdriverMetricsService(object):
     self.__janitor_func()
 
     time_series = []
-    self.__update_monitored_resources(service_metrics)
+    self._update_monitored_resources(service_metrics)
     spectator_client.foreach_metric_in_service_map(
         service_metrics, self.add_metric_to_timeseries, time_series)
     offset = 0

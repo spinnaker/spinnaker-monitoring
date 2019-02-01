@@ -21,7 +21,10 @@ import unittest
 
 import yaml
 
-from spectator_metric_transformer import SpectatorMetricTransformer
+from spectator_metric_transformer import (
+    AggregatedMetricsBuilder,
+    SpectatorMetricTransformer,
+    TransformationRule)
 
 
 # This is a sample spectator response containing
@@ -41,6 +44,78 @@ EXAMPLE_MEMORY_USED_RESPONSE = {
         }]
     }
 }
+
+
+class AggregatedBuilderTest(unittest.TestCase):
+  TIMESTAMP = 987654321
+  def _make_values(self, count):
+    return [{'v': 100 + i, 't': self.TIMESTAMP+i}
+            for i in range(count)]
+
+  def _make_tags(self, **kwargs):
+    return [{'key': key, 'value': value} for key, value in kwargs.items()]
+
+  def _make_simple_rule_builder(self, options=None):
+    # transformer isnt used for these tests, but is required to construct
+    options = options or {}
+    transformer = SpectatorMetricTransformer(options, {})
+
+    rule = TransformationRule(
+        transformer,
+        {
+            'rename': 'NewName',
+            'kind': 'Timer',
+            'tags': ['status'],
+        })
+    # The builder only uses the kind part of the rule.
+    # The other parts of the rule are used when it is applied
+    # to preprocess the response before adding to the builder.
+    return AggregatedMetricsBuilder(rule)
+
+  def _make_timer_measurements(self, status='2xx'):
+    t, v = {'2xx': (0, 0),
+            '4xx': (0, 400),   # different value same time
+            '5xx': (500, 500), # different value different time
+            '0xx': (500, 0),   # same value different time
+           }[status]
+    if status == '0xx':
+      status = '2xx'
+
+    return [
+        {'values': [{'v':123 + v, 't': self.TIMESTAMP + t}],
+         'tags': self._make_tags(status=status, statistic='count')},
+        {'values': [{'v':321 + v, 't': self.TIMESTAMP + t}],
+         'tags': self._make_tags(status=status, statistic='totalTime')}
+    ]
+
+  def _determine_expected_tags(self, measurement):
+    expect_tags = list(measurement['tags'])
+    for i, entry in enumerate(expect_tags):
+      if entry['key'] == 'statistic':
+        del expect_tags[i]
+        break
+    return sorted(expect_tags)
+
+  def test_timer(self):
+    # This test is just showing nothing interesting happening
+    # and we get out what we put in.
+    builder = self._make_simple_rule_builder()
+    for measurement in self._make_timer_measurements():
+      builder.add(measurement['values'][0], measurement['tags'])
+    self.assertEquals(
+        sorted([
+            {
+                'values': [{'v': 123, 't': self.TIMESTAMP}],
+                'tags': sorted([{'key': 'status', 'value': '2xx'},
+                                {'key': 'statistic', 'value': 'count'}])
+            },
+            {
+                'values': [{'v': 321, 't': self.TIMESTAMP}],
+                'tags': sorted([{'key': 'status', 'value': '2xx'},
+                                {'key': 'statistic', 'value': 'totalTime'}])
+            }
+        ]),
+        sorted(builder.build()))
 
 
 class SpectatorMetricTransformerTest(unittest.TestCase):
@@ -85,6 +160,33 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     got_response = transformer.process_response(spectator_response)
     self.assertResponseEquals(spectator_response, got_response)
 
+  def test_stackdriver_timers(self):
+    spec = {}
+    transformer = SpectatorMetricTransformer(
+        {'enforce_stackdriver_names': True}, spec)
+
+    do_name = lambda name, kind: transformer.normalize_meter_name(
+        name, kind)
+    self.assertEquals('timers', do_name('timers', 'Gauge'))
+    self.assertEquals('timers', do_name('timers', 'Counter'))
+    self.assertEquals('timer_latency', do_name('timer', 'Timer'))
+    self.assertEquals('timer_latency', do_name('timers', 'Timer'))
+    self.assertEquals('timer_latency', do_name('timer_latency', 'Timer'))
+    self.assertEquals('timer_latency', do_name('timerLatency', 'Timer'))
+
+  def test_snakeify(self):
+    spec = {}
+    transformer = SpectatorMetricTransformer({'use_snake_case': True}, spec)
+    snakeify = lambda name: transformer.normalize_text_case(name)
+    self.assertEquals('test', snakeify('test'))
+    self.assertEquals('test', snakeify('Test'))
+    self.assertEquals('test', snakeify('TEST'))
+    self.assertEquals('camel_case', snakeify('camelCase'))
+    self.assertEquals('title_case', snakeify('TitleCase'))
+    self.assertEquals('snake_case', snakeify('Snake_Case'))
+    self.assertEquals('http_response', snakeify('HTTPResponse'))
+    self.assertEquals('upper_case', snakeify('UPPER_CASE'))
+
   def test_change_meter_name_explicit(self):
     self.do_test(
         textwrap.dedent("""\
@@ -101,11 +203,23 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
-              rename: memory_used
+              rename: memoryUsed
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
-        {'memory_used': EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used']}
+        {'memoryUsed': EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used']}
+    )
+
+  def test_change_meter_name_snakeify(self):
+    self.do_test(
+        textwrap.dedent("""\
+            jvm.memory.used:
+              rename: memoryUsed
+        """),
+
+        EXAMPLE_MEMORY_USED_RESPONSE,
+        {'memory_used': EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used']},
+        options={'use_snake_case': True}
     )
 
   def test_discard_meter_by_name(self):

@@ -14,9 +14,6 @@
 
 # pylint: disable=missing-docstring
 
-import mock
-from mock import Mock
-
 import collections
 import copy
 import logging
@@ -26,6 +23,9 @@ import tempfile
 import unittest
 import yaml
 from googleapiclient.errors import HttpError
+
+import mock
+from mock import Mock
 
 import stackdriver_service
 
@@ -106,6 +106,79 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.service = stackdriver_service.StackdriverMetricsService(
         lambda: self.mockStub, options)
 
+  def test_record_counter_metric(self):
+    self._do_test_add_metric('Counter', 'CUMULATIVE', 'DOUBLE',
+                             12, {'doubleValue': 12})
+
+  def test_record_gauge_metric(self):
+    self._do_test_add_metric('Gauge', 'GAUGE', 'DOUBLE',
+                             21, {'doubleValue': 21})
+
+  def _do_test_add_metric(self,
+                          spectator_kind, stackdriver_kind,
+                          stackdriver_value_type, raw_value, expect_value):
+    result = []
+
+    startTime = 1548685300000
+    service = 'TestService'
+
+    test_metric_instance = {
+        'values': [{'t': startTime + 12345, 'v': raw_value}],
+        'tags': [{'key': 'key1', 'value': 'value1'},
+                 {'key': 'key2', 'value': 'value2'}]
+    }
+
+    test_metric_entry = {
+        'kind': spectator_kind,
+        'values': [test_metric_instance]
+    }
+    service_response = {
+        'applicationName': service,
+        'startTime': startTime,
+        'metrics': {
+            'TestMetric': test_metric_entry
+        }
+    }
+    service_map = {
+        'TestService': [
+            service_response
+        ]
+    }
+
+    self.service._update_monitored_resources(service_map)
+    self.service.add_metric_to_timeseries(
+        service,
+        'TestMetric', test_metric_instance, test_metric_entry, service_response,
+        result)
+
+    # The dates here are the string equivalents of our hardcoded int
+    interval = {'endTime': '2019-01-28T14:21:52Z'}
+    if stackdriver_kind != 'GAUGE':
+      interval['startTime'] = '2019-01-28T14:21:40Z'
+
+    self.assertEquals(
+        [{
+            'metricKind': stackdriver_kind,
+            'valueType': stackdriver_value_type,
+            'metric': {
+                'labels': {'key1': 'value1', 'key2': 'value2'},
+                'type': 'custom.googleapis.com/spinnaker/TestService/TestMetric'
+            },
+            'resource': {
+                'type': 'gce_instance',
+                'labels': {
+                    'instance_id': 'test-instance',
+                    'project_id': 'test-project',
+                    'zone': 'us-central1-f'
+                }
+            },
+            'points': [{
+                'interval': interval,
+                'value': expect_value
+            }]
+        }],
+        result)
+
   def test_find_problematic_elements(self):
     content = """{
   "error": {
@@ -168,8 +241,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     timeseries = 'OPAQUE'
 
     original_descriptor = {'labels': [{'key': 'TestLabel'}],
-                           'type': 'TYPE'
-                           }
+                           'type': 'TYPE'}
     new_descriptor = dict(copy.deepcopy(original_descriptor))
     new_descriptor['labels'].append({'key': 'NewLabel'})
 
@@ -190,8 +262,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     timeseries = 'OPAQUE'
 
     original_descriptor = {'labels': [{'key': 'TestLabel'}],
-                           'type': 'TYPE'
-                           }
+                           'type': 'TYPE'}
 
     self.mockGetDescriptor.execute.side_effect = [original_descriptor]
     self.mockDeleteDescriptor.execute.side_effect = ResponseStatus(
@@ -259,7 +330,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     descriptor['name'] = timer_name + '__count'
     descriptor['type'] = timer_type + '__count'
     descriptor['description'] = (
-      'Number of measurements in test_system/test_timer__totalTime.')
+        'Number of measurements in test_system/test_timer__totalTime.')
     result[descriptor['name']] = descriptor
 
     descriptor = dict(timer_descriptor)
@@ -281,7 +352,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         ]
     }
     result[gauge['name']] = gauge
-  
+
     counter = {
         'valueType': 'DOUBLE',
         'metricKind': 'CUMULATIVE',
@@ -294,7 +365,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         ]
     }
     result[counter['name']] = counter
-  
+
     unused = {
         'valueType': 'DOUBLE',
         'metricKind': 'CUMULATIVE',
@@ -307,7 +378,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         ]
     }
     result[unused['name']] = unused
-  
+
     return result
 
   def get_descriptor_subset(self, from_map, names):

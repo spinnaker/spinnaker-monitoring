@@ -44,9 +44,11 @@ EXAMPLE_MEMORY_USED_RESPONSE = {
 
 
 class SpectatorMetricTransformerTest(unittest.TestCase):
-  def do_test(self, spec_yaml, spectator_response, expect_response):
+  def do_test(self, spec_yaml, spectator_response, expect_response,
+              options=None):
     spec = yaml.load(spec_yaml)
-    transformer = SpectatorMetricTransformer(spec)
+    options = options or {}
+    transformer = SpectatorMetricTransformer(options, spec)
     got_response = transformer.process_response(spectator_response)
     for _, got_meter_data in got_response.items():
       values = got_meter_data.get('values')
@@ -64,21 +66,22 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
   def test_discard_default(self):
     spectator_response = EXAMPLE_MEMORY_USED_RESPONSE
     spec = {}
-    transformer = SpectatorMetricTransformer(spec)
+    transformer = SpectatorMetricTransformer({}, spec)
     got_response = transformer.process_response(spectator_response)
     self.assertResponseEquals({}, got_response)
 
   def test_identity_default(self):
     spectator_response = EXAMPLE_MEMORY_USED_RESPONSE
     spec = {}
-    transformer = SpectatorMetricTransformer(spec, default_is_identity=True)
+    options = {'default_is_identity': True}
+    transformer = SpectatorMetricTransformer(options, spec)
     got_response = transformer.process_response(spectator_response)
     self.assertResponseEquals(spectator_response, got_response)
 
   def test_identity_explicit(self):
     spectator_response = EXAMPLE_MEMORY_USED_RESPONSE
     spec = {'jvm.memory.used': None}
-    transformer = SpectatorMetricTransformer(spec)
+    transformer = SpectatorMetricTransformer({}, spec)
     got_response = transformer.process_response(spectator_response)
     self.assertResponseEquals(spectator_response, got_response)
 
@@ -557,19 +560,21 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ]),
                 '__per_tag_values': {
                     'application': sorted([
-                      {
-                         'values': [{'t': 1540224536922, 'v': 12.0}],
-                         'tags': [
-                             {'key': 'application', 'value': 'MyApplication'},
-                             {'key': 'executionType', 'value': 'Pipeline'}
-                         ]
-                      }, {
-                         'values': [{'t': 1540224536923, 'v': 21.0}],
-                         'tags': [
-                             {'key': 'application', 'value': 'YourApplication'},
-                             {'key': 'executionType', 'value': 'Pipeline'}
-                         ]
-                      }
+                        {
+                            'values': [{'t': 1540224536922, 'v': 12.0}],
+                            'tags': [
+                                {'key': 'application',
+                                 'value': 'MyApplication'},
+                                {'key': 'executionType', 'value': 'Pipeline'}
+                            ]
+                        }, {
+                            'values': [{'t': 1540224536923, 'v': 21.0}],
+                            'tags': [
+                                {'key': 'application',
+                                 'value': 'YourApplication'},
+                                {'key': 'executionType', 'value': 'Pipeline'}
+                            ]
+                        }
                     ]),
                 }}]),
             }

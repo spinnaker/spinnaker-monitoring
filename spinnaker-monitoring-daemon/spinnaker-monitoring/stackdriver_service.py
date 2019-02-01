@@ -449,7 +449,7 @@ class StackdriverMetricsService(object):
                'value': {'doubleValue': e['v']}}
               for e in instance['values']]
 
-    primitive_kind = spectator_client.determine_primitive_kind(
+    primitive_kind = self.__spectator_helper.determine_primitive_kind(
         metric_metadata['kind'])
     if primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND:
       metric_kind = 'GAUGE'

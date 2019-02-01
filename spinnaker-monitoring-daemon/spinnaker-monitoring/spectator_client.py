@@ -68,7 +68,13 @@ def merge_specifications(baseline, derived):
 
 
 class ResponseProcessor(object):
+  @property
+  def spectator_options(self):
+    """Returns the bound spectator_options configuring this processor."""
+    return self.__spectator_options
+
   def __init__(self, options):
+    self.__spectator_options = options.get('spectator', {})
     self.__disable_filter = options.get('disable_metric_filter', False)
     self.__disable_transform = options.get('disable_metric_transform', False)
     self.__filter_dir = options.get('metric_filter_dir')
@@ -103,8 +109,10 @@ class ResponseProcessor(object):
 
     if default_metric_transformer is None:
       logging.info('default_metric_transformer will be IDENTITY')
-      default_metric_transformer = SpectatorMetricTransformer(
-          {}, default_is_identity=True)
+      copy_opts = dict(self.__spectator_options)
+      copy_opts['default_is_identity'] = True
+      spec = {}
+      default_metric_transformer = SpectatorMetricTransformer(copy_opts, spec)
 
     self.__default_metric_filter = default_metric_filter
     self.__default_metric_transformer = default_metric_transformer
@@ -162,8 +170,7 @@ class ResponseProcessor(object):
           elif transform_spec is not None:
             logging.info('Loading metric transformer from "%s"', path)
             metric_transformer = SpectatorMetricTransformer(
-                transform_spec,
-                default_is_identity=False)
+                self.__spectator_options, transform_spec)
           else:
             logging.info('"%s" has no monitoring.transforms entry -- ignoring',
                          path)
@@ -193,16 +200,6 @@ class ResponseProcessor(object):
   def __filter_response(self, service, spectator_response):
     metric_filter = self.determine_service_metric_filter(service)
     return metric_filter(spectator_response['metrics'])
-
-
-def determine_primitive_kind(kind):
-  if kind in (
-      'Counter', 'Timer', 'Distribution', 'DistributionSummary',
-      'PercentileCounter', 'PercentileTimer',
-      'PercentileDistributionSummary'
-  ):
-    return COUNTER_PRIMITIVE_KIND
-  return GAUGE_PRIMITIVE_KIND
 
 
 def get_source_catalog(options):
@@ -299,6 +296,15 @@ class SpectatorClientHelper(object):
     self.__decorate_metric_name = (self.__options.get('decorate_metric_name')
                                    if 'decorate_metric_name' in self.__options
                                    else not self.__inject_service_tag)
+
+  def determine_primitive_kind(self, kind):
+    if kind in (
+        'Counter', 'Timer', 'Distribution', 'DistributionSummary',
+        'PercentileCounter', 'PercentileTimer',
+        'PercentileDistributionSummary'
+    ):
+      return COUNTER_PRIMITIVE_KIND
+    return GAUGE_PRIMITIVE_KIND
 
   def normalize_name_and_tags(self, service, name,
                               metric_instance, metric_metadata):

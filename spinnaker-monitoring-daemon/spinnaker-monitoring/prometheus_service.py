@@ -57,8 +57,8 @@ try:
       generate_latest)
 
   from prometheus_client.core import (
-      GaugeMetricFamily,
       CounterMetricFamily,
+      GaugeMetricFamily,
       REGISTRY)
 
   from prometheus_client.exposition import push_to_gateway
@@ -171,7 +171,7 @@ class PrometheusMetricsCollection(object):
         spectator_client.COUNTER_PRIMITIVE_KIND: CounterBuilder,
         spectator_client.GAUGE_PRIMITIVE_KIND: GaugeBuilder
     }
-    primitive_kind = spectator_client.determine_primitive_kind(info.kind)
+    primitive_kind = self.__spectator_helper.determine_primitive_kind(info.kind)
     return kind_to_factory[primitive_kind](metric_name, all_tags)
 
 

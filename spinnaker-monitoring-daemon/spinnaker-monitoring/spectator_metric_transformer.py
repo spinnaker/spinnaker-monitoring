@@ -54,19 +54,19 @@ class MetricInfo(object):
 
     # NOTE(20181203):
     # This extra field here is experimental, but we're always going
-    # to incur the runtime overhead to maintain the data model for simplicity. 
+    # to incur the runtime overhead to maintain the data model for simplicity.
     #
     # This is for another map 'per_tag_values' which is meant to capture
     # the breakout (group by) of "per_<account|application>" tags that were
     # dropped and aggregated to the tags list. The values here is a dictionary
-    # keyed by the tag name (e.g. account) with entries for each of the tag values
-    # along with the standard tags above (e.g. add 'account': 'MyAccount')
+    # keyed by the tag name (e.g. account) with entries for each of the tag
+    # values along with the standard tags above (eg. add 'account': 'MyAccount')
     #
     # This allows the standard interface using the tags to see the redacted view
-    # (remove the "per_*" tags) while having visibility to those extra tags using
-    # the "per_tag_values" view. The intent is to allow the metric store to handle
-    # these values with high cardinality tags differently. It isnt yet definitive
-    # how to do that or even if we want to.
+    # (remove the "per_*" tags) while having visibility to those extra tags
+    # using the "per_tag_values" view. The intent is to allow the metric store
+    # to handle these values with high cardinality tags differently. It isnt
+    # yet definitive how to do that or even if we want to.
     self.__per_tag_values = {}
 
   def add_per_tags(self, value_json, sorted_tags, per_tags):
@@ -88,7 +88,7 @@ class MetricInfo(object):
         info = MetricInfo(value_json, sorted_augmented_tags)
         tag_container[normalized_key] = info
       else:
-        info.aggregate_value(json)
+        info.aggregate_value(value_json)
 
   def aggregate_value(self, value_json):
     """Aggregate another value into this metric."""
@@ -102,8 +102,9 @@ class MetricInfo(object):
       response['tags'] = self.__tags
     if self.__per_tag_values:
       response['__per_tag_values'] = {
-        key: sorted([v.encode_as_spectator_response() for v in value.values()])
-        for key, value in self.__per_tag_values.items()
+          key: sorted([v.encode_as_spectator_response()
+                       for v in value.values()])
+          for key, value in self.__per_tag_values.items()
       }
     return response
 
@@ -151,7 +152,6 @@ class AggregatedMetricsBuilder(object):
     else:
       metric.aggregate_value(value_json)
     metric.add_per_tags(value_json, sorted_tags, per_tags)
-
 
   def build(self):
     """Encode all the measurements for the meter."""
@@ -288,8 +288,6 @@ class TransformationRule(object):
     extract_regex = transformation.get('extract_regex')
     if not extract_regex:
       if tag_type == 'INT':
-        empty_if_unknown = lambda x: '' if x=='UNKNOWN' else x
-
         transformation['_xform_func'] = lambda value: {
             to_tag: int(0 if value in ('', 'UNKNOWN') else value)
         }
@@ -326,9 +324,17 @@ class TransformationRule(object):
       }
     transformation['_xform_func'] = composite_func
 
-  def __init__(self, rule_spec):
-    self.__rule_spec = rule_spec if rule_spec else None
+  def __init__(self, transformer, rule_spec):
+    """Construct new transformation rule
 
+    Args:
+      transformer: [SpectatorMetricTransformer] The owning transformer
+         is used for configuration options for any deployment-oriented
+         transform configuration policy applied on top of the generic rules.
+      rule_spec: [dict] The rule specification loaded from the json file.
+    """
+    self.__transformer = transformer
+    self.__rule_spec = rule_spec if rule_spec else None
     if rule_spec is None:
       rule_spec = {}
 
@@ -496,31 +502,32 @@ class SpectatorMetricTransformer(object):
   """
 
   @staticmethod
-  def new_from_yaml_path(path, **kwargs):
+  def new_from_yaml_path(path, options=None):
     """Create new instance using specification in YAML file."""
     with open(path, 'r') as stream:
       transform_spec = yaml.load(stream)
-    return SpectatorMetricTransformer(transform_spec, **kwargs)
+    return SpectatorMetricTransformer(options, transform_spec)
 
   @property
   def rulebase(self):
     """The rulebase used."""
     return self.__rulebase
 
-  def __init__(self, spec,
-               default_is_identity=False):
+  def __init__(self, options, spec):
     """Constructor.
 
     Args:
+      options: [dict] Configuration options for the transformer.
+          - default_is_identity: [bool] If true and a spec is not
+                found when transforming a metric then assume the identity.
+                Otherwise assume the metric should be discarded.
       spec: [dict] Transformation specification entry from YAML.
-      default_is_identity: [bool] If true and a spec is not
-          found when transforming a metric then assume the identity.
-          otherwise assume the metric should be discarded.
     """
-    self.__default_rule = (TransformationRule(None)  # identity
+    default_is_identity = options.get('default_is_identity', False)
+    self.__default_rule = (TransformationRule(self, None)  # identity
                            if default_is_identity
                            else None)              # discard
-    self.__rulebase = {key: TransformationRule(value)
+    self.__rulebase = {key: TransformationRule(self, value)
                        for key, value in spec.items()}
     for meter_name, rule in spec.items():
       if not rule:

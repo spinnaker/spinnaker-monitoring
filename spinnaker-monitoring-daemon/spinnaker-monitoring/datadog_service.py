@@ -241,7 +241,7 @@ class DatadogMetricsService(object):
     # counters, timers, distribution summaries, etc are counters.
     # only "Gauge" is a gauge.
     if self.__use_types:
-      primitive_kind = spectator_client.determine_primitive_kind(
+      primitive_kind = self.__spectator_helper.determine_primitive_kind(
           metric_metadata['kind'])
       metric_type = ('gauge'
                      if primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND

@@ -196,10 +196,77 @@ class AggregatedMetricsBuilder(object):
       metric.aggregate_value(value_json)
     metric.add_per_tags(value_json, sorted_tags, per_tags)
 
+  def _collate_metric_values(self):
+    """Collate the values in the builder to produce composite values
+       for all meters.
+
+       See _collate_measurements for more info on collating individual meters.
+    """
+    collated_measurement_values = {}
+    for info in self.__tags_to_metric.values():
+      self._collate_metric_info(info, collated_measurement_values)
+    return collated_measurement_values
+
+  def _collate_metric_info(
+      self, metric_info, collated_metric_infos):
+    """Collate the metric_info for a given meter.
+
+    Collated metric_info are a composite value replacing a collection
+    of metric_info related through different "statistic" tag values.
+    For example a timer with tag bindings including "statistic=count"
+    whose value is COUNT and "statistic=totalTime" whose value is TOTAL
+    will result in a single composite value {count:COUNT, totalTime:TOTAL}
+    whose tag bindings were the original minus the "statistic" tag.
+
+    To collate into a composite metric, two measurements must have the
+    same tag bindings (other than statistic) and each composite value must
+    have values from the same timestamp.
+
+    Args:
+      metric_info: MetricInfo we wish to collate into the collated metrics
+      collated_metric_infos: map keyed by normalized tag bindings
+         whose values are the [collated] MetricInfo for a given composite meter.
+    """
+    # Iterate over all the metric tag binding combinations
+    key = None
+    tags = list(metric_info.tags)
+    for index, key_value in enumerate(tags):
+      # For this particular binding, find the statistic tag
+      if key_value['key'] == 'statistic':
+        key = key_value['value']
+        del(tags[index])
+        break
+
+    # Produce our normalized metric instance without the 'statistic' tag
+    # but with a composite value adding the statistic value mapped to
+    # instance value (e.g. count: <value> or mean: <value>)
+    #
+    # We'll need to align the timestamps across the different statistic values
+    # to correlate their composite elements correctly.
+    normalized_key = str(tags)
+    normalized_info = collated_metric_infos.get(normalized_key)
+    if not normalized_info:
+      json_value = {'t': metric_info.timestamp, 'v': {key: metric_info.value}}
+      normalized_info = MetricInfo(json_value, tags)
+      collated_metric_infos[normalized_key] = normalized_info
+      return
+    normalized_info.value[key] = metric_info.value
+
   def build(self):
     """Encode all the measurements for the meter."""
+    kind = self.__rule.rule_specification.get('kind', '')
+    if ((self.__rule.transformer.options.get('summarize_timers', False)
+         and kind.endswith('Timer'))
+        or kind == 'Summary'):
+      collated_values = self._collate_metric_values()
+      return self.__encode_all_metric_info(collated_values.values())
+
+    return self.__encode_all_metric_info(self.__tags_to_metric.values())
+
+  def __encode_all_metric_info(self, metric_info_list):
+    """Encode all the measurements for the meter."""
     return [info.encode_as_spectator_response()
-            for info in self.__tags_to_metric.values()]
+            for info in metric_info_list]
 
 
 class TransformationRule(object):
@@ -327,6 +394,11 @@ class TransformationRule(object):
     else:
       to_tag = self.__transformer.normalize_text_case(transformation['to'])
 
+    if not 'type' in transformation:
+      # Set the type in the original spec to be explicit to other consumers
+      # looking at the raw spec.
+      transformation['type'] = 'STRING'
+
     tag_type = transformation['type']
     if tag_type == 'BOOL':
       compare = transformation.get('compare_value')
@@ -428,6 +500,7 @@ class TransformationRule(object):
         change_tags.append({'from': check_tag, 'to': normalized_tag})
         rule_spec['change_tags'] = change_tags
       rule_tags = keep_tags
+      rule_spec['tags'] = rule_tags
 
     self.__per_application = rule_spec.get('per_application')
     if self.__per_application:
@@ -621,6 +694,10 @@ class SpectatorMetricTransformer(object):
                 use snake-case. Otherwise leave as is.
           - enforce_stackdriver_names: [bool] Hack for internal google use
                 to workaround historical policy constraints.
+          - summarize_timers: [bool] If true then convert Timer metrics
+                into a Summary by creating a single composite metric from the
+                individual count/totalTime measurements rather than reporting
+                out as separate component measurements.
       spec: [dict] Transformation specification entry from YAML.
     """
     self.__options = dict(options)
@@ -691,7 +768,7 @@ class SpectatorMetricTransformer(object):
       return None, None
 
     transformed = {
-        'kind': spectator_metric['kind'],
+        'kind': rule.rule_specification.get('kind') or spectator_metric['kind'],
         'values': rule.apply(spectator_metric)
     }
     return transformed_name, transformed

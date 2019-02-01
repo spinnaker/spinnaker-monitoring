@@ -24,6 +24,17 @@ import logging
 import re
 import yaml
 
+
+# see https://stackoverflow.com/questions/1175208/\
+#     elegant-python-function-to-convert-camelcase-to-snake-case
+_SNAKE_CASE_RE = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)(?<!_)[A-Z](?=[a-z]))')
+
+
+def _snakeify(text):
+  """Turn text into snake-case."""
+  return _SNAKE_CASE_RE.sub(r'_\1', text).lower()
+
+
 class TimestampedMetricValue(
     collections.namedtuple('TimedstampedMetricValue', ['timestamp', 'value'])):
   """Represents a value of a particular metric and the time for it.
@@ -47,6 +58,21 @@ class TimestampedMetricValue(
 class MetricInfo(object):
   """Manages the value for a specific spectator measurement.
   """
+  @property
+  def tags(self):
+    """Returns the tag bindings for this metric info."""
+    return self.__tags
+
+  @property
+  def timestamp(self):
+    """Returns the timestamp for this metric info."""
+    return self.__timestamp
+
+  @property
+  def value(self):
+    """Returns the value for this metric info."""
+    return self.__value
+
   def __init__(self, value_json, sorted_tags):
     self.__timestamp = value_json['t']
     self.__value = value_json['v']
@@ -68,6 +94,23 @@ class MetricInfo(object):
     # to handle these values with high cardinality tags differently. It isnt
     # yet definitive how to do that or even if we want to.
     self.__per_tag_values = {}
+
+  def __eq__(self, info):
+    """Equality is used for testing."""
+    return (info.__class__ == self.__class__
+            and info.timestamp == self.__timestamp
+            and info.tags == self.__tags
+            and info.value == self.__value)
+
+  def __repr__(self):
+    return repr({'t': self.__timestamp,
+                 'v': self.__value,
+                 'tags': self.__tags})
+
+  def __str__(self):
+    return str({'t': self.__timestamp,
+                'v': self.__value,
+                'tags': self.__tags})
 
   def add_per_tags(self, value_json, sorted_tags, per_tags):
     if not per_tags:
@@ -260,6 +303,11 @@ class TransformationRule(object):
     """The underlying rule specification dict."""
     return self.__rule_spec
 
+  @property
+  def transformer(self):
+    """Return transformer that this rule belongs to."""
+    return self.__transformer
+
   def __prepare_transformation(self, transformation):
     """Update the transformation entry from the YAML to contain functions.
 
@@ -273,7 +321,12 @@ class TransformationRule(object):
       ValueError if the specification was not valid.
     """
     from_tag = transformation['from']
-    to_tag = transformation['to']
+    if isinstance(transformation['to'], list):
+      to_tag = [self.__transformer.normalize_text_case(t)
+                for t in transformation['to']]
+    else:
+      to_tag = self.__transformer.normalize_text_case(transformation['to'])
+
     tag_type = transformation['type']
     if tag_type == 'BOOL':
       compare = transformation.get('compare_value')
@@ -327,6 +380,18 @@ class TransformationRule(object):
   def __init__(self, transformer, rule_spec):
     """Construct new transformation rule
 
+    While the rule_spec can specify the transforms, in practice it is desired
+    for this to be standardized for a particular monitoring strategy
+    independent of deployments so it can be shared among a community.
+
+    However there may be some tweaks that an individual deployment may
+    desire or require. Those options can be communicated through the
+    transformer. The intent is that the TransformRule can apply those
+    deployment options to the origianl rule spec as if the original rule
+    spec was written explicitly using those deployment options. The benefit
+    is that the deployment policy is contained here, and the rules can
+    be standardized.
+
     Args:
       transformer: [SpectatorMetricTransformer] The owning transformer
          is used for configuration options for any deployment-oriented
@@ -351,6 +416,18 @@ class TransformationRule(object):
         del rule_tags[rule_tags.index('statistic')]
       except ValueError:
         pass
+
+      # Force change if label normalization has an effect
+      keep_tags = []
+      for check_tag in rule_tags:
+        normalized_tag = self.__transformer.normalize_text_case(check_tag)
+        if normalized_tag == check_tag:
+          keep_tags.append(check_tag)
+          continue
+        change_tags = rule_spec.get('change_tags', [])
+        change_tags.append({'from': check_tag, 'to': normalized_tag})
+        rule_spec['change_tags'] = change_tags
+      rule_tags = keep_tags
 
     self.__per_application = rule_spec.get('per_application')
     if self.__per_application:
@@ -377,7 +454,7 @@ class TransformationRule(object):
     self.__identity_tags = (
         'tags' not in rule_spec and 'change_tags' not in rule_spec)
     self.__added_tags = [
-        {'key': key, 'value': value}
+        {'key': self.__transformer.normalize_text_case(key), 'value': value}
         for key, value in rule_spec.get('add_tags', {}).items()
     ]
     for transformation in change_tags:
@@ -408,7 +485,9 @@ class TransformationRule(object):
     Returns:
       The name, possibly original meter_name, or None to disregard this meter.
     """
-    return self.__rule_spec.get('rename', meter_name)
+    return self.__transformer.normalize_meter_name(
+        self.__rule_spec.get('rename', meter_name),
+        self.__rule_spec.get('kind'))
 
   def apply(self, spectator_metric):
     """Apply the rule to the given metric instance."""
@@ -513,6 +592,23 @@ class SpectatorMetricTransformer(object):
     """The rulebase used."""
     return self.__rulebase
 
+  @property
+  def options(self):
+    """Return bound options."""
+    return self.__options
+
+  def __normalize_stackdriver_name(self, name, kind):
+    """This is a hack for internal stackdriver policy compliance."""
+    if name == 'status':
+      return 'status_code_class'
+    name = _snakeify(name)
+    if kind.endswith('Timer'):
+      if name[-1] == 's':
+        name = name[:-1]
+      if not name.endswith('_latency'):
+        name += '_latency'
+    return name
+
   def __init__(self, options, spec):
     """Constructor.
 
@@ -521,8 +617,23 @@ class SpectatorMetricTransformer(object):
           - default_is_identity: [bool] If true and a spec is not
                 found when transforming a metric then assume the identity.
                 Otherwise assume the metric should be discarded.
+          - use_snake_case: [bool] If true then names and labels should
+                use snake-case. Otherwise leave as is.
+          - enforce_stackdriver_names: [bool] Hack for internal google use
+                to workaround historical policy constraints.
       spec: [dict] Transformation specification entry from YAML.
     """
+    self.__options = dict(options)
+    if options.get('use_snake_case', False):
+      self.normalize_text_case = _snakeify
+    else:
+      self.normalize_text_case = lambda x: x
+
+    if options.get('enforce_stackdriver_names'):
+      self.normalize_meter_name = self.__normalize_stackdriver_name
+    else:
+      self.normalize_meter_name = lambda x, _: self.normalize_text_case(x)
+
     default_is_identity = options.get('default_is_identity', False)
     self.__default_rule = (TransformationRule(self, None)  # identity
                            if default_is_identity

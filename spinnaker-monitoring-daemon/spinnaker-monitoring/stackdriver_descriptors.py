@@ -274,7 +274,8 @@ class MetricDescriptorManager(object):
   }
 
   NON_CUMULATIVE_KIND_MAP = {
-      'Gauge': 'GAUGE'
+      'Gauge': 'GAUGE',
+      'Summary': 'DISTRIBUTION'
   }
 
   # Only recognize units stackdriver can handle.
@@ -296,8 +297,11 @@ class MetricDescriptorManager(object):
     We'll add additional state rather than passing params around.
     """
     # For getting service meter specifications.
+    spectator_options = spectator_response_processor.spectator_options
     self.__stackdriver = stackdriver
     self.__response_processor = spectator_response_processor
+    self.__timers_are_distribution = spectator_options.get('summarize_timers')
+
     self.__name_prefix = (
         'projects/{project}/metricDescriptors/'
         .format(project=self.__stackdriver.project))
@@ -389,7 +393,14 @@ class MetricDescriptorManager(object):
       want['description'] = spec.get('docs')
 
     result = []
-    if meter_kind in ['Timer', 'PercentileTimer']:
+    meter_is_timer = meter_kind in ['Timer', 'PercentileTimer']
+    if self.__timers_are_distribution and meter_is_timer:
+      want['unit'] = 'ns'
+      want['valueType'] = 'DISTRIBUTION'
+      want['metricKind'] = 'CUMULATIVE'
+      result.append(want)
+
+    elif meter_is_timer:
       if not rule.discard_tag_value('statistic', 'count'):
         component = dict(want)
         component['name'] += '__count'

@@ -192,13 +192,14 @@ class StackdriverMetricsService(object):
     logging.info('Using stackdriver project %r', self.__project)
 
     spectator_options = options_copy.get('spectator', {})
+    stackdriver_overrides = self.__stackdriver_options.get('spectator', {})
+    spectator_options.update(stackdriver_overrides)
     if self.__stackdriver_options.get('generic_task_resources'):
       spectator_options['inject_service_tag'] = False
       spectator_options['decorate_service_name'] = False
     options_copy['spectator'] = spectator_options
-
     self.__spectator_helper = spectator_client.SpectatorClientHelper(options_copy)
-
+    
     if not self.__project:
       # Set default to our instance if we are on GCE.
       # Otherwise ignore since we might not actually need the project.
@@ -450,9 +451,37 @@ class StackdriverMetricsService(object):
                'value': {'doubleValue': e['v']}}
               for e in instance['values']]
 
+    metric_kind = metric_metadata['kind']
     primitive_kind = self.__spectator_helper.determine_primitive_kind(
-        metric_metadata['kind'])
-    if primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND:
+        metric_kind)
+    value_type = 'DOUBLE'
+    if primitive_kind == spectator_client.SUMMARY_PRIMITIVE_KIND:
+      start_time = self.millis_to_time(service_metadata.get('startTime', 0))
+      value_type = 'DISTRIBUTION'
+      metric_kind = 'CUMULATIVE'
+      for point in points:
+        # Change points from assumed doubleValue to distributionValue
+        # The double value we encoded above was a dict
+        raw_value = point['value']['doubleValue']
+        count = raw_value['count']
+        # Summary was either a timer (totalTime) or summary (totalAmount).
+        total = raw_value.get('totalTime') or raw_value.get('totalAmount', 0)
+        mean = float(total) / float(count) if count else 0
+        bucketOptions = {
+          'linearBuckets':  {
+            'numFiniteBuckets': 1, 'width': 1, 'offset': mean
+          }
+        }
+        distribution_value = {
+            'count': count,
+            'mean': mean,
+            'bucketOptions': bucketOptions,
+            'bucketCounts': [count]
+        }
+        point['value'] = {'distributionValue': distribution_value}
+        if metric_kind == 'CUMULATIVE':
+            point['interval']['startTime'] = start_time
+    elif primitive_kind == spectator_client.GAUGE_PRIMITIVE_KIND:
       metric_kind = 'GAUGE'
     else:
       metric_kind = 'CUMULATIVE'
@@ -464,7 +493,7 @@ class StackdriverMetricsService(object):
         'metric': metric,
         'resource': self.get_monitored_resource(service, service_metadata),
         'metricKind': metric_kind,
-        'valueType': 'DOUBLE',
+        'valueType': value_type,
         'points': points})
 
 

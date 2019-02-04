@@ -389,10 +389,11 @@ class TransformationRule(object):
     """
     from_tag = transformation['from']
     if isinstance(transformation['to'], list):
-      to_tag = [self.__transformer.normalize_text_case(t)
+      to_tag = [self.__transformer.normalize_label_name(t)
                 for t in transformation['to']]
     else:
-      to_tag = self.__transformer.normalize_text_case(transformation['to'])
+      to_tag = self.__transformer.normalize_label_name(transformation['to'])
+    transformation['to'] = to_tag
 
     if not 'type' in transformation:
       # Set the type in the original spec to be explicit to other consumers
@@ -492,7 +493,7 @@ class TransformationRule(object):
       # Force change if label normalization has an effect
       keep_tags = []
       for check_tag in rule_tags:
-        normalized_tag = self.__transformer.normalize_text_case(check_tag)
+        normalized_tag = self.__transformer.normalize_label_name(check_tag)
         if normalized_tag == check_tag:
           keep_tags.append(check_tag)
           continue
@@ -527,7 +528,7 @@ class TransformationRule(object):
     self.__identity_tags = (
         'tags' not in rule_spec and 'change_tags' not in rule_spec)
     self.__added_tags = [
-        {'key': self.__transformer.normalize_text_case(key), 'value': value}
+        {'key': self.__transformer.normalize_label_name(key), 'value': value}
         for key, value in rule_spec.get('add_tags', {}).items()
     ]
     for transformation in change_tags:
@@ -670,10 +671,14 @@ class SpectatorMetricTransformer(object):
     """Return bound options."""
     return self.__options
 
+  def __normalize_stackdriver_label(self, label):
+    """This is a hack for internal stackdriver policy compliance."""
+    if label == 'status':
+      return 'status_code_class'
+    return _snakeify(label)
+
   def __normalize_stackdriver_name(self, name, kind):
     """This is a hack for internal stackdriver policy compliance."""
-    if name == 'status':
-      return 'status_code_class'
     name = _snakeify(name)
     if kind.endswith('Timer'):
       if name[-1] == 's':
@@ -708,8 +713,10 @@ class SpectatorMetricTransformer(object):
 
     if options.get('enforce_stackdriver_names'):
       self.normalize_meter_name = self.__normalize_stackdriver_name
+      self.normalize_label_name = self.__normalize_stackdriver_label
     else:
       self.normalize_meter_name = lambda x, _: self.normalize_text_case(x)
+      self.normalize_label_name = lambda x: self.normalize_text_case(x)
 
     default_is_identity = options.get('default_is_identity', False)
     self.__default_rule = (TransformationRule(self, None)  # identity

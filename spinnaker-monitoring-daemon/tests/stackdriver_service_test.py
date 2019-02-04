@@ -114,6 +114,22 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self._do_test_add_metric('Gauge', 'GAUGE', 'DOUBLE',
                              21, {'doubleValue': 21})
 
+  def test_record_summary_metric(self):
+    self.options['spectator'] = {'summarize_timers': True}
+    self.service = stackdriver_service.StackdriverMetricsService(
+        lambda: self.mockStub, self.options)
+    bucketOptions = {
+        'linearBuckets': {'numFiniteBuckets': 1, 'offset': 50.25, 'width': 1}
+    }
+    self._do_test_add_metric('Timer', 'CUMULATIVE', 'DISTRIBUTION',
+                             {'count': 4, 'totalTime': 201},
+                             {'distributionValue': {
+                                 'bucketOptions': bucketOptions,
+                                 'bucketCounts': [4],
+                                 'count': 4,
+                                 'mean': 50.25
+                             }})
+
   def _do_test_add_metric(self,
                           spectator_kind, stackdriver_kind,
                           stackdriver_value_type, raw_value, expect_value):
@@ -302,6 +318,12 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             'kind': 'Counter',
             'docs': 'Counter documentation.'
         },
+
+        'spectator.summary': {
+            'rename': 'test_system/test_summary',
+            'kind': 'Summary',
+            'docs': 'Summary documentation.'
+        },
     }}}
     os.makedirs(self.filter_dir)
     with open(os.path.join(self.filter_dir, filename), 'w') as stream:
@@ -366,6 +388,19 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     }
     result[counter['name']] = counter
 
+    summary = {
+        'valueType': 'DOUBLE',
+        'metricKind': 'DISTRIBUTION',
+        'name': meter_name_to_descriptor_name('test_system/test_summary'),
+        'type': meter_name_to_descriptor_type('test_system/test_summary'),
+        'description': 'Summary documentation.',
+        'labels': [
+            {'key': 'spin_service'},
+            {'key': 'spin_variant'}
+        ]
+    }
+    result[summary['name']] = summary
+
     unused = {
         'valueType': 'DOUBLE',
         'metricKind': 'CUMULATIVE',
@@ -399,10 +434,13 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     old_gauge = dict(expected_descriptors[gauge_name])
     expect_same = {gauge_name: dict(expected_descriptors[gauge_name])}
 
+    summary_name = meter_name_to_descriptor_name('test_system/test_summary')
+    summary = expected_descriptors[summary_name]
     timer_name = meter_name_to_descriptor_name('test_system/test_timer')
     timer_count = expected_descriptors[timer_name + '__count']
     timer_total = expected_descriptors[timer_name + '__totalTime']
     expect_new = {
+        summary['name']: summary,
         timer_count['name']: timer_count,
         timer_total['name']: timer_total
     }
@@ -441,14 +479,14 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(0, audit.num_fixed_issues)
     self.assertEquals(
         set(expect_same.keys()), audit.unchanged_descriptor_names)
-    self.assertEquals(2, audit.missing_count)
+    self.assertEquals(3, audit.missing_count)
     self.assertEquals(0, audit.created_count)
     self.assertEquals(1, audit.outdated_count)
     self.assertEquals(0, audit.updated_count)
     self.assertEquals(1, audit.obsoleted_count)
     self.assertEquals(0, audit.deleted_count)
-    self.assertEquals(4, audit.num_unresolved_issues)
-    self.assertEquals(4, audit.warnings)
+    self.assertEquals(5, audit.num_unresolved_issues)
+    self.assertEquals(5, audit.warnings)
     self.assertEquals(0, audit.errors)
 
     self.assertEquals(0, self.mockStub.projects.list.call_count)
@@ -482,11 +520,11 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
     self.assertEquals(expect_unused, audit.unused_descriptors)
 
-    self.assertEquals(3, audit.num_fixed_issues)
+    self.assertEquals(4, audit.num_fixed_issues)
     self.assertEquals(
         set(expect_same.keys()), audit.unchanged_descriptor_names)
     self.assertEquals(0, audit.missing_count)
-    self.assertEquals(2, audit.created_count)
+    self.assertEquals(3, audit.created_count)
     self.assertEquals(0, audit.outdated_count)
     self.assertEquals(1, audit.updated_count)
     self.assertEquals(1, audit.obsoleted_count)
@@ -499,7 +537,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
     self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(3, self.mockMetricDescriptors.create.call_count)
+    self.assertEquals(4, self.mockMetricDescriptors.create.call_count)
 
   def test_audit_update_failure(self):
     expect_same, expect_new, expect_changed, expect_unused = (
@@ -523,11 +561,11 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
     self.assertEquals(expect_unused, audit.unused_descriptors)
 
-    self.assertEquals(2, audit.num_fixed_issues)
+    self.assertEquals(3, audit.num_fixed_issues)
     self.assertEquals(
         set(expect_same.keys()), audit.unchanged_descriptor_names)
     self.assertEquals(0, audit.missing_count)
-    self.assertEquals(2, audit.created_count)
+    self.assertEquals(3, audit.created_count)
     self.assertEquals(1, audit.outdated_count)
     self.assertEquals(0, audit.updated_count)
     self.assertEquals(1, audit.obsoleted_count)
@@ -540,7 +578,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
     self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(2, self.mockMetricDescriptors.create.call_count)
+    self.assertEquals(3, self.mockMetricDescriptors.create.call_count)
 
   def test_audit_create_failure(self):
     expect_same, expect_new, expect_changed, expect_unused = (
@@ -567,21 +605,21 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(0, audit.num_fixed_issues)
     self.assertEquals(
         set(expect_same.keys()), audit.unchanged_descriptor_names)
-    self.assertEquals(2, audit.missing_count)
+    self.assertEquals(3, audit.missing_count)
     self.assertEquals(0, audit.created_count)
     self.assertEquals(1, audit.outdated_count)
     self.assertEquals(0, audit.updated_count)
     self.assertEquals(1, audit.obsoleted_count)
     self.assertEquals(0, audit.deleted_count)
-    self.assertEquals(4, audit.num_unresolved_issues)
+    self.assertEquals(5, audit.num_unresolved_issues)
     self.assertEquals(1, audit.warnings) # delete
-    self.assertEquals(3, audit.errors)
+    self.assertEquals(4, audit.errors)
 
     self.assertEquals(0, self.mockStub.projects.list.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.list.call_count)
     self.assertEquals(0, self.mockMetricDescriptors.get.call_count)
     self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(3, self.mockMetricDescriptors.create.call_count)
+    self.assertEquals(4, self.mockMetricDescriptors.create.call_count)
 
     
 if __name__ == '__main__':

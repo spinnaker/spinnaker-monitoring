@@ -119,7 +119,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.service = stackdriver_service.StackdriverMetricsService(
         lambda: self.mockStub, self.options)
     bucketOptions = {
-        'linearBuckets': {'numFiniteBuckets': 1, 'offset': 50.25, 'width': 1}
+        'explicitBuckets': {'bounds': [0]}
     }
     self._do_test_add_metric('Timer', 'CUMULATIVE', 'DISTRIBUTION',
                              {'count': 4, 'totalTime': 201},

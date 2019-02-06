@@ -472,10 +472,12 @@ class StackdriverMetricsService(object):
         # Summary was either a timer (totalTime) or summary (totalAmount).
         total = raw_value.get('totalTime') or raw_value.get('totalAmount', 0)
         mean = float(total) / float(count) if count else 0
+
+        # Using explicitBuckets with bounds[0] is recommendation of stackdriver.
+        #    linearBuckets {'numFiniteBuckets':1, 'width':1, 'offset':mean}
+        #    also works
         bucketOptions = {
-          'linearBuckets':  {
-            'numFiniteBuckets': 1, 'width': 1, 'offset': mean
-          }
+            'explicitBuckets': {'bounds': [0]}
         }
         distribution_value = {
             'count': count,

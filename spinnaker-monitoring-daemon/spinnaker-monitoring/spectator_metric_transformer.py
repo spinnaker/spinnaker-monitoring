@@ -690,10 +690,10 @@ class SpectatorMetricTransformer(object):
     """This is a hack for internal stackdriver policy compliance."""
     name = _snakeify(name)
     if kind.endswith('Timer'):
-      if name[-1] == 's':
-        name = name[:-1]
-      if not name.endswith('_latency'):
-        name += '_latency'
+      if not name.endswith('_latencies'):
+        if name[-1] == 's':
+          name = name[:-1]
+        name += '_latencies'
     return name
 
   def __init__(self, options, spec):

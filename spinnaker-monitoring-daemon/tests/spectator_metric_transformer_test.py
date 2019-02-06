@@ -298,10 +298,10 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     do_name = transformer.normalize_meter_name
     self.assertEquals('timers', do_name('timers', 'Gauge'))
     self.assertEquals('timers', do_name('timers', 'Counter'))
-    self.assertEquals('timer_latency', do_name('timer', 'Timer'))
-    self.assertEquals('timer_latency', do_name('timers', 'Timer'))
-    self.assertEquals('timer_latency', do_name('timer_latency', 'Timer'))
-    self.assertEquals('timer_latency', do_name('timerLatency', 'Timer'))
+    self.assertEquals('timer_latencies', do_name('timer', 'Timer'))
+    self.assertEquals('timer_latencies', do_name('timers', 'Timer'))
+    self.assertEquals('timer_latencies', do_name('timer_latencies', 'Timer'))
+    self.assertEquals('timer_latencies', do_name('timerLatencies', 'Timer'))
 
     do_label = transformer.normalize_label_name
     self.assertEquals('status_code', do_label('status_code'))

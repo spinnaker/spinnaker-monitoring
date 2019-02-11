@@ -180,10 +180,15 @@ def set_default_paths():
 
   home_yml_path = os.path.join(
       os.environ.get('HOME', ''), '.spinnaker', 'spinnaker-monitoring.yml')
+  hal_yml_path = os.path.join(
+      os.environ.get('HOME', ''),
+      '.hal', 'default', 'profiles', 'spinnaker-monitoring.yml')
 
   global DEFAULT_CONFIG_PATH
   if os.path.exists(home_yml_path):
     DEFAULT_CONFIG_PATH = home_yml_path
+  elif os.path.exists(hal_yml_path):
+    DEFAULT_CONFIG_PATH = hal_yml_path
   elif os.path.exists(yml_path):
     DEFAULT_CONFIG_PATH = yml_path
 

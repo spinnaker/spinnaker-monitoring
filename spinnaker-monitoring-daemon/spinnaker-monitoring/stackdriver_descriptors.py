@@ -663,8 +663,10 @@ class MetricDescriptorManager(object):
 
     rulebase = self.__response_processor.determine_service_metric_transformer(
         service).rulebase
-    for key, rule in rulebase.items():
-      descriptors = self.__transform_rule_to_descriptors(key, rule)
+    for key, rule_list in rulebase.items():
+      descriptors = []
+      for rule in rule_list:
+        descriptors.extend(self.__transform_rule_to_descriptors(key, rule))
       self.__do_audit(service, descriptors, audit_results)
 
   def __do_audit(self, service, descriptors, audit_results):

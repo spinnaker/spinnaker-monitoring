@@ -122,7 +122,10 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
           if not xform_response:
             continue
           for xform_name, response_part in xform_response.items():
-            xform_name_map[meter_name] = xform_name
+            if meter_name in xform_name_map:
+              xform_name_map[meter_name].append(xform_name)
+            else:
+              xform_name_map[meter_name] = [xform_name]
             if not xform_name in xform_type_map:
               xform_type_map[xform_name] = {}
             xform_type_map[xform_name].update({service: [response_part]})
@@ -373,22 +376,26 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
     xform_filtered_metrics = [set()] * len(service_filtered_metrics)
 
     for meter_name, meter_service_tag_map in sorted(service_tag_map.items()):
-      xform_name = xform_name_map.get(meter_name)
-      if xform_service_tag_map.get(xform_name) == meter_service_tag_map:
-        xform_name = None
-      elif xform_name:
-        # The transformed name was known outside our precomputed
-        # list of metrics so add it in since all transformed names
-        # are included.
-        for the_set in service_filtered_metrics:
-          the_set.add(meter_name)
+      xform_name_list = xform_name_map.get(meter_name, [])
+      if (len(xform_name_list) == 1
+          and (xform_service_tag_map.get(xform_name_list[0])
+               == meter_service_tag_map)):
+        # We did not actually change anything from the original
+        xform_name_list = []
+      for xform_name in xform_name_list:
+        if xform_service_tag_map.get(xform_name) != meter_service_tag_map:
+          # The transformed name was known outside our precomputed
+          # list of metrics so add it in since all transformed names
+          # are included.
+          for the_set in service_filtered_metrics:
+            the_set.add(meter_name)
 
       html.append(
         self.__to_row_html(
             params, columns, meter_name,
             type_map, meter_service_tag_map,
-            service_filtered_metrics, transforms_to=xform_name))
-      if xform_name:
+            service_filtered_metrics, transforms_to=xform_name_list))
+      for xform_name in xform_name_list:
         # Show the transformed name under the original for easier correlation.
         html.append(
             self.__to_row_html(
@@ -426,7 +433,8 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
 
       transform_info = ''
       if transforms_to:
-        transform_info = '<br/><i>Transforms into "%s"<i>' % transforms_to
+        transform_info = ('<br/><i>Transforms into "%s"<i>'
+                          % ' AND '.join(transforms_to))
       elif transforms_from:
         transform_info = '<br/><i>Derived from "%s"<i>' % transforms_from
 

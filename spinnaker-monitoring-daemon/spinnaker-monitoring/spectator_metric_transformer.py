@@ -450,6 +450,15 @@ class TransformationRule(object):
       }
     transformation['_xform_func'] = composite_func
 
+  @staticmethod
+  def make_rule_list(transformer, rule_spec_or_list):
+    if rule_spec_or_list is None:
+      return []
+    rule_spec_list = (rule_spec_or_list
+                      if isinstance(rule_spec_or_list, list)
+                      else [rule_spec_or_list])
+    return [TransformationRule(transformer, elem) for elem in rule_spec_list]
+
   def __init__(self, transformer, rule_spec):
     """Construct new transformation rule
 
@@ -663,7 +672,7 @@ class SpectatorMetricTransformer(object):
 
   @property
   def rulebase(self):
-    """The rulebase used."""
+    """Maps an original meter name to a list of TransformRules for it."""
     return self.__rulebase
 
   @property
@@ -719,10 +728,10 @@ class SpectatorMetricTransformer(object):
       self.normalize_label_name = lambda x: self.normalize_text_case(x)
 
     default_is_identity = options.get('default_is_identity', False)
-    self.__default_rule = (TransformationRule(self, None)  # identity
-                           if default_is_identity
-                           else None)              # discard
-    self.__rulebase = {key: TransformationRule(self, value)
+    self.__default_rule_list = ([]                      # identity
+                                if default_is_identity
+                                else None)              # discard
+    self.__rulebase = {key: TransformationRule.make_rule_list(self, value)
                        for key, value in spec.items()}
     for meter_name, rule in spec.items():
       if not rule:
@@ -736,46 +745,43 @@ class SpectatorMetricTransformer(object):
     """Transform the spectator response metrics per the spec."""
     result = {}
     for meter_name, spectator_metric in metric_response.items():
-      to_name, to_value = self.process_metric(meter_name, spectator_metric)
-      if to_name is None != to_value is None:
-        raise ValueError('Metric "%s" transformed inconsistently'
-                         ' name=%s, value=%s'
-                         % (meter_name, to_name, to_value))
-
-      if to_name is not None:
-        if to_name in result:
-          result[to_name]['values'].extend(to_value['values'])
-        else:
-          result[to_name] = to_value
+      self.process_metric(meter_name, spectator_metric, result)
     return result
 
-  def process_metric(self, meter_name, spectator_metric):
+  def process_metric(self, meter_name, spectator_metric, response):
     """Produce the desired Spectator metric from existing one.
 
     Args:
       meter_name: [string] The name of the metric
       spectator_metric: [dict] Individual metric response entry from
           spectator web endpoint.
+    response: [dict] The spectator response being built
 
     Returns:
       None if the meter should be ignored
       Otherwise the transformed metric instance from the spec.
     """
-    rule = self.__rulebase.get(meter_name, self.__default_rule)
-    if not rule:
-      if rule is None:
-        # discard if not mentioned and default rule was discard
-        return None, None
-      # identity if not mentioned and default rule was identity
-      # or if was mentioned but no transformations given.
-      return meter_name, spectator_metric
+    def add_meter_mapping(meter_name, spectator_metric, response):
+      if meter_name in response:
+        response[meter_name]['values'].extend(spectator_metric['values'])
+      else:
+        response[meter_name] = spectator_metric
+      
+    rule_list = self.__rulebase.get(meter_name, self.__default_rule_list)
+    if not rule_list:
+      # if None then discard if not mentioned and default rule was discard
+      # otherwise the default rule was the identity
+      if rule_list is not None:
+        add_meter_mapping(meter_name, spectator_metric, response)
+      return
 
-    transformed_name = rule.determine_meter_name(meter_name)
-    if not transformed_name:
-      return None, None
+    for rule in rule_list:
+      transformed_name = rule.determine_meter_name(meter_name)
+      if not transformed_name:
+        continue
 
-    transformed = {
+      transformed = {
         'kind': rule.rule_specification.get('kind') or spectator_metric['kind'],
         'values': rule.apply(spectator_metric)
-    }
-    return transformed_name, transformed
+      }
+      add_meter_mapping(transformed_name, transformed, response)

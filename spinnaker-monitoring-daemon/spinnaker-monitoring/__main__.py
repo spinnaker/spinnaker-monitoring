@@ -38,9 +38,6 @@ import stackdriver_handlers
 import util
 
 
-DEFAULT_CONFIG_PATH = '/opt/spinnaker-monitoring/config/spinnaker-monitoring.yml'
-
-
 def handle_sigterm(signalnum, stackframe):
   logging.info('Shutting down from SIGTERM')
   sys.exit(0)
@@ -99,7 +96,7 @@ def add_global_args(parser):
       '--log_dir', default=None,
       help='If specified, log to a --log_basename in this directory instead of console.')
   parser.add_argument('--log_level', default=None, help='log level to console')
-  parser.add_argument('--config', default=DEFAULT_CONFIG_PATH,
+  parser.add_argument('--config', default=None,
                       help='Path to base configuration directory.')
   parser.add_argument('--registry_dir',
                       default=spectator_client.DEFAULT_REGISTRY_DIR,
@@ -140,7 +137,7 @@ def disable_ssl_verification():
     # Handle target environment that doesn't support HTTPS verification
     ssl._create_default_https_context = _create_unverified_https_context
 
-def main():
+def main(config_search_path):
   """The main program sets up the commands then delegates to one of them."""
 
   disable_ssl_verification()
@@ -148,7 +145,9 @@ def main():
   all_command_handlers, parser = prepare_commands()
   opts = parser.parse_args()
   options = vars(opts)
-  options = util.merge_options_and_yaml_from_path(options, opts.config)
+  if options.get('config'):
+    config_search_path.append(options.get('config'))
+  options = util.merge_options_and_yaml_from_dirs(options, config_search_path)
   init_logging(options)
 
   # TODO(ewiseblatt): decouple this so we dont need to know about this here.
@@ -171,28 +170,21 @@ def set_default_paths():
   abs_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
   registry_path = os.path.join(abs_path, 'registry')
   dev_path = os.path.join(abs_path, 'registry.dev')
-  yml_path = os.path.join(abs_path, 'spinnaker-monitoring.yml')
 
   if os.path.exists(registry_path):
     spectator_client.DEFAULT_REGISTRY_DIR = registry_path
   elif os.path.exists(dev_path):
     spectator_client.DEFAULT_REGISTRY_DIR = dev_path
 
-  home_yml_path = os.path.join(
-      os.environ.get('HOME', ''), '.spinnaker', 'spinnaker-monitoring.yml')
-  hal_yml_path = os.path.join(
-      os.environ.get('HOME', ''),
-      '.hal', 'default', 'profiles', 'spinnaker-monitoring.yml')
-
-  global DEFAULT_CONFIG_PATH
-  if os.path.exists(home_yml_path):
-    DEFAULT_CONFIG_PATH = home_yml_path
-  elif os.path.exists(hal_yml_path):
-    DEFAULT_CONFIG_PATH = hal_yml_path
-  elif os.path.exists(yml_path):
-    DEFAULT_CONFIG_PATH = yml_path
+  home_dir = os.environ.get('HOME', '')
+  return [
+      '/opt/spinnaker-monitoring/config',
+      os.path.join(abs_path),
+      os.path.join(home_dir, '.hal', 'default', 'profiles'),
+      os.path.join(home_dir, '.spinnaker')
+  ]
 
 
 if __name__ == '__main__':
-  set_default_paths()
-  main()
+  search_path = set_default_paths()
+  main(search_path)

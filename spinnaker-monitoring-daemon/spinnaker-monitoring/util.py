@@ -43,35 +43,19 @@ def update_with_overrides(baseline_config, override_config):
       update_with_overrides(baseline_config[key], value)
 
 
-def load_yaml_options(config_path):
-  """Load options from the YAML file at the specified path.
+def merge_options_and_yaml_from_dirs(options, search_path):
+  """Load options from the YAML files found in the specified search path.
 
   Will attempt to apply override values from "-local.yml" file if present.
   Returns an empty dictionary and logs a warning on error.
+
+  -local files have precedence over non "-local" file, and later directories
+  in the search path over earlier ones.
   """
-
-  config = _log_and_load_yaml(config_path)
-
-  local_path = None
-  if config_path.endswith('.yml'):
-    local_path = config_path[:-4] + '-local.yml'
-  if not os.path.exists(local_path):
-    return config
-
-  local_config = _log_and_load_yaml(local_path)
-  logging.info('Overriding %s with values from %s', config_path, local_path)
-
-  update_with_overrides(config, local_config)
-  return config
-
-
-def merge_options_and_yaml_from_path(options, config_path):
-  """Return a new dictionary containing all the options and YAML info.
-
-  Non-None option values have higher precedence if found in both places.
-  """
-  config = load_yaml_options(config_path)
-  for key, value in options.items():
-    if value is not None:
-      config[key] = value
-  return config
+  filenames = ['spinnaker-monitoring.yml', 'spinnaker-monitoring-local.yml']
+  for filename in filenames:
+    for dir_path in search_path:
+      path = os.path.join(dir_path, filename)
+      if os.path.exists(path):
+        update_with_overrides(options, _log_and_load_yaml(path))
+  return options

@@ -25,7 +25,7 @@ class UtilTest(unittest.TestCase):
   def test_load_without_override(self):
     temp_dir = mkdtemp()
     try:
-      with open(os.path.join(temp_dir, 'test.yml'), 'w') as stream:
+      with open(os.path.join(temp_dir, 'spinnaker-monitoring.yml'), 'w') as stream:
         stream.write("""
             root:
               num: 1
@@ -34,7 +34,7 @@ class UtilTest(unittest.TestCase):
                 one: 1
                 changed: false
         """)
-      got = util.load_yaml_options(os.path.join(temp_dir, 'test.yml'))
+      got = util.merge_options_and_yaml_from_dirs({}, [temp_dir])
     finally:
       shutil.rmtree(temp_dir)
 
@@ -53,7 +53,7 @@ class UtilTest(unittest.TestCase):
   def test_load_with_override(self):
     temp_dir = mkdtemp()
     try:
-      with open(os.path.join(temp_dir, 'test.yml'), 'w') as stream:
+      with open(os.path.join(temp_dir, 'spinnaker-monitoring.yml'), 'w') as stream:
         stream.write("""
             root:
               num: 1
@@ -62,7 +62,7 @@ class UtilTest(unittest.TestCase):
                 one: 1
                 changed: false
         """)
-      with open(os.path.join(temp_dir, 'test-local.yml'), 'w') as stream:
+      with open(os.path.join(temp_dir, 'spinnaker-monitoring-local.yml'), 'w') as stream:
         stream.write("""
             extra: EXTRA
             root:
@@ -71,7 +71,7 @@ class UtilTest(unittest.TestCase):
                 changed: true
                 more: MORE
         """)
-      got = util.load_yaml_options(os.path.join(temp_dir, 'test.yml'))
+      got = util.merge_options_and_yaml_from_dirs({}, [temp_dir])
     finally:
       shutil.rmtree(temp_dir)
 

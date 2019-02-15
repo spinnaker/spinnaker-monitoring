@@ -165,7 +165,7 @@ class PrometheusMetricsCollection(object):
       all_tags = list(info.tags)
       all_tags.extend(self.__metalabels)
     else:
-      all_tags = info.tags
+      all_tags = list(info.tags)
 
     kind_to_factory = {
         spectator_client.COUNTER_PRIMITIVE_KIND: CounterBuilder,
@@ -199,9 +199,9 @@ class PrometheusMetricsService(object):
         else ':'
     )
 
-    add_metalabels = options.get(
-        'prometheus_add_source_metalabels',
-        prometheus_options.get('add_source_metalabels', True))
+    add_metalabels = options.get('prometheus_add_source_metalabels')
+    if add_metalabels is None:
+      add_metalabels = prometheus_options.get('add_source_metalabels', True)
     self.__metalabels = {'job', 'instance'} if add_metalabels else {}
 
     self.__push_gateway = options.get('prometheus', {}).get('push_gateway')
@@ -349,7 +349,7 @@ class PrometheusServiceFactory(object):
     parser.add_argument(
         '--prometheus_add_source_metalabels', default=None,
         action='store_true',
-        help='Add Spinnaker job/instance labels for prometheus.')
+        help='DEPRECATED\nAdd Spinnaker job/instance labels for prometheus.')
 
   def __call__(self, options, command_handlers):
     """Implements server_handlers.MonitorCommandHandler interface."""

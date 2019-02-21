@@ -98,7 +98,7 @@ class StackdriverMetricsService(object):
   """Helper class for interacting with Stackdriver."""
   WRITE_SCOPE = 'https://www.googleapis.com/auth/monitoring'
   MAX_BATCH = 200
-  JANITOR_PERIOD = 120
+  JANITOR_PERIOD = 600
 
   # custom metrics must be strings because there isnt a way to specify the
   # tag type when using automatic descriptor creation, and stackdriver

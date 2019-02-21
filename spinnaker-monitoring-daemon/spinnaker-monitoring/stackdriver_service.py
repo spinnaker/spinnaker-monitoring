@@ -61,6 +61,11 @@ def normalize_options(options):
   if options_copy.get('manage_stackdriver_descriptors'):
     stackdriver_options['manage_descriptors'] = (
         options_copy['manage_stackdriver_descriptors'])
+
+  if 'fix_labels_unsafe' not in stackdriver_options:
+    stackdriver_options['fix_labels_unsafe'] = options.get(
+        'fix_stackdriver_labels_unsafe', False)
+
   return options_copy
 
 
@@ -217,8 +222,8 @@ class StackdriverMetricsService(object):
     self.__next_janitor_time = time.time()
     self.__good_janitor_count = 0
 
-    self.__fix_stackdriver_labels_unsafe = options.get(
-        'fix_stackdriver_labels_unsafe', True)
+    self.__fix_stackdriver_labels_unsafe = self.__stackdriver_options.get(
+        'fix_labels_unsafe', False)
     self.__monitored_resource = {}
     self.__add_source_tag = False
 

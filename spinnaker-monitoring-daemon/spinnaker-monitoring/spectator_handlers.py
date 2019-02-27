@@ -123,7 +123,9 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
             continue
           for xform_name, response_part in xform_response.items():
             if meter_name in xform_name_map:
-              xform_name_map[meter_name].append(xform_name)
+              have_names = xform_name_map[meter_name]
+              if xform_name not in have_names:
+                have_names.append(xform_name)
             else:
               xform_name_map[meter_name] = [xform_name]
             if not xform_name in xform_type_map:

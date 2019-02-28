@@ -206,7 +206,7 @@ class BatchProcessor(object):
       self.bad_data.append(self.__data_list[index])
       self.was_ok[index] = False
       status = 'FAILED'
-      details = ': ' + exception
+      details = ': ' + str(exception)
       self.batch_response[index] = 'ERROR {0}'.format(
           cgi.escape(str(exception)))
       logging.error(exception)
@@ -270,7 +270,8 @@ class MetricDescriptorManager(object):
   TAG_TYPE_MAP = {
       ''.__class__: 'STRING',
       True.__class__: 'BOOL',
-      int(0).__class__: 'INT64'
+      int(0).__class__: 'INT64',
+      None.__class__: 'STRING'
   }
 
   NON_CUMULATIVE_KIND_MAP = {
@@ -301,6 +302,8 @@ class MetricDescriptorManager(object):
     self.__stackdriver = stackdriver
     self.__response_processor = spectator_response_processor
     self.__timers_are_distribution = spectator_options.get('summarize_timers')
+    self.__distributions_also_have_count = stackdriver.stackdriver_options.get(
+        'distributions_also_have_count')
 
     self.__name_prefix = (
         'projects/{project}/metricDescriptors/'
@@ -395,6 +398,20 @@ class MetricDescriptorManager(object):
     result = []
     meter_is_timer = meter_kind in ['Timer', 'PercentileTimer']
     if self.__timers_are_distribution and meter_is_timer:
+      if self.__distributions_also_have_count:
+        # Add an implied metric which is just a counter.
+        # This is to workaround a temporary shortcoming querying the counts.
+        # Eventually this will be deprecated.
+        component = dict(want)
+        component['description'] = (
+            'Counter mirroring number of measurements in %s.'
+            ' This metric may soon be deprecated.'
+            % meter_name)
+        component['name'] += '__count'
+        component['type'] += '__count'
+        component['metricKind'] = 'CUMULATIVE'
+        result.append(component)
+
       want['unit'] = 'ns'
       want['valueType'] = 'DISTRIBUTION'
       want['metricKind'] = 'CUMULATIVE'

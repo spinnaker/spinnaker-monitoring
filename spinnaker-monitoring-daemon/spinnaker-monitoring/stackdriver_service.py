@@ -110,7 +110,6 @@ class StackdriverMetricsService(object):
   # doesnt bother trying to figure it out.
   TAG_VALUE_FUNC = lambda self, value: str(value)
 
-
   @staticmethod
   def millis_to_time(millis):
     return datetime.fromtimestamp(millis / 1000).isoformat('T') + 'Z'
@@ -131,6 +130,11 @@ class StackdriverMetricsService(object):
   def descriptor_manager(self):
     """Return MetricDescriptorManager."""
     return self.__descriptor_manager
+
+  @property
+  def stackdriver_options(self):
+    """Return stackdriver config options."""
+    return self.__stackdriver_options
 
   def _update_monitored_resources(self, service_map):
     """Exposed for testing."""
@@ -204,7 +208,9 @@ class StackdriverMetricsService(object):
       spectator_options['decorate_service_name'] = False
     options_copy['spectator'] = spectator_options
     self.__spectator_helper = spectator_client.SpectatorClientHelper(options_copy)
-    
+    self.__distributions_also_have_count = self.__stackdriver_options.get(
+        'distributions_also_have_count')
+
     if not self.__project:
       # Set default to our instance if we are on GCE.
       # Otherwise ignore since we might not actually need the project.
@@ -427,7 +433,7 @@ class StackdriverMetricsService(object):
       if problems and not self.__fix_stackdriver_labels_unsafe:
         logging.info(
             'Fixing this problem would wipe stackdriver data.'
-            ' Doing so was not enabled with --fix_stackdriver_lebals_unsafe')
+            ' Doing so was not enabled with --fix_stackdriver_lables_unsafe')
       elif problems:
         logging.info('Attempting to fix these problems. This may lose'
                      ' stackdriver data for these metrics. To disable this,'
@@ -462,8 +468,22 @@ class StackdriverMetricsService(object):
     value_type = 'DOUBLE'
     if primitive_kind == spectator_client.SUMMARY_PRIMITIVE_KIND:
       start_time = self.millis_to_time(service_metadata.get('startTime', 0))
-      value_type = 'DISTRIBUTION'
+      if self.__distributions_also_have_count:
+        # Add an implied metric which is just a counter.
+        # This is to workaround a temporary shortcoming querying the counts.
+        # Eventually this will be deprecated.
+        counter_points = copy.deepcopy(points)
+        for elem in counter_points:
+          elem['interval']['startTime'] = start_time
+        result.append({
+           'metric': metric + '__count',
+           'resource': self.get_monitored_resource(service, service_metadata),
+           'metricKind': 'CUMULATIVE',
+           'valueType': 'DOUBLE',
+           'points': counter_points})
+
       metric_kind = 'CUMULATIVE'
+      value_type = 'DISTRIBUTION'
       for point in points:
         # Change points from assumed doubleValue to distributionValue
         # The double value we encoded above was a dict

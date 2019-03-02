@@ -203,6 +203,9 @@ class StackdriverMetricsService(object):
       spectator_options['inject_service_tag'] = False
       spectator_options['decorate_service_name'] = False
     options_copy['spectator'] = spectator_options
+    if 'transform_values' in self.__stackdriver_options:
+      spectator_options['transform_values'] = (
+          self.__stackdriver_options['transform_values'])
     self.__spectator_helper = spectator_client.SpectatorClientHelper(options_copy)
     self.__distributions_also_have_count = self.__stackdriver_options.get(
         'distributions_also_have_count')
@@ -452,15 +455,20 @@ class StackdriverMetricsService(object):
     if self.__add_source_tag:
       metric['labels']['InstanceSrc'] = '{host}:{port}'.format(
           host=service_metadata['__host'], port=service_metadata['__port'])
+    value_type, value_key = {
+        int: ('INT64', 'int64Value'),
+        bool: ('BOOL', 'boolValue'),
+        float: ('DOUBLE', 'doubleValue'),
+        dict: ('DISTRIBUTION', 'temp')
+    }[instance['values'][0]['v'].__class__]
 
     points = [{'interval': {'endTime': self.millis_to_time(e['t'])},
-               'value': {'doubleValue': e['v']}}
+               'value': {value_key: e['v']}}
               for e in instance['values']]
 
     metric_kind = metric_metadata['kind']
     primitive_kind = self.__spectator_helper.determine_primitive_kind(
         metric_kind)
-    value_type = 'DOUBLE'
     if primitive_kind == spectator_client.SUMMARY_PRIMITIVE_KIND:
       start_time = self.millis_to_time(service_metadata.get('startTime', 0))
       if self.__distributions_also_have_count:
@@ -470,19 +478,22 @@ class StackdriverMetricsService(object):
         counter_points = copy.deepcopy(points)
         for elem in counter_points:
           elem['interval']['startTime'] = start_time
+          elem['value'] = {'int64Value': int(elem['value'][value_key]['count'])}
+        counter_metric = copy.deepcopy(metric)
+        counter_metric['type'] += '__count'
         result.append({
-           'metric': metric + '__count',
+           'metric': counter_metric,
            'resource': self.get_monitored_resource(service, service_metadata),
            'metricKind': 'CUMULATIVE',
-           'valueType': 'DOUBLE',
+           'valueType': 'INT64',
            'points': counter_points})
 
       metric_kind = 'CUMULATIVE'
       value_type = 'DISTRIBUTION'
       for point in points:
-        # Change points from assumed doubleValue to distributionValue
-        # The double value we encoded above was a dict
-        raw_value = point['value']['doubleValue']
+        # Change points from assumed |value_key| to distributionValue
+        # The |value_key| we encoded above was a dict
+        raw_value = point['value'][value_key]
         count = raw_value['count']
         # Summary was either a timer (totalTime) or summary (totalAmount).
         total = raw_value.get('totalTime') or raw_value.get('totalAmount', 0)

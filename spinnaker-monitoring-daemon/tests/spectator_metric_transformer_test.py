@@ -597,6 +597,53 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         options={'tags_are_typed': True}
     )
 
+  def test_oneof_tag_values(self):
+    self.do_test(
+        textwrap.dedent("""\
+            onDemand_count:
+              change_tags:
+                - from: providerName
+                  to: provider
+                  type: STRING
+                  oneof_regex: '.*\.provider\.(.*)|(kubernetes)'
+        """),
+
+        {'onDemand_count': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 1.0}],
+                'tags': [
+                    {'key': 'providerName',
+                     'value': 'org.spinnaker.provider.MyProvider'}
+                ]
+            }, {
+                'values': [{'t': 1540224536923, 'v': 2.0}],
+                'tags': [
+                    {'key': 'providerName',
+                     'value': 'kubernetes'}
+                ]
+            },
+                             ])},
+        },
+
+        {'onDemand_count': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 1.0}],
+                'tags': sorted([
+                    {'key': 'provider', 'value': 'MyProvider'},
+                ])
+            },
+            {
+                'values': [{'t': 1540224536923, 'v': 2.0}],
+                'tags': sorted([
+                    {'key': 'provider', 'value': 'kubernetes'},
+                ])
+            }
+                             ])}
+        }
+    )
+
   def test_decompose_tag(self):
     self.do_test(
         textwrap.dedent("""\

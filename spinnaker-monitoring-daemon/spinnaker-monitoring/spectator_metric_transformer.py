@@ -296,6 +296,7 @@ class TransformationRule(object):
         'to': <target_tag_name_or_names>
         'type': <type_name_or_names>
         'compare_value': <compare_string_value>
+        'oneof_regex': <extract_regex>
         'extract_regex': <extract_regex>
      where:
         * <source_tag_name> is the tag in the spectator metric for the value(s)
@@ -305,7 +306,9 @@ class TransformationRule(object):
 
           if the value is a list, then multiple tags will be produced. In this
           case the <extract_regex> should have a capture group for each
-          element.
+          element. The <oneof_regex> offers multiple capture group
+          possibilities, and uses whichever value was matched.
+  
         * <type_name_or_names> is the type for the <target_tag_name_or_names>.
           This should match the structure of <target_tag_name_or_names>.
           types are as follows:
@@ -316,6 +319,9 @@ class TransformationRule(object):
           the tag value when converting into a BOOL.
         * <extract_regex> a regular expression used to extract substrings
           from the original tag value to produce the new desired tag values.
+        * <oneof_regex> similar to extract_regex but allows for multiple
+          capture groups and assumes only one will produce a value.
+
    * <added_tag_bindings> is a dictionary of key/value pairs for tags
      that should be added. The tag values are constants. This is intended
      to consolidate multiple spectator metrics into a single one using
@@ -419,8 +425,9 @@ class TransformationRule(object):
         }
       return
 
-    extract_regex = transformation.get('extract_regex')
-    if not extract_regex:
+    use_regex = (transformation.get('extract_regex')
+                 or transformation.get('oneof_regex'))
+    if not use_regex:
       if not tags_are_typed or tag_type == 'STRING':
         transformation['_xform_func'] = lambda value: {to_tag: value}
       elif tag_type == 'INT':
@@ -431,7 +438,8 @@ class TransformationRule(object):
         raise ValueError('Unknown tag_type "%s"' % tag_type)
       return
 
-    extractor = re.compile(extract_regex)
+    extractor = re.compile(use_regex)
+    allof = 'extract_regex' in transformation
     to_tags = to_tag if isinstance(to_tag, list) else [to_tag]
 
     def composite_func(value):
@@ -439,7 +447,7 @@ class TransformationRule(object):
       matched = extractor.match(value)
       if not matched:
         error = ('{tag}: "{pattern}" did not match "{value}"'
-                 .format(tag=from_tag, pattern=extract_regex, value=value))
+                 .format(tag=from_tag, pattern=use_regex, value=value))
         matched_values = transformation.get('default_value')
         if matched_values:
           if not isinstance(matched_values, list):
@@ -448,6 +456,11 @@ class TransformationRule(object):
           raise ValueError(error)
       else:
         matched_values = matched.groups()
+
+      if not allof:
+        # Reduce oneof_regex to a single matched value
+        matched_values = [value for value in matched_values
+                          if value is not None]
 
       if len(matched_values) != len(to_tags):
         raise ValueError('Wrong number of matches: {got} for {tags}'

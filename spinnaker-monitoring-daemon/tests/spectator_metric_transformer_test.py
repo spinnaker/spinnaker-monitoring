@@ -141,23 +141,28 @@ class AggregatedBuilderTest(unittest.TestCase):
 
   def test_collate_one_measurement(self):
     builder = self._make_simple_rule_builder()
+    rule = builder.rule
     output = {}
     measurements = self._make_timer_measurements()
     for measurement in measurements:
       builder._collate_metric_info(
-          MetricInfo(measurement['values'][0], sorted(measurement['tags'])),
+          MetricInfo(measurement['values'][0],
+                     sorted(measurement['tags']),
+                     rule),
           output)
 
     self.assertEquals(
         sorted([
             MetricInfo({'t': self.TIMESTAMP,
                         'v': {'count': 123, 'totalTime': 321}},
-                       self._determine_expected_tags(measurements[0]))
+                       self._determine_expected_tags(measurements[0]),
+                       rule)
         ]),
         sorted(output.values()))
 
   def test_collate_multiple_measurements(self):
     builder = self._make_simple_rule_builder()
+    rule = builder.rule
     output = {}
     measurements2xx = self._make_timer_measurements(status='2xx')
     measurements4xx = self._make_timer_measurements(status='4xx')
@@ -172,23 +177,28 @@ class AggregatedBuilderTest(unittest.TestCase):
     ]
     for measurement in measurements:
       builder._collate_metric_info(
-          MetricInfo(measurement['values'][0], sorted(measurement['tags'])),
+          MetricInfo(measurement['values'][0],
+                     sorted(measurement['tags']),
+                     rule),
           output)
 
     expect_values = [
         MetricInfo({'t': self.TIMESTAMP,
                     'v': {'count': 123, 'totalTime': 321}},
-                   self._determine_expected_tags(measurements2xx[0])),
+                   self._determine_expected_tags(measurements2xx[0]),
+                   rule),
 
         # different value, same time
         MetricInfo({'t': self.TIMESTAMP,
                     'v': {'count': 123 + 400, 'totalTime': 321 + 400}},
-                   self._determine_expected_tags(measurements4xx[0])),
+                   self._determine_expected_tags(measurements4xx[0]),
+                   rule),
 
         # different value, different time
         MetricInfo({'t': self.TIMESTAMP + 500,
                     'v': {'count': 123 + 500, 'totalTime': 321 + 500}},
-                   self._determine_expected_tags(measurements5xx[0]))
+                   self._determine_expected_tags(measurements5xx[0]),
+                   rule)
     ]
 
     for got in output.values():
@@ -259,6 +269,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
       values = got_meter_data.get('values')
       if values:
         values.sort()
+
     self.assertResponseEquals(expect_response, got_response)
 
   def assertResponseEquals(self, expect_response, got_response):
@@ -267,6 +278,12 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             'Actual:   %r\n'
             % (expect_response, got_response))
     self.assertEquals(expect_response, got_response)
+
+    if str(expect_response) != str(got_response):
+      print('Expected: %r\n'
+            'Actual:   %r\n'
+            % (expect_response, got_response))
+    self.assertEquals(str(expect_response), str(got_response))
 
   def test_discard_default(self):
     spectator_response = EXAMPLE_MEMORY_USED_RESPONSE
@@ -417,6 +434,10 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             {'key': 'numeric', 'value': expect_num_value},
         ])
 
+    normalized_orig = copy.deepcopy(EXAMPLE_MEMORY_USED_RESPONSE)
+    normalized_orig['jvm.memory.used']['values'][0]['tags'] = sorted(
+       normalized_orig['jvm.memory.used']['values'][0]['tags'])
+
     self.do_test(
         textwrap.dedent("""\
             jvm.memory.used:
@@ -428,7 +449,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 numeric: 123
         """),
 
-        EXAMPLE_MEMORY_USED_RESPONSE,
+        normalized_orig,
         {'jvm.memory.used': transformed_value},
         options=options
     )
@@ -502,6 +523,83 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             }
                       ]
         }}
+    )
+
+  def test_change_value_to_type_int(self):
+    self.do_test(
+        textwrap.dedent("""\
+            jvm.memory.used:
+              value_type: SCALAR
+              tags:
+                - id
+        """),
+
+        {'jvm.memory.used': {
+            'kind': 'Gauge',
+            'values': sorted([
+                {'values': [{'t': 1540224536922, 'v': 1489720024.0}],
+                 'tags': [
+                     {'key': 'id', 'value': 'PS Eden Space'},
+                 ]},
+                {'values': [{'t': 1540224536923, 'v': 12345.0}],
+                 'tags': [
+                     {'key': 'id', 'value': 'Code Cache'},
+                 ]},
+            ])},
+        },
+
+        {'jvm.memory.used': {
+            'kind': 'Gauge',
+            'values': sorted([
+                {'values': [{'t': 1540224536922, 'v': 1489720024}],
+                 'tags': sorted([
+                     {'key': 'id', 'value': 'PS Eden Space'},
+                 ])},
+                {'values': [{'t': 1540224536923, 'v': 12345}],
+                 'tags': sorted([
+                     {'key': 'id', 'value': 'Code Cache'},
+                 ])},
+            ])},
+        },
+        options={'transform_values': True}
+    )
+
+  def test_change_value_to_type_bool(self):
+    self.do_test(
+        textwrap.dedent("""\
+            is_on:
+              value_type: BOOL
+              tags:
+                - note
+        """),
+        {'is_on': {
+            'kind': 'Gauge',
+            'values': sorted([
+                {'values': [{'t': 1540224536922, 'v': 1.0}],
+                 'tags': [
+                     {'key': 'note', 'value': 'on'},
+                 ]},
+                {'values': [{'t': 1540224536923, 'v': 0.0}],
+                 'tags': [
+                     {'key': 'note', 'value': 'off'},
+                 ]},
+            ])},
+        },
+
+        {'is_on': {
+            'kind': 'Gauge',
+            'values': sorted([
+                {'values': [{'t': 1540224536922, 'v': True}],
+                 'tags': sorted([
+                     {'key': 'note', 'value': 'on'},
+                 ])},
+                {'values': [{'t': 1540224536923, 'v': False}],
+                 'tags': sorted([
+                     {'key': 'note', 'value': 'off'},
+                 ])},
+            ])},
+        },
+        options={'transform_values': True}
     )
 
   def test_change_tag_to_type_bool(self):
@@ -595,6 +693,53 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             ]},
         },
         options={'tags_are_typed': True}
+    )
+
+  def test_oneof_tag_values(self):
+    self.do_test(
+        textwrap.dedent("""\
+            onDemand_count:
+              change_tags:
+                - from: providerName
+                  to: provider
+                  type: STRING
+                  oneof_regex: '.*\.provider\.(.*)|(kubernetes)'
+        """),
+
+        {'onDemand_count': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 1.0}],
+                'tags': [
+                    {'key': 'providerName',
+                     'value': 'org.spinnaker.provider.MyProvider'}
+                ]
+            }, {
+                'values': [{'t': 1540224536923, 'v': 2.0}],
+                'tags': [
+                    {'key': 'providerName',
+                     'value': 'kubernetes'}
+                ]
+            },
+                             ])},
+        },
+
+        {'onDemand_count': {
+            'kind': 'Counter',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 1.0}],
+                'tags': sorted([
+                    {'key': 'provider', 'value': 'MyProvider'},
+                ])
+            },
+            {
+                'values': [{'t': 1540224536923, 'v': 2.0}],
+                'tags': sorted([
+                    {'key': 'provider', 'value': 'kubernetes'},
+                ])
+            }
+                             ])}
+        }
     )
 
   def test_oneof_tag_values(self):
@@ -788,6 +933,63 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                              ])},
         }
     )
+
+  def _do_remove_tag_bool_value(self, options, expect):
+    """Tests how measurements that are BOOL combine together."""
+    maybe_default_value = (
+        "'default_value': {expect}".format(expect=expect)
+        if isinstance(expect, bool)
+        else ''
+    )
+    self.do_test(
+        textwrap.dedent("""\
+            is_on:
+              value_type: BOOL
+              {maybe_default_value}
+              tags:
+        """.format(maybe_default_value=maybe_default_value)),
+
+        {'is_on': {
+            'kind': 'Gauge',
+            'values': sorted([{
+                'values': [{'t': 1540224536922, 'v': 0.0}],
+                'tags': [
+                    {'key': 'discard', 'value': 'false'},
+                ]
+            }, {
+                'values': [{'t': 1540224536922, 'v': 1.0}],
+                'tags': [
+                    {'key': 'discard', 'value': 'true'},
+                ]
+            }, {
+                'values': [{'t': 1540224536923, 'v': 1.0}],
+                'tags': [
+                    {'key': 'discard', 'value': 'true'},
+                ]
+            },
+                             ])},
+        },
+
+        {'is_on': {
+            'kind': 'Gauge',
+            'values': sorted([{
+                'values': [{'t': 1540224536923, 'v': expect}],
+            },
+                             ])}
+        },
+        options=options
+    )
+
+  def test_remove_tag_bool_value_no_transform(self):
+    self._do_remove_tag_bool_value({}, 2.0)
+
+  def test_remove_tag_bool_value_true(self):
+    options = {'transform_values': True}
+    self._do_remove_tag_bool_value(options, True)
+
+  def test_remove_tag_bool_value_false(self):
+    options = {'transform_values': True}
+    self._do_remove_tag_bool_value(options, False)
 
   def test_discard_tag_values(self):
     self.do_test(

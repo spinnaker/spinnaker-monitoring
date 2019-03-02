@@ -279,6 +279,12 @@ class MetricDescriptorManager(object):
       'Summary': 'DISTRIBUTION'
   }
 
+  VALUE_TYPE_MAP = {
+      'BOOL': 'BOOL',
+      'REAL': 'DOUBLE',
+      'SCALAR': 'INT64',
+  }
+
   # Only recognize units stackdriver can handle.
   # Other units (e.g. "requests") will be ignored.
   UNIT_MAP = {
@@ -364,6 +370,14 @@ class MetricDescriptorManager(object):
       return None
     return self.__transform_rule_to_descriptors(spectator_name, rule)
 
+  def _determine_value_type(self, rule):
+    """Determine stackdriver value type from rule's value value."""
+    want = self.VALUE_TYPE_MAP.get(rule.value_type)
+    if want is None:
+      logging.warning('Unrecognized value type for metric rule %r', rule)
+      want = 'DOUBLE'
+    return want
+
   def __transform_rule_to_descriptors(self, spectator_name, rule):
     """Derive MetricDescriptor object implied by a transform rule.
 
@@ -385,7 +399,7 @@ class MetricDescriptorManager(object):
         'name': self.__name_prefix + base_stackdriver_type,
         'metricKind': self.NON_CUMULATIVE_KIND_MAP.get(meter_kind,
                                                        'CUMULATIVE'),
-        'valueType': 'DOUBLE',
+        'valueType': self._determine_value_type(rule),
         'labels': self.__derive_labels(spec),
     }
 
@@ -409,6 +423,7 @@ class MetricDescriptorManager(object):
             % meter_name)
         component['name'] += '__count'
         component['type'] += '__count'
+        component['valueType'] = 'INT64'
         component['metricKind'] = 'CUMULATIVE'
         result.append(component)
 

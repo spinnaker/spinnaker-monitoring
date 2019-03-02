@@ -73,10 +73,11 @@ class MetricInfo(object):
     """Returns the value for this metric info."""
     return self.__value
 
-  def __init__(self, value_json, sorted_tags):
+  def __init__(self, value_json, sorted_tags, rule):
     self.__timestamp = value_json['t']
     self.__value = value_json['v']
     self.__tags = sorted_tags
+    self.__rule = rule
 
     # NOTE(20181203):
     # This extra field here is experimental, but we're always going
@@ -100,7 +101,8 @@ class MetricInfo(object):
     return (info.__class__ == self.__class__
             and info.timestamp == self.__timestamp
             and info.tags == self.__tags
-            and info.value == self.__value)
+            and info.value == self.__value
+            and info.__rule == self.__rule)
 
   def __repr__(self):
     return repr({'t': self.__timestamp,
@@ -128,14 +130,15 @@ class MetricInfo(object):
       normalized_key = str(sorted_augmented_tags)
       info = tag_container.get(normalized_key)
       if not info:
-        info = MetricInfo(value_json, sorted_augmented_tags)
+        info = MetricInfo(value_json, sorted_augmented_tags, self.__rule)
         tag_container[normalized_key] = info
       else:
         info.aggregate_value(value_json)
 
   def aggregate_value(self, value_json):
     """Aggregate another value into this metric."""
-    self.__value += value_json['v']
+    self.__value = self.__rule.combine_values(
+        self.__value, value_json['v'])
     self.__timestamp = max(self.__timestamp, value_json['t'])
 
   def encode_as_spectator_response(self):
@@ -166,6 +169,11 @@ class AggregatedMetricsBuilder(object):
   the individual partitions that went into the aggregate.
   """
 
+  @property
+  def rule(self):
+    """The rule bound to this builder."""
+    return self.__rule
+
   def __init__(self, rule):
     self.__tags_to_metric = {}
     self.__rule = rule
@@ -190,7 +198,7 @@ class AggregatedMetricsBuilder(object):
 
     metric = self.__tags_to_metric.get(normalized_key)
     if not metric:
-      metric = MetricInfo(value_json, sorted_tags)
+      metric = MetricInfo(value_json, sorted_tags, self.__rule)
       self.__tags_to_metric[normalized_key] = metric
     else:
       metric.aggregate_value(value_json)
@@ -246,8 +254,9 @@ class AggregatedMetricsBuilder(object):
     normalized_key = str(tags)
     normalized_info = collated_metric_infos.get(normalized_key)
     if not normalized_info:
-      json_value = {'t': metric_info.timestamp, 'v': {key: metric_info.value}}
-      normalized_info = MetricInfo(json_value, tags)
+      json_value = {'t': metric_info.timestamp,
+                    'v': {key: metric_info.value}}
+      normalized_info = MetricInfo(json_value, tags, self.__rule)
       collated_metric_infos[normalized_key] = normalized_info
       return
     normalized_info.value[key] = metric_info.value
@@ -370,6 +379,11 @@ class TransformationRule(object):
   def per_application(self):
     """Should this rule break out "application" tags if present."""
     return self.__per_application
+
+  @property
+  def value_type(self):
+    """Returns the value type for the specified metric."""
+    return self.__rule_spec.get('value_type', 'REAL')
 
   @property
   def rule_specification(self):
@@ -501,6 +515,33 @@ class TransformationRule(object):
          transform configuration policy applied on top of the generic rules.
       rule_spec: [dict] The rule specification loaded from the json file.
     """
+    if transformer.options.get('transform_values', False):
+      self.__value_transform = {
+          None: lambda x: x,
+          'BOOL': lambda x: bool(x),
+          'REAL': lambda x: x,
+          'SCALAR': lambda x: int(x)
+      }[rule_spec.get('value_type')]
+    else:
+      self.__value_transform = lambda x: x
+
+    # If we need to aggregate values of this type
+    # (e.g. because we remove a tag in the transform)
+    # then by default we'll add the values together.
+    # However if it is a boolean type then it isnt obvious
+    # whether combining True and False should be True or False.
+    # It depends on the individual metric, so use a config option
+    # to disambiguate.
+    #   (e.g. if the value indicates success we'd probably want AND
+    #    but if the value indicates a failure we'd probably want OR)
+    self.combine_values = lambda x, y: x + y
+    if (rule_spec.get('value_type') == 'BOOL'):
+      self.combine_values = {
+          True: lambda x, y: x or y,    # Any are true
+          False: lambda x, y: x and y,  # All are true
+          None: lambda x, y: x + y      # Scalar sum of true values
+      }[rule_spec.get('default_value')]
+
     self.__transformer = transformer
     self.__rule_spec = rule_spec if rule_spec else None
     if rule_spec is None:
@@ -590,6 +631,20 @@ class TransformationRule(object):
     compiled_re = self.__discard_tag_values.get(tag)
     return compiled_re and compiled_re.match(str(value))
 
+  def determine_measurement(self, measurement):
+    """Convert the measurement value according to the rule.
+
+    Args:
+      measurement: [dict]  A {'t', 'v'} timestamp value pair.
+    """
+    try:
+      value = self.__value_transform(measurement['v'])
+    except TypeError as err:
+      logging.error('TypeError %s transforming %r',
+                    str(err), measurement['v'])
+      raise
+    return {'t': measurement['t'], 'v': value}
+
   def determine_meter_name(self, meter_name):
     """Get transformed meter name (or original).
 
@@ -666,9 +721,10 @@ class TransformationRule(object):
       if target_tags:
         target_metric['tags'] = sorted(target_tags)
 
-      metric_builder.add(target_metric['values'][-1],
-                         target_metric.get('tags'),
-                         per_tags=per_tags)
+      metric_builder.add(
+          self.determine_measurement(target_metric['values'][-1]),
+          target_metric.get('tags'),
+          per_tags=per_tags)
     return metric_builder.build()
 
 

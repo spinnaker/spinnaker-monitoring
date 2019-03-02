@@ -106,13 +106,23 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.service = stackdriver_service.StackdriverMetricsService(
         lambda: self.mockStub, options)
 
-  def test_record_counter_metric(self):
+  def test_record_counter_metric_double(self):
     self._do_test_add_metric('Counter', 'CUMULATIVE', 'DOUBLE',
-                             12, {'doubleValue': 12})
+                             12.0, {'doubleValue': 12.0})
+
+  def test_record_counter_metric_scalar(self):
+    self._do_test_add_metric('Counter', 'CUMULATIVE', 'INT64',
+                             12, {'int64Value': 12})
+
+  def test_record_counter_metric_bool(self):
+    self._do_test_add_metric('Gauge', 'GAUGE', 'BOOL',
+                             True, {'boolValue': True})
+    self._do_test_add_metric('Gauge', 'GAUGE', 'BOOL',
+                             False, {'boolValue': False})
 
   def test_record_gauge_metric(self):
     self._do_test_add_metric('Gauge', 'GAUGE', 'DOUBLE',
-                             21, {'doubleValue': 21})
+                             21.0, {'doubleValue': 21.0})
 
   def test_record_summary_metric(self):
     self.options['spectator'] = {'summarize_timers': True}
@@ -621,6 +631,6 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
     self.assertEquals(4, self.mockMetricDescriptors.create.call_count)
 
-    
+
 if __name__ == '__main__':
   unittest.main()

@@ -400,25 +400,33 @@ class TransformationRule(object):
       # looking at the raw spec.
       transformation['type'] = 'STRING'
 
+    tags_are_typed = self.__transformer.options.get('tags_are_typed')
     tag_type = transformation['type']
     if tag_type == 'BOOL':
       compare = transformation.get('compare_value')
       if compare:
-        transformation['_xform_func'] = lambda value: {to_tag: value == compare}
+        compare_func = lambda value: value == compare
+      else:
+        compare_func = lambda value: value == 'true' or value == ''
+
+      if tags_are_typed:
+        transformation['_xform_func'] = lambda value: {
+            to_tag: compare_func(value)
+        }
       else:
         transformation['_xform_func'] = lambda value: {
-            to_tag: value == 'true' or value == ''
+            to_tag: str(compare_func(value)).lower()
         }
       return
 
     extract_regex = transformation.get('extract_regex')
     if not extract_regex:
-      if tag_type == 'INT':
+      if not tags_are_typed or tag_type == 'STRING':
+        transformation['_xform_func'] = lambda value: {to_tag: value}
+      elif tag_type == 'INT':
         transformation['_xform_func'] = lambda value: {
             to_tag: int(0 if value in ('', 'UNKNOWN') else value)
         }
-      elif tag_type == 'STRING':
-        transformation['_xform_func'] = lambda value: {to_tag: value}
       else:
         raise ValueError('Unknown tag_type "%s"' % tag_type)
       return
@@ -533,11 +541,21 @@ class TransformationRule(object):
     else:
       self.is_per_tag = lambda t: False
 
+    if self.__transformer.options.get('tags_are_typed'):
+      normalize_tag_value = lambda x: x
+    else:
+      normalize_tag_value = lambda x: (
+          str(x).lower()
+          if isinstance(x, bool)
+          else str(x)
+      )
+
     change_tags = rule_spec.get('change_tags', [])
     self.__identity_tags = (
         'tags' not in rule_spec and 'change_tags' not in rule_spec)
     self.__added_tags = [
-        {'key': self.__transformer.normalize_label_name(key), 'value': value}
+        {'key': self.__transformer.normalize_label_name(key),
+         'value': normalize_tag_value(value)}
         for key, value in rule_spec.get('add_tags', {}).items()
     ]
     for transformation in change_tags:
@@ -704,6 +722,8 @@ class SpectatorMetricTransformer(object):
           - default_is_identity: [bool] If true and a spec is not
                 found when transforming a metric then assume the identity.
                 Otherwise assume the metric should be discarded.
+          - tags_are_typed: [bool] If true then tag values should have
+                their specified native types. Otherwise they are strings.
           - use_snake_case: [bool] If true then names and labels should
                 use snake-case. Otherwise leave as is.
           - enforce_stackdriver_names: [bool] Hack for internal google use

@@ -393,17 +393,28 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         {'platform/java/memory': transformed_value}
     )
 
-  def test_add_tags(self):
+  def _do_test_add_tags(self, tags_are_typed):
+    if tags_are_typed:
+      expect_true_value = True
+      expect_false_value = False
+      expect_num_value = 123
+      options = {'tags_are_typed': True}
+    else:
+      expect_true_value = 'true'
+      expect_false_value = 'false'
+      expect_num_value = '123'
+      options = {}
+
     transformed_value = copy.deepcopy(
         EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used'])
     transformed_value['values'][0]['tags'] = sorted(
         transformed_value['values'][0]['tags']
         + [
             {'key': 'first', 'value': 'FIRST'},
-            {'key': 'T', 'value': True},
-            {'key': 'F', 'value': False},
+            {'key': 'T', 'value': expect_true_value},
+            {'key': 'F', 'value': expect_false_value},
             {'key': 'S', 'value': 'true'},
-            {'key': 'numeric', 'value': 123},
+            {'key': 'numeric', 'value': expect_num_value},
         ])
 
     self.do_test(
@@ -418,8 +429,15 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         """),
 
         EXAMPLE_MEMORY_USED_RESPONSE,
-        {'jvm.memory.used': transformed_value}
+        {'jvm.memory.used': transformed_value},
+        options=options
     )
+
+  def test_add_tags_typed(self):
+    self._do_test_add_tags(True)
+
+  def test_add_tags_untyped(self):
+    self._do_test_add_tags(False)
 
   def test_consolidate_metrics(self):
     self.do_test(
@@ -472,14 +490,14 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 'tags': sorted([
                     {'key': 'objectType', 'value': 'PIPELINES'},
                     {'key': 'statistic', 'value': 'totalTime'},
-                    {'key': 'scheduled', 'value': False}
+                    {'key': 'scheduled', 'value': 'false'}
                 ])
             }, {
                 'values': [{'t': 1540224536922, 'v': 1489720024.0}],
                 'tags': sorted([
                     {'key': 'objectType', 'value': 'PIPELINES'},
                     {'key': 'statistic', 'value': 'totalTime'},
-                    {'key': 'scheduled', 'value': True}
+                    {'key': 'scheduled', 'value': 'true'}
                 ])
             }
                       ]
@@ -529,7 +547,8 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                      {'key': 'heap', 'value': False},
                  ])},
             ])},
-        }
+        },
+        options={'tags_are_typed': True}
     )
 
   def test_change_tag_to_type_int(self):
@@ -574,7 +593,8 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                      {'key': 'statusCode', 'value': 200},
                  ]}
             ]},
-        }
+        },
+        options={'tags_are_typed': True}
     )
 
   def test_decompose_tag(self):
@@ -761,7 +781,9 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 'values': [{'t': 1540224536922, 'v': 1489720024.0}],
                 'tags': sorted([
                     {'key': 'id', 'value': 'PS Eden Space'},
-                    {'key': 'heap', 'value': True},
+                    # This test is not using tag types, so
+                    # the BOOL value will be a string value.
+                    {'key': 'heap', 'value': 'true'},
                 ])
             },
                              ])}

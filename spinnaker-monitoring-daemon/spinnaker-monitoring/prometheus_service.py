@@ -46,6 +46,7 @@ the gateway debian package. See prometheus.io.
 """
 
 import collections
+import logging
 import time
 
 import command_processor
@@ -74,8 +75,6 @@ MetricInfo = collections.namedtuple('MetricInfo', ['kind', 'tags', 'records'])
 
 class BaseMeterBuilder(object):
   """Base class for populating prometheus data objects."""
-
-  BOOL_TO_LOWER = {True: 'true', False: 'false'}
 
   def __init__(self, family, name, labels, documentation=''):
     self.__meter = family(name, documentation, labels=labels)
@@ -110,8 +109,7 @@ class BaseMeterBuilder(object):
       for elem in record.tags:
         index = label_names.index(elem['key'])
         if index >= 0:
-          value = elem['value'] # tags must be string but lowerize bools
-          label_values[index] = str(self.BOOL_TO_LOWER.get(value, value))
+          label_values[index] = elem['value']
       if self.__job_tag_index >= 0:
         label_values[self.__job_tag_index] = record.service
       if self.__instance_tag_index >= 0:
@@ -190,7 +188,12 @@ class PrometheusMetricsService(object):
 
     self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
-    self.__spectator_helper = spectator_client.SpectatorClientHelper(options)
+    options_copy = dict(options)
+
+    # prometheus tags must be strings.
+    options_copy['tags_are_typed'] = False
+    self.__spectator_helper = spectator_client.SpectatorClientHelper(
+        options_copy)
 
     prometheus_options = options.get('prometheus', {})
     # '_' is preferred but ':' was used in earlier releases.

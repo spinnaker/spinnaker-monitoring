@@ -16,6 +16,7 @@
 
 from datetime import datetime
 import collections
+import copy
 import json
 import logging
 import os
@@ -104,11 +105,6 @@ class StackdriverMetricsService(object):
   WRITE_SCOPE = 'https://www.googleapis.com/auth/monitoring'
   MAX_BATCH = 200
   JANITOR_PERIOD = 600
-
-  # custom metrics must be strings because there isnt a way to specify the
-  # tag type when using automatic descriptor creation, and stackdriver
-  # doesnt bother trying to figure it out.
-  TAG_VALUE_FUNC = lambda self, value: str(value)
 
   @staticmethod
   def millis_to_time(millis):
@@ -451,8 +447,7 @@ class StackdriverMetricsService(object):
         service, name, instance, metric_metadata)
     metric = {
         'type': self.__descriptor_manager.name_to_type(name),
-        'labels': {tag['key']: self.TAG_VALUE_FUNC(tag['value'])
-                   for tag in tags}
+        'labels': {tag['key']: tag['value'] for tag in tags}
     }
     if self.__add_source_tag:
       metric['labels']['InstanceSrc'] = '{host}:{port}'.format(

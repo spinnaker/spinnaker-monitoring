@@ -676,10 +676,13 @@ class DeployedMonitoredResourceBuilder(object):
       doc = get_aws_identity_document()
 
       return {
-          'instance_id': doc['instanceId'],
-          'region': doc['region'],
-          'aws_account': doc['accountId'],
-          'project_id': self.__project
+        'type': 'aws_ec2_instance',
+        'labels': {
+            'instance_id': doc['instanceId'],
+            'region': doc['region'],
+            'aws_account': doc['accountId'],
+            'project_id': self.__project
+        }
       }
     except (IOError, ValueError, KeyError):
       return None

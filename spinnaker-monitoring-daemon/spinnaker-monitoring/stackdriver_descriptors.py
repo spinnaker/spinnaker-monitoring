@@ -472,7 +472,7 @@ class MetricDescriptorManager(object):
         component['type'] += '__percentile'
         component['description'] = (
             'Percentile bucket time referenced by {summary}.'.format(
-                summary='%s__count'))
+                summary='%s__count' % meter_name))
         result.append(component)
 
     return result

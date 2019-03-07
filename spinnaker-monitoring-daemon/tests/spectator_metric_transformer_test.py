@@ -97,10 +97,9 @@ class AggregatedBuilderTest(unittest.TestCase):
         break
     return sorted(expect_tags)
 
-  def test_timer(self):
+  def do_test_compound_kind_as_is(self, builder):
     # This test is just showing nothing interesting happening
     # and we get out what we put in.
-    builder = self._make_simple_rule_builder()
     for measurement in self._make_timer_measurements():
       builder.add(measurement['values'][0], measurement['tags'])
     self.assertEquals(
@@ -118,13 +117,31 @@ class AggregatedBuilderTest(unittest.TestCase):
         ]),
         sorted(builder.build()))
 
-  def test_summary(self):
-    transformer = SpectatorMetricTransformer({}, {})
+  def test_timer(self):
+    builder = self._make_simple_rule_builder()
+    self.do_test_compound_kind_as_is(builder)
+
+  def test_summary_as_is(self):
+    options = {}
+    transformer = SpectatorMetricTransformer(options, {})
     rule = TransformationRule(
         transformer,
         {
             'rename': 'NewName',
-            'kind': 'Summary',
+            'kind': 'DistributionSummary',
+            'tags': ['status'],
+        })
+    builder = AggregatedMetricsBuilder(rule)
+    self.do_test_compound_kind_as_is(builder)
+
+  def test_summary_summarize(self):
+    options = {'summarize_compound_kinds': True}
+    transformer = SpectatorMetricTransformer(options, {})
+    rule = TransformationRule(
+        transformer,
+        {
+            'rename': 'NewName',
+            'kind': 'DistributionSummary',
             'tags': ['status'],
         })
     builder = AggregatedMetricsBuilder(rule)
@@ -212,7 +229,7 @@ class AggregatedBuilderTest(unittest.TestCase):
     self.assertEquals([], expect_values)
 
   def test_summarize_timers_and_build(self):
-    options = {'summarize_timers': True}
+    options = {'summarize_compound_kinds': True}
     builder = self._make_simple_rule_builder(options=options)
     measurements2xx = self._make_timer_measurements(status='2xx')
     measurements4xx = self._make_timer_measurements(status='4xx')

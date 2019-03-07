@@ -293,7 +293,8 @@ class SpectatorClientHelper(object):
 
   def __init__(self, options):
     self.__options = options.get('spectator', {})
-    self.__summarize_timers = self.__options.get('summarize_timers')
+    self.__summarize_compound_kinds = self.__options.get(
+        'summarize_compound_kinds')
     self.__inject_service_tag = self.__options.get('inject_service_tag')
     self.__decorate_metric_name = (self.__options.get('decorate_metric_name')
                                    if 'decorate_metric_name' in self.__options
@@ -305,7 +306,8 @@ class SpectatorClientHelper(object):
         'PercentileCounter', 'PercentileTimer',
         'PercentileDistributionSummary'
     ):
-      if self.__summarize_timers and kind.endswith('Timer'):
+      if (self.__summarize_compound_kinds
+          and (kind.endswith('Timer') or kind.endswith('Summary'))):
         return SUMMARY_PRIMITIVE_KIND
       return COUNTER_PRIMITIVE_KIND
     return GAUGE_PRIMITIVE_KIND
@@ -573,7 +575,7 @@ class SpectatorClient(object):
       threads[service].join()
 
     logging.debug('Collection times %d (ms): %s',
-                 (time.time() - start) * 1000, service_time)
+                  (time.time() - start) * 1000, service_time)
     return result
 
   def scan_by_type(self, service_catalog, params=None):

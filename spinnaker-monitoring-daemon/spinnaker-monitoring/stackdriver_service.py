@@ -96,6 +96,19 @@ def get_google_metadata(attribute):
   return response.read()
 
 
+def determine_local_project():
+  """Determine which GCP project we are currently running in, if at all.
+
+  Running on GCP is special because it means we can infer which Stackdriver project
+  we're associating the metrics with.
+  """
+  try:
+    return get_google_metadata('project/numeric-project-id')
+  except IOError:
+    # Not running on GCP
+    return None
+
+
 class StackdriverMetricsService(object):
   """Helper class for interacting with Stackdriver."""
   WRITE_SCOPE = 'https://www.googleapis.com/auth/monitoring'
@@ -149,6 +162,13 @@ class StackdriverMetricsService(object):
     return '%s:%s' % (service_metadata['__host'], service_metadata['__port'])
 
   def __update_monitored_generic_task_resources(self, service_map):
+    deployed, _ = DeployedMonitoredResourceBuilder(
+      self.__stackdriver_options, self.__project).build()
+    my_task_id = (deployed['labels'].get('pod_id')          # from gke_container
+                  or deployed['labels'].get('pod_name')     # from k8s_container
+                  or deployed['labels'].get('instance_id')  # from gce_instance or ec2_instance
+                  or None)
+
     for service, service_metric_list in service_map.items():
       service_resource = self.__monitored_resource.get(service)
       if not service_resource:
@@ -189,7 +209,8 @@ class StackdriverMetricsService(object):
 
     self.__stub_factory = stub_factory
     self.__stub = None
-    self.__project = self.__stackdriver_options.get('project')
+    self.__project = (self.__stackdriver_options.get('project')
+                      or determine_local_project())
     logging.info('Using stackdriver project %r', self.__project)
 
     spectator_options = options_copy.get('spectator', {})
@@ -205,14 +226,6 @@ class StackdriverMetricsService(object):
     self.__spectator_helper = spectator_client.SpectatorClientHelper(options_copy)
     self.__distributions_also_have_count = self.__stackdriver_options.get(
         'distributions_also_have_count')
-
-    if not self.__project:
-      # Set default to our instance if we are on GCE.
-      # Otherwise ignore since we might not actually need the project.
-      try:
-        self.__project = get_google_metadata('project/project-id')
-      except IOError:
-        pass
 
     manager = stackdriver_descriptors.MetricDescriptorManager(
         self,
@@ -574,18 +587,20 @@ class GenericTaskResourceBuilder(object):
       raise ValueError('Unable to determine location or --zone.')
 
   def build(self, service, task_id, service_metadata):
+    deployed_builder = DeployedMonitoredResourceBuilder
     location = self.determine_location()
     monitored_resource = {
         'type': 'generic_task',
         'labels': {
             'project_id': self.__project,
             'location': location,
-            'namespace': 'standard',  # eventually variant such as 'read-only'
-            'job': service,
+            'namespace':  determine_local_project() or 'default',
+            'job': 'default',   # placeholder for future use
             'task_id': task_id
         }
     }
-    logging.info('Monitoring resource=%r', monitored_resource)
+    logging.info('%r monitored resource is %r',
+                 service, monitored_resource)
     return monitored_resource
 
 
@@ -609,8 +624,11 @@ class DeployedMonitoredResourceBuilder(object):
     if monitored_resource is None:
       add_source_tag = True
       monitored_resource = {
-          'type': 'global',
-          'project_id': self.__project
+          'type': 'generic_node',
+          'project_id': self.__project,
+          'location': self.__stackdriver_options.get('generic_location', 'UNKNOWN'),
+          'namespace': self.__stackdriver_options.get('generic_namespace', ''),
+          'node_id': self.__stackdriver_options.get('generic_node_id', '')
       }
 
     logging.info('Monitoring resource=%r', monitored_resource)

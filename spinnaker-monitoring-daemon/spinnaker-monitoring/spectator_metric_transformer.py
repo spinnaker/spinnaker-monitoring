@@ -264,9 +264,8 @@ class AggregatedMetricsBuilder(object):
   def build(self):
     """Encode all the measurements for the meter."""
     kind = self.__rule.rule_specification.get('kind', '')
-    if ((self.__rule.transformer.options.get('summarize_timers', False)
-         and kind.endswith('Timer'))
-        or kind == 'Summary'):
+    if (self.__rule.transformer.options.get('summarize_compound_kinds', False)
+        and (kind.endswith('Timer') or kind.endswith('Summary'))):
       collated_values = self._collate_metric_values()
       return self.__encode_all_metric_info(collated_values.values())
 
@@ -781,6 +780,10 @@ class SpectatorMetricTransformer(object):
         if name[-1] == 's':
           name = name[:-1]
         name += '_latencies'
+    if kind.endswith('Summary'):
+      if not name.endswith('_distribution'):
+        name += '_distribution'
+
     return name
 
   def __init__(self, options, spec):
@@ -797,10 +800,11 @@ class SpectatorMetricTransformer(object):
                 use snake-case. Otherwise leave as is.
           - enforce_stackdriver_names: [bool] Hack for internal google use
                 to workaround historical policy constraints.
-          - summarize_timers: [bool] If true then convert Timer metrics
-                into a Summary by creating a single composite metric from the
-                individual count/totalTime measurements rather than reporting
-                out as separate component measurements.
+          - summarize_compound_kinds: [bool] If true then convert
+                Timer and DistributionSummary metrics into a Summary by
+                creating a single compound metric from the individual
+                count/totalTime measurements rather than reporting out as
+                separate component measurements.
       spec: [dict] Transformation specification entry from YAML.
     """
     self.__options = dict(options)

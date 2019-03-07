@@ -307,7 +307,8 @@ class MetricDescriptorManager(object):
     spectator_options = spectator_response_processor.spectator_options
     self.__stackdriver = stackdriver
     self.__response_processor = spectator_response_processor
-    self.__timers_are_distribution = spectator_options.get('summarize_timers')
+    self.__summary_is_distribution = spectator_options.get(
+        'summarize_compound_kinds')
     self.__distributions_also_have_count = stackdriver.stackdriver_options.get(
         'distributions_also_have_count')
 
@@ -411,26 +412,12 @@ class MetricDescriptorManager(object):
 
     result = []
     meter_is_timer = meter_kind in ['Timer', 'PercentileTimer']
-    if self.__timers_are_distribution and meter_is_timer:
-      if self.__distributions_also_have_count:
-        # Add an implied metric which is just a counter.
-        # This is to workaround a temporary shortcoming querying the counts.
-        # Eventually this will be deprecated.
-        component = dict(want)
-        component['description'] = (
-            'Counter mirroring number of measurements in %s.'
-            ' This metric may soon be deprecated.'
-            % meter_name)
-        component['name'] += '__count'
-        component['type'] += '__count'
-        component['valueType'] = 'INT64'
-        component['metricKind'] = 'CUMULATIVE'
-        result.append(component)
-
-      want['unit'] = 'ns'
-      want['valueType'] = 'DISTRIBUTION'
-      want['metricKind'] = 'CUMULATIVE'
-      result.append(want)
+    meter_is_distribution = meter_kind in ['DistributionSummary',
+                                           'PercentileDistributionSummary']
+    if self.__summary_is_distribution and meter_is_timer:
+      self.__append_summary(meter_name, "ns", want, result)
+    elif self.__summary_is_distribution and meter_is_distribution:
+      self.__append_summary(meter_name, "1", want, result)
 
     elif meter_is_timer:
       if not rule.discard_tag_value('statistic', 'count'):
@@ -447,8 +434,7 @@ class MetricDescriptorManager(object):
         component['unit'] = 'ns'
         result.append(component)
 
-    elif meter_kind in ['DistrbutionSummary',
-                        'PercentileDistributionSummary']:
+    elif meter_is_distribution:
       if not rule.discard_tag_value('statistic', 'count'):
         component = dict(want)
         component['name'] += '__count'
@@ -465,7 +451,9 @@ class MetricDescriptorManager(object):
     else:
       result.append(want)
 
-    if meter_kind.startswith('Percentile'):
+    if (meter_kind.startswith('Percentile')
+        and not self.__summary_is_distribution):
+      # Only consider "percentile" dimension if not using distributions.
       if not rule.discard_tag_value('statistic', 'percentile'):
         component = dict(want)
         component['name'] += '__percentile'
@@ -476,6 +464,27 @@ class MetricDescriptorManager(object):
         result.append(component)
 
     return result
+
+  def __append_summary(self, meter_name, units, want, result):
+    if self.__distributions_also_have_count:
+      # Add an implied metric which is just a counter.
+      # This is to workaround a temporary shortcoming querying the counts.
+      # Eventually this will be deprecated.
+      component = dict(want)
+      component['description'] = (
+          'Counter mirroring number of measurements in %s.'
+          ' This metric may soon be deprecated.'
+          % meter_name)
+      component['name'] += '__count'
+      component['type'] += '__count'
+      component['valueType'] = 'INT64'
+      component['metricKind'] = 'CUMULATIVE'
+      result.append(component)
+
+    want['unit'] = units
+    want['valueType'] = 'DISTRIBUTION'
+    want['metricKind'] = 'CUMULATIVE'
+    result.append(want)
 
   def __derive_labels(self, spec):
     result = {'spin_service': 'STRING', 'spin_variant': 'STRING'}

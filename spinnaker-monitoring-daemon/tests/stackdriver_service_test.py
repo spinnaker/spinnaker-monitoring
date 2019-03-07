@@ -125,7 +125,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
                              21.0, {'doubleValue': 21.0})
 
   def test_record_summary_metric(self):
-    self.options['spectator'] = {'summarize_timers': True}
+    self.options['spectator'] = {'summarize_compound_kinds': True}
     self.service = stackdriver_service.StackdriverMetricsService(
         lambda: self.mockStub, self.options)
     bucketOptions = {

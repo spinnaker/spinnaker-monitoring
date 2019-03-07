@@ -63,10 +63,6 @@ def normalize_options(options):
     stackdriver_options['manage_descriptors'] = (
         options_copy['manage_stackdriver_descriptors'])
 
-  if 'fix_labels_unsafe' not in stackdriver_options:
-    stackdriver_options['fix_labels_unsafe'] = options.get(
-        'fix_stackdriver_labels_unsafe', False)
-
   return options_copy
 
 
@@ -227,8 +223,8 @@ class StackdriverMetricsService(object):
     self.__next_janitor_time = time.time()
     self.__good_janitor_count = 0
 
-    self.__fix_stackdriver_labels_unsafe = self.__stackdriver_options.get(
-        'fix_labels_unsafe', False)
+    self.__fix_custom_metrics_unsafe = self.__stackdriver_options.get(
+        'fix_custom_metrics_unsafe', False)
     self.__monitored_resource = {}
     self.__add_source_tag = False
 
@@ -343,16 +339,6 @@ class StackdriverMetricsService(object):
 
     found = []
 
-    unknown_label_pattern = (r'timeSeries\[(\d+?)\]\.metric\.labels\[\d+?\]'
-                             r' had an invalid value of "(\w+?)"')
-    for match in re.finditer(unknown_label_pattern, message):
-      ts_index = int(match.group(1))
-      label = match.group(2)
-      metric = batch[ts_index]['metric']
-      metric_type = metric['type']
-      found.append((self.add_label_and_retry,
-                    label, metric_type, batch[ts_index]))
-
     counter_to_gauge_pattern = (
         r'timeSeries\[(\d+?)\]\.metricKind'
         r' had an invalid value of \"(CUMULATIVE|GAUGE)\"'
@@ -389,54 +375,21 @@ class StackdriverMetricsService(object):
         body={'timeSeries': ts_request})
      .execute())
 
-  def add_label_and_retry(self, label, metric_type, ts_request):
-    if self.add_label_to_metric(label, metric_type):
-      # Try again to write time series data.
-      logging.info('Retrying create timeseries %s', ts_request)
-      (self.stub.projects().timeSeries().create(
-          name=self.project_to_resource(self.__project),
-          body={'timeSeries': ts_request})
-       .execute())
-
-  def add_label_to_metric(self, label, metric_type):
-    metric_name_param = '/'.join([
-        self.project_to_resource(self.__project),
-        'metricDescriptors', metric_type])
-    logging.info('Attempting to add label "%s" to %s', label, metric_type)
-    api = self.stub.projects().metricDescriptors()
-
-    try:
-      descriptor = api.get(name=metric_name_param).execute()
-    except HttpError as err:
-      # Maybe another process is deleting it
-      logging.error('Could not get descriptor: %s', err)
-      return False
-
-    labels = descriptor.get('labels', [])
-    if [elem for elem in labels if elem['key'] == label]:
-      logging.info('Label was already added: %s', descriptor)
-      return True
-
-    logging.info('Starting with metricDescriptors.get %s:', descriptor)
-    labels.append({'key': label, 'valueType': 'STRING'})
-    descriptor['labels'] = labels
-    return self.__descriptor_manager.replace_custom_metric_descriptor(
-        metric_name_param, descriptor)
-
   def handle_time_series_http_error(self, error, batch):
     logging.error('Caught %s', error)
 
     if error.resp.status == 400:
       problems = self.find_problematic_elements(error, batch)
       logging.info('PROBLEMS %r', problems)
-      if problems and not self.__fix_stackdriver_labels_unsafe:
+      if problems and not self.__fix_custom_metrics_unsafe:
         logging.info(
             'Fixing this problem would wipe stackdriver data.'
-            ' Doing so was not enabled with --fix_stackdriver_lables_unsafe')
+            ' Doing so was not enabled. To enable, add:\n\n'
+            'stackdriver:\n  fix_custom_metrics_unsafe: true\n'
+            'to your spinnaker-monitoring-local.yml')
       elif problems:
         logging.info('Attempting to fix these problems. This may lose'
-                     ' stackdriver data for these metrics. To disable this,'
-                     ' invoke with --nofix_stackdriver_labels_unsafe.')
+                     ' stackdriver data for these metrics.')
         for elem in problems:
           try:
             elem[0](*elem[1:])
@@ -586,18 +539,11 @@ class StackdriverServiceFactory(object):
 
     parser.add_argument(
         '--fix_stackdriver_labels_unsafe', default=True,
-        action='store_true',
-        help='Work around Stackdriver design bug. Using this'
-        ' option can result in the loss of all historic data for'
-        ' a given metric that needs to workaround. Not using this'
-        ' options will result in the inability to collect metric'
-        ' data for a given metric that needs the workaround.'
-        ' When needed the workaround will only be needed once'
-        ' and then remembered for the lifetime of the project.')
+        action='store_true', help='DEPRECATED')
     parser.add_argument(
         '--nofix_stackdriver_labels_unsafe',
         dest='fix_stackdriver_labels_unsafe',
-        action='store_false')
+        action='store_false', help='DEPRECATED')
 
   def __call__(self, options, command_handlers):
     """Create a service instance for interacting with Stackdriver."""

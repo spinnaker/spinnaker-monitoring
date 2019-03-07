@@ -70,8 +70,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
                'zone': 'us-central1-f',
                'instance_id': instance,
                'config_dir': '/notfound',
-               'metric_filter_dir': self.filter_dir,
-               'fix_stackdriver_labels_unsafe': True}
+               'metric_filter_dir': self.filter_dir}
 
     self.options = options
     self.mockStub = mock.create_autospec(['projects'])
@@ -204,104 +203,6 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             }]
         }],
         result)
-
-  def test_find_problematic_elements(self):
-    content = """{
-  "error": {
-    "code": 400,
-    "message": "Field timeSeries[1].metric.labels[2] had an invalid value of \\"application\\": Unrecognized metric label.",
-    "errors": [
-      {
-        "message": "Field timeSeries[1].metric.labels[2] had an invalid value of \\"application\\": Unrecognized metric label.",
-        "domain": "global",
-        "reason": "badRequest"
-      }
-    ],
-    "status": "INVALID_ARGUMENT"
-  }
-}"""
-
-    Error = collections.namedtuple('Error', ['content'])
-    error = Error(content)
-
-    all_ts = [
-        {'metric': {'type': 'typeA', 'name': 'nameA'}},
-        {'metric': {'type': 'FOUND-TYPE', 'name': 'nameFound'}},
-        {'metric': {'type': 'typeC', 'name': 'nameC'}},
-        ]
-
-    found = self.service.find_problematic_elements(error, all_ts)
-    self.assertEquals([(self.service.add_label_and_retry,
-                        'application',
-                        'FOUND-TYPE', all_ts[1])], found)
-
-  def test_add_label_and_retry_no_descriptor(self):
-    timeseries = 'OPAQUE'
-
-    status = ResponseStatus(404, 'Not Found')
-    self.mockMetricDescriptors.get.side_effect = HttpError(
-        status, 'Not Found')
-
-    self.service.add_label_and_retry('NewLabel', 'ExistingType', timeseries)
-    self.assertEquals(0, self.mockStub.projects.list.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.get.call_count)
-    self.assertEquals(0, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(0, self.mockMetricDescriptors.create.call_count)
-    self.assertEquals(0, self.mockTimeSeries.create.call_count)
-
-  def test_add_label_already_present(self):
-    timeseries = 'OPAQUE'
-
-    original_descriptor = {'type': 'TYPE',
-                           'labels': [{'key': 'TestLabel'}]}
-    self.mockGetDescriptor.execute.side_effect = [original_descriptor]
-
-    self.service.add_label_and_retry('TestLabel', 'ExistingType', timeseries)
-    self.assertEquals(0, self.mockStub.projects.list.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.get.call_count)
-    self.assertEquals(0, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(0, self.mockMetricDescriptors.create.call_count)
-    self.assertEquals(1, self.mockTimeSeries.create.call_count)
-
-  def test_add_label_and_retry_cannot_delete(self):
-    timeseries = 'OPAQUE'
-
-    original_descriptor = {'labels': [{'key': 'TestLabel'}],
-                           'type': 'TYPE'}
-    new_descriptor = dict(copy.deepcopy(original_descriptor))
-    new_descriptor['labels'].append({'key': 'NewLabel'})
-
-    self.mockGetDescriptor.execute.side_effect = [
-        original_descriptor, new_descriptor]
-    self.mockDeleteDescriptor.execute.side_effect = HttpError(
-        ResponseStatus(404, 'Not Found'), 'Not Found')
-    self.mockCreateDescriptor.execute.side_effect = [new_descriptor]
-
-    self.service.add_label_and_retry('NewLabel', 'ExistingType', timeseries)
-    self.assertEquals(0, self.mockStub.projects.list.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.get.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.create.call_count)
-    self.assertEquals(1, self.mockTimeSeries.create.call_count)
-
-  def test_add_label_and_retry_cannot_create(self):
-    timeseries = 'OPAQUE'
-
-    original_descriptor = {'labels': [{'key': 'TestLabel'}],
-                           'type': 'TYPE'}
-
-    self.mockGetDescriptor.execute.side_effect = [original_descriptor]
-    self.mockDeleteDescriptor.execute.side_effect = ResponseStatus(
-        200, 'ok')
-    self.mockCreateDescriptor.execute.side_effect = HttpError(
-        ResponseStatus(404, 'Not Found'), 'Not Found')
-
-    self.service.add_label_and_retry('NewLabel', 'ExistingType', timeseries)
-    self.assertEquals(0, self.mockStub.projects.list.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.get.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.delete.call_count)
-    self.assertEquals(1, self.mockMetricDescriptors.create.call_count)
-    self.assertEquals(0, self.mockTimeSeries.create.call_count)
 
   def __write_transforms(self, filename):
     xforms = {'monitoring': {'transforms' : {

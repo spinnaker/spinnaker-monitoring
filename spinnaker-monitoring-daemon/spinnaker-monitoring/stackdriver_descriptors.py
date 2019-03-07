@@ -403,10 +403,11 @@ class MetricDescriptorManager(object):
         'valueType': self._determine_value_type(rule),
         'labels': self.__derive_labels(spec),
     }
-
     unit = self.UNIT_MAP.get(spec.get('unit'))
     if unit:
       want['unit'] = unit
+    if spec.get('display_name'):
+      want['displayName'] = spec.get('display_name')
     if spec.get('docs'):
       want['description'] = spec.get('docs')
 
@@ -415,39 +416,41 @@ class MetricDescriptorManager(object):
     meter_is_distribution = meter_kind in ['DistributionSummary',
                                            'PercentileDistributionSummary']
     if self.__summary_is_distribution and meter_is_timer:
-      self.__append_summary(meter_name, "ns", want, result)
+      want['unit'] = 'ns'
+      self.__append_summary(meter_name, want, result)
     elif self.__summary_is_distribution and meter_is_distribution:
-      self.__append_summary(meter_name, "1", want, result)
+      self.__append_summary(meter_name, want, result)
 
-    elif meter_is_timer:
+    elif (meter_is_timer or meter_is_distribution):
+      if meter_is_timer:
+        totalSuffix = 'totalTime'
+        displayNameSuffix = ' total time'
+        unit = "ns"
+      else:
+        totalSuffix = 'totalAmount'
+        displayNameSuffix = ' total'
+        unit = None
+
       if not rule.discard_tag_value('statistic', 'count'):
         component = dict(want)
         component['name'] += '__count'
         component['type'] += '__count'
         component['description'] = 'Number of measurements in {timer}.'.format(
-            timer='%s__totalTime' % meter_name)
-        result.append(component)
-      if not rule.discard_tag_value('statistic', 'totalTime'):
-        component = dict(want)
-        component['name'] += '__totalTime'
-        component['type'] += '__totalTime'
-        component['unit'] = 'ns'
+            timer='%s__%s' % (meter_name, totalSuffix))
+        if component.get('displayName'):
+          component['displayName'] += ' count'
         result.append(component)
 
-    elif meter_is_distribution:
-      if not rule.discard_tag_value('statistic', 'count'):
+      if not rule.discard_tag_value('statistic', totalSuffix):
         component = dict(want)
-        component['name'] += '__count'
-        component['type'] += '__count'
-        component['description'] = (
-            'Number of measurements in {summary}.'.format(
-                summary='%s__totalAmount' % meter_name))
+        component['name'] += '__' + totalSuffix
+        component['type'] += '__' + totalSuffix
+        if unit:
+          component['unit'] = unit
+        if component.get('displayName'):
+          component['displayName'] += ' ' + displayNameSuffix
         result.append(component)
-      if not rule.discard_tag_value('statistic', 'totalAmount'):
-        component = dict(want)
-        component['name'] += '__totalAmount'
-        component['type'] += '__totalAmount'
-        result.append(component)
+
     else:
       result.append(want)
 
@@ -465,7 +468,7 @@ class MetricDescriptorManager(object):
 
     return result
 
-  def __append_summary(self, meter_name, units, want, result):
+  def __append_summary(self, meter_name, want, result):
     if self.__distributions_also_have_count:
       # Add an implied metric which is just a counter.
       # This is to workaround a temporary shortcoming querying the counts.
@@ -477,11 +480,14 @@ class MetricDescriptorManager(object):
           % meter_name)
       component['name'] += '__count'
       component['type'] += '__count'
+      if 'unit' in component:
+        del component['unit']
       component['valueType'] = 'INT64'
       component['metricKind'] = 'CUMULATIVE'
+      if component.get('displayName'):
+        component['displayName'] += ' count'
       result.append(component)
 
-    want['unit'] = units
     want['valueType'] = 'DISTRIBUTION'
     want['metricKind'] = 'CUMULATIVE'
     result.append(want)

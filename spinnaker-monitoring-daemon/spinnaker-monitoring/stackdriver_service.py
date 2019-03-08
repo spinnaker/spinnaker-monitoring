@@ -50,6 +50,14 @@ GenericTaskInfo = collections.namedtuple('GenericTaskInfo',
                                          ['monitored_resource', 'start_time'])
 
 
+def enforce(prefix, options, key, value):
+  prefix = 'stackdriver.' + (prefix + '.' if prefix else '')
+  if options.get(key) is not None and options[key] != value:
+    logging.error('Forcing %s%s = %r  (rather than %r)',
+                  prefix, key, value, options[key])
+  options[key]  = value
+
+
 def normalize_options(options):
   options_copy = dict(options)
   stackdriver_options = options_copy.get('stackdriver', {})
@@ -62,6 +70,29 @@ def normalize_options(options):
   if options_copy.get('manage_stackdriver_descriptors'):
     stackdriver_options['manage_descriptors'] = (
         options_copy['manage_stackdriver_descriptors'])
+
+  if stackdriver_options.get('enforce_standards'):
+    prefix = ''
+    enforce(prefix, stackdriver_options, 'distributions_also_have_count', True)
+    enforce(prefix, stackdriver_options, 'fix_custom_metrics_unsafe', False)
+
+    prefix = 'spectator'
+    spectator = stackdriver_options.get('spectator')
+    if spectator is None:
+      spectator = {}
+
+    enforce(prefix, spectator, 'inject_service_tag', True)
+    enforce(prefix, spectator, 'decorate_metric_name', False)
+    enforce(prefix, spectator, 'use_base_service_name_only', False)
+
+    enforce(prefix, spectator, 'use_snake_case', True)
+    enforce(prefix, spectator, 'enforce_stackdriver_names', True)
+    enforce(prefix, spectator, 'summarize_compound_kinds', True)
+    enforce(prefix, spectator, 'transform_values', True)
+    if not options_copy.get('spectator'):
+      options_copy['spectator'] = spectator
+    else:
+      options_copy['spectator'].update(spectator)
 
   return options_copy
 
@@ -217,7 +248,6 @@ class StackdriverMetricsService(object):
     stackdriver_overrides = self.__stackdriver_options.get('spectator', {})
     spectator_options.update(stackdriver_overrides)
     if self.__stackdriver_options.get('generic_task_resources'):
-      spectator_options['inject_service_tag'] = False
       spectator_options['decorate_service_name'] = False
     options_copy['spectator'] = spectator_options
     if 'transform_values' in self.__stackdriver_options:
@@ -334,6 +364,7 @@ class StackdriverMetricsService(object):
     while offset < len(time_series):
       last = min(offset + self.MAX_BATCH, len(time_series))
       chunk = time_series[offset:last]
+
       try:
         (method(name=self.project_to_resource(self.__project),
                 body={'timeSeries': chunk})

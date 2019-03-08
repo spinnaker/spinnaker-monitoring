@@ -107,8 +107,9 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   def process_web_request(self, request, path, params, fragment):
     """Implements CommandHandler."""
     options = dict(get_global_options())
+    stackdriver_options = options['stackdriver']
     mode = params.get('mode', 'none').lower()
-    options['stackdriver']['manage_descriptors'] = mode
+    stackdriver_options['manage_descriptors'] = mode
     stackdriver = stackdriver_service.make_service(options)
     manager = stackdriver.descriptor_manager
     audit_results = manager.audit_descriptors(options)
@@ -136,11 +137,13 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     text = audit_results_to_output(
         audit_results, 'Metric Filters not configured.')
 
+    stackdriver_metric_prefix = stackdriver_descriptors.determine_metric_prefix(
+        stackdriver_options)
     unchanged_names = audit_results.unchanged_descriptor_names
     if unchanged_names:
       unchanged = '{count} Unchanged Descriptors:\n  - {list}'.format(
           count=len(unchanged_names),
-          list='\n  - '.join([stackdriver_descriptors.shorten_custom_name(name)
+          list='\n  - '.join([name[name.find(stackdriver_metric_prefix):]
                               for name in unchanged_names]))
     else:
       unchanged = ''
@@ -177,9 +180,11 @@ class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     options = dict(get_global_options())
     options.update(params)
     descriptor_list = get_descriptor_list(options)
+    metric_prefix = stackdriver_descriptors.determine_metric_prefix(
+        options['stackdriver'])
 
     if self.accepts_content_type(request, 'text/html'):
-      html = self.descriptors_to_html(descriptor_list)
+      html = self.descriptors_to_html(metric_prefix, descriptor_list)
       html_doc = http_server.build_html_document(
           html, title='Custom Descriptors')
       request.respond(200, {'ContentType': 'text/html'}, html_doc)
@@ -187,37 +192,37 @@ class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
       json_doc = json.JSONEncoder(indent=2).encode(descriptor_list)
       request.respond(200, {'ContentType': 'application/json'}, json_doc)
     else:
-      text = self.descriptors_to_text(descriptor_list)
+      text = self.descriptors_to_text(metric_prefix, descriptor_list)
       request.respond(200, {'ContentType': 'text/plain'}, text)
 
-  def collect_rows(self, descriptor_list):
+  def collect_rows(self, metric_prefix, descriptor_list):
     rows = []
     for elem in descriptor_list:
-      type_name = elem['type'][len(stackdriver_descriptors.CUSTOM_PREFIX):]
+      type_name = elem['type'][len(metric_prefix):]
       labels = elem.get('labels', [])
       label_names = [k['key'] for k in labels]
       rows.append((type_name, label_names))
     return rows
 
-  def descriptors_to_html(self, descriptor_list):
-    rows = self.collect_rows(descriptor_list)
+  def descriptors_to_html(self, metric_prefix, descriptor_list):
+    rows = self.collect_rows(metric_prefix, descriptor_list)
 
-    html = ['<table>', '<tr><th>Custom Type</th><th>Labels</th></tr>']
+    html = ['<table>', '<tr><th>Metric Type</th><th>Labels</th></tr>']
     html.extend(['<tr><td><b>{0}</b></td><td><code>{1}</code></td></tr>'
                  .format(row[0], ', '.join(row[1]))
                  for row in rows])
     html.append('</table>')
-    html.append('<p>Found {0} Custom Metrics</p>'
+    html.append('<p>Found {0} Spinnaker Metrics</p>'
                 .format(len(descriptor_list)))
     return '\n'.join(html)
 
-  def descriptors_to_text(self, descriptor_list):
-    rows = self.collect_rows(descriptor_list)
+  def descriptors_to_text(self, metric_prefix, descriptor_list):
+    rows = self.collect_rows(metric_prefix, descriptor_list)
 
     text = []
     for row in rows:
       text.append('{0}\n  Tags={1}'.format(row[0], ','.join(row[1])))
-    text.append('Found {0} Custom Metrics'.format(len(descriptor_list)))
+    text.append('Found {0} Spinnaker Metrics'.format(len(descriptor_list)))
     return '\n\n'.join(text)
 
 
@@ -420,152 +425,6 @@ class StackdriverSurveyor(object):
       return SurveyInfo.make_error(type_name, str(e)), False
 
 
-class AuditCustomDescriptorsHandler(BaseStackdriverCommandHandler):
-  """Administrative handler to distinguish in-use from unused descriptors."""
-
-  def delete_unused(self, options, surveyor, survey):
-    descriptor_name_prefix = 'projects/{project}/metricDescriptors/'.format(
-        project=surveyor.project)
-    to_delete = []
-    for info in survey.values():
-      if info.days_ago == info.UNKNOWN_DAYS_AGO:
-        to_delete.append({'name': descriptor_name_prefix + info.type_name,
-                          'type': info.type_name})
-
-    processor = ClearCustomDescriptorsHandler.clear_descriptors(
-        options, to_delete)
-    batch_response = processor.batch_response
-    for index, response in enumerate(batch_response):
-      type_name = to_delete[index]['type']
-      # The response and 'OK' here are our own batch response strings,
-      # not the original http response from the server.
-      if response.startswith('OK'):
-        survey[type_name] = SurveyInfo.make_deleted(type_name)
-      else:
-        survey[type_name] = SurveyInfo.make_error(type_name, response)
-
-  def add_argparser(self, subparsers):
-    parser = super(AuditCustomDescriptorsHandler, self).add_argparser(
-        subparsers)
-    parser.add_argument('--delete_unused', default=False, action='store_true',
-                        help='Delete the unused spinnaker metric descriptors.')
-    parser.add_argument('--days_since', default=1, type=int,
-                        help='How many days back to look for metric activity.')
-
-  def process_commandline_request(self, options):
-    surveyor = StackdriverSurveyor(options)
-    descriptor_list = get_descriptor_list(options)
-    survey = surveyor.build_survey_from_descriptor_list(descriptor_list)
-    if str(options.get('delete_unused')).lower() == 'true':
-      self.delete_unused(options, surveyor, survey)
-    info_list = surveyor.survey_to_sorted_list(survey)
-    json_text = json.JSONEncoder(indent=2).encode(info_list)
-    self.output(options, json_text)
-
-  def process_web_request(self, request, path, params, fragment):
-    options = dict(get_global_options())
-    options.update(params)
-
-    surveyor = StackdriverSurveyor(options)
-    descriptor_list = get_descriptor_list(options)
-
-    begin_time = time.time()
-    survey = surveyor.build_survey_from_descriptor_list(descriptor_list)
-    survey_secs = time.time() - begin_time
-    if str(params.get('delete_unused')).lower() == 'true':
-      self.delete_unused(options, surveyor, survey)
-    info_list = surveyor.survey_to_sorted_list(survey)
-
-    footer = 'Survey Time = %.1f s' % survey_secs
-    header = 'Activity during %s ... %s (%s)' % (
-        surveyor.start_time, surveyor.end_time,
-        SurveyInfo.to_days_since(surveyor.days_since))
-
-    if self.accepts_content_type(request, 'text/html'):
-      html = header + '<p>'
-      html += self.survey_to_html(surveyor, info_list)
-      html += '<br/>' + footer
-      html_doc = http_server.build_html_document(
-          html, title='Last Custom Descriptor Use')
-      request.respond(200, {'ContentType': 'text/html'}, html_doc)
-    elif self.accepts_content_type(request, 'application/json'):
-      json_doc = json.JSONEncoder(indent=2).encode(info_list)
-      request.respond(200, {'ContentType': 'application/json'}, json_doc)
-    else:
-      text = self.survey_to_text(info_list)
-      text += '\n\n' + footer
-      request.respond(200, {'ContentType': 'text/plain'}, text)
-
-  def survey_to_html(self, surveyor, info_list):
-    survey_html = ['<table><tr>'
-                   '<th>Last Time</th>'
-                   '<th>Days</th>'
-                   '<th>Type Name</th></tr>']
-    num_ok = 0
-    num_warning = 0
-    num_deleted = 0
-    num_error = 0
-
-    for info in info_list:
-      literal_str = info.iso_time if info.iso_time else ''
-      if info.deleted:
-        literal_str = 'DELETED'
-        css = 'deleted'
-        num_deleted += 1
-      elif info.error:
-        literal_str = info.error
-        css = 'error'
-        num_error += 1
-      elif info.iso_time:
-        css = 'ok'
-        num_ok += 1
-      else:
-        css = 'warning'
-        num_warning += 1
-
-      survey_html.append(
-          '<tr><td{css}>{literal}</td>'
-          '<td{css}>{days}</td>'
-          '<td{css}>{what}</td></tr>'.format(
-              css=' class="%s"' % css,
-              literal=literal_str,
-              days=info.days_ago_str(),
-              what=info.type_name))
-    survey_html.append('</table>\n')
-
-    # pylint: disable=bad-whitespace
-    table = [('In Use',     'ok',      num_ok),
-             ('Not In Use', 'warning', num_warning),
-             ('Deleted',    'deleted', num_deleted),
-             ('Error',      'error',   num_error)]
-    html = textwrap.dedent("""\
-       <h2>Summary</h2>
-       <table>
-       {summary}
-       <tr><th>Total</th><td>{total}</td></tr>
-       </table>
-       <h2>Survey</h2>
-       {survey}
-    """.format(
-        summary='\n'.join(
-            ['<tr><th>{title}</th><td class={css}>{count}</td></tr>'
-             .format(title=elem[0], css=elem[1], count=elem[2])
-             for elem in table if elem[2] > 0]),
-        total=num_ok + num_warning + num_deleted + num_error,
-        survey='\n'.join(survey_html)))
-    return html
-
-  def survey_to_text(self, info_list):
-    text = ['Found {0} Custom Metrics'.format(len(info_list))]
-    for info in info_list:
-      when = ('DELETED'
-              if info.deleted
-              else info.error if info.error
-              else info.iso_time)
-      text.append('{when}: {what}'.format(when=when, what=info.type_name))
-    return '\n\n'.join(text)
-
-
 class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   """Administrative handler to clear all the known descriptors.
   """
@@ -578,7 +437,6 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     audit_results.unused_descriptors = {
         item['type']: item for item in descriptor_list
     }
-
     stackdriver.descriptor_manager.delete_descriptors(
         descriptor_list, audit_results)
     return audit_results
@@ -739,10 +597,6 @@ def add_handlers(handler_list, subparsers):
           '/stackdriver/list_descriptors',
           'list_stackdriver',
           'Get the JSON of all the Stackdriver Custom Metric Descriptors.'),
-      AuditCustomDescriptorsHandler(
-          '/stackdriver/audit_descriptors',
-          'audit_stackdriver',
-          'Determine which stackdriver descriptors are in use.'),
       ClearCustomDescriptorsHandler(
           '/stackdriver/clear_descriptors',
           'clear_stackdriver',

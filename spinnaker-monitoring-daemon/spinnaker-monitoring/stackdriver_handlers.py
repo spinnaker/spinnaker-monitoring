@@ -107,8 +107,9 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
   def process_web_request(self, request, path, params, fragment):
     """Implements CommandHandler."""
     options = dict(get_global_options())
+    stackdriver_options = options['stackdriver']
     mode = params.get('mode', 'none').lower()
-    options['stackdriver']['manage_descriptors'] = mode
+    stackdriver_options['manage_descriptors'] = mode
     stackdriver = stackdriver_service.make_service(options)
     manager = stackdriver.descriptor_manager
     audit_results = manager.audit_descriptors(options)
@@ -136,11 +137,13 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     text = audit_results_to_output(
         audit_results, 'Metric Filters not configured.')
 
+    stackdriver_metric_prefix = stackdriver_descriptors.determine_metric_prefix(
+        stackdriver_options)
     unchanged_names = audit_results.unchanged_descriptor_names
     if unchanged_names:
       unchanged = '{count} Unchanged Descriptors:\n  - {list}'.format(
           count=len(unchanged_names),
-          list='\n  - '.join([stackdriver_descriptors.shorten_custom_name(name)
+          list='\n  - '.join([name[name.find(stackdriver_metric_prefix):]
                               for name in unchanged_names]))
     else:
       unchanged = ''
@@ -177,9 +180,11 @@ class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     options = dict(get_global_options())
     options.update(params)
     descriptor_list = get_descriptor_list(options)
+    metric_prefix = stackdriver_descriptors.determine_metric_prefix(
+        options['stackdriver'])
 
     if self.accepts_content_type(request, 'text/html'):
-      html = self.descriptors_to_html(descriptor_list)
+      html = self.descriptors_to_html(metric_prefix, descriptor_list)
       html_doc = http_server.build_html_document(
           html, title='Custom Descriptors')
       request.respond(200, {'ContentType': 'text/html'}, html_doc)
@@ -187,37 +192,37 @@ class ListCustomDescriptorsHandler(BaseStackdriverCommandHandler):
       json_doc = json.JSONEncoder(indent=2).encode(descriptor_list)
       request.respond(200, {'ContentType': 'application/json'}, json_doc)
     else:
-      text = self.descriptors_to_text(descriptor_list)
+      text = self.descriptors_to_text(metric_prefix, descriptor_list)
       request.respond(200, {'ContentType': 'text/plain'}, text)
 
-  def collect_rows(self, descriptor_list):
+  def collect_rows(self, metric_prefix, descriptor_list):
     rows = []
     for elem in descriptor_list:
-      type_name = elem['type'][len(stackdriver_descriptors.CUSTOM_PREFIX):]
+      type_name = elem['type'][len(metric_prefix):]
       labels = elem.get('labels', [])
       label_names = [k['key'] for k in labels]
       rows.append((type_name, label_names))
     return rows
 
-  def descriptors_to_html(self, descriptor_list):
-    rows = self.collect_rows(descriptor_list)
+  def descriptors_to_html(self, metric_prefix, descriptor_list):
+    rows = self.collect_rows(metric_prefix, descriptor_list)
 
-    html = ['<table>', '<tr><th>Custom Type</th><th>Labels</th></tr>']
+    html = ['<table>', '<tr><th>Metric Type</th><th>Labels</th></tr>']
     html.extend(['<tr><td><b>{0}</b></td><td><code>{1}</code></td></tr>'
                  .format(row[0], ', '.join(row[1]))
                  for row in rows])
     html.append('</table>')
-    html.append('<p>Found {0} Custom Metrics</p>'
+    html.append('<p>Found {0} Spinnaker Metrics</p>'
                 .format(len(descriptor_list)))
     return '\n'.join(html)
 
-  def descriptors_to_text(self, descriptor_list):
-    rows = self.collect_rows(descriptor_list)
+  def descriptors_to_text(self, metric_prefix, descriptor_list):
+    rows = self.collect_rows(metric_prefix, descriptor_list)
 
     text = []
     for row in rows:
       text.append('{0}\n  Tags={1}'.format(row[0], ','.join(row[1])))
-    text.append('Found {0} Custom Metrics'.format(len(descriptor_list)))
+    text.append('Found {0} Spinnaker Metrics'.format(len(descriptor_list)))
     return '\n\n'.join(text)
 
 
@@ -432,7 +437,6 @@ class ClearCustomDescriptorsHandler(BaseStackdriverCommandHandler):
     audit_results.unused_descriptors = {
         item['type']: item for item in descriptor_list
     }
-
     stackdriver.descriptor_manager.delete_descriptors(
         descriptor_list, audit_results)
     return audit_results

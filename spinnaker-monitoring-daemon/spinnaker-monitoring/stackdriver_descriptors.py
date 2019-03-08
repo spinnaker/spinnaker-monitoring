@@ -25,33 +25,28 @@ except ImportError:
   STACKDRIVER_AVAILABLE = False
 
 
-CUSTOM_PREFIX = 'custom.googleapis.com/spinnaker/'
-
-
 def compare_descriptor_types(a, b):
   """Compare two metric types to sort them in order."""
   # pylint: disable=invalid-name
-  a_root = a['type'][len(CUSTOM_PREFIX):]
-  b_root = b['type'][len(CUSTOM_PREFIX):]
+  a_root = a['type']
+  b_root = b['type']
   return (-1 if a_root < b_root
           else 0 if a_root == b_root
           else 1)
 
 
+def determine_metric_prefix(options):
+  return options.get('metric_name_prefix',
+                     'custom.googleapis.com/spinnaker/')
+  
+
 def get_descriptor_list(stackdriver):
   """Return a list of all the stackdriver custom metric descriptors."""
-  type_map = stackdriver.descriptor_manager.fetch_all_custom_descriptors(
+  type_map = stackdriver.descriptor_manager.fetch_all_descriptors(
       stackdriver.project)
   descriptor_list = type_map.values()
   descriptor_list.sort(compare_descriptor_types)
   return descriptor_list
-
-
-def shorten_custom_name(name):
-  index = name.find('custom.googleapis.com')
-  if index > 0:
-    return name[index:]
-  return name
 
 
 class AuditResults(object):
@@ -218,12 +213,15 @@ class BatchProcessor(object):
       self.batch_response[index] = 'OK {0}'.format(
           cgi.escape(str(response)))
 
+    internal_name_prefix = (
+        'projects/{project}/metricDescriptors/'
+        .format(project=self.__stackdriver.project))
+
     audit_results.lines.append(
         '  - {status}: {action} {name!r}{details}'.format(
             status=status, action=self.__action,
-            name=shorten_custom_name(name),
+            name=name[len(internal_name_prefix)],
             details=details))
-
 
   def process(self):
     """Process all the data by sending one or more batches."""
@@ -305,6 +303,8 @@ class MetricDescriptorManager(object):
     """
     # For getting service meter specifications.
     spectator_options = spectator_response_processor.spectator_options
+    self.__metric_name_prefix = determine_metric_prefix(
+        stackdriver.stackdriver_options)
     self.__stackdriver = stackdriver
     self.__response_processor = spectator_response_processor
     self.__summary_is_distribution = spectator_options.get(
@@ -312,28 +312,28 @@ class MetricDescriptorManager(object):
     self.__distributions_also_have_count = stackdriver.stackdriver_options.get(
         'distributions_also_have_count')
 
-    self.__name_prefix = (
+    self.__internal_name_prefix = (
         'projects/{project}/metricDescriptors/'
         .format(project=self.__stackdriver.project))
 
   def name_to_type(self, name):
     """Determine Custom Descriptor type name for the given metric type name."""
-    return CUSTOM_PREFIX + name
+    return self.__metric_name_prefix + name
 
-  def fetch_all_custom_descriptors(self, project):
-    """Get all the custom spinnaker descriptors already known in Stackdriver."""
+  def fetch_all_descriptors(self, project):
+    """Get all the spinnaker descriptors already known in Stackdriver."""
     project_name = 'projects/' + (project or self.__stackdriver.project)
     found = {}
 
     def partition(descriptor):
       descriptor_type = descriptor['type']
-      if descriptor_type.startswith(CUSTOM_PREFIX):
+      if descriptor_type.startswith(self.__metric_name_prefix):
         found[descriptor_type] = descriptor
 
-    self.foreach_custom_descriptor(partition, name=project_name)
+    self.foreach_descriptor(partition, name=project_name)
     return found
 
-  def foreach_custom_descriptor(self, func, **args):
+  def foreach_descriptor(self, func, **args):
     """Apply a function to each metric descriptor known to Stackdriver."""
     api = self.__stackdriver.stub.projects().metricDescriptors()
     request = api.list(**args)
@@ -397,7 +397,7 @@ class MetricDescriptorManager(object):
 
     want = {
         'type': base_stackdriver_type,
-        'name': self.__name_prefix + base_stackdriver_type,
+        'name': self.__internal_name_prefix + base_stackdriver_type,
         'metricKind': self.NON_CUMULATIVE_KIND_MAP.get(meter_kind,
                                                        'CUMULATIVE'),
         'valueType': self._determine_value_type(rule),

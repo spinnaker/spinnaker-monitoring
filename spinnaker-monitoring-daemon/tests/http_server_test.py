@@ -15,37 +15,46 @@
 import socket
 import threading
 import time
-import urllib2
 
 import mock
 import unittest
 from mock import patch
 
-import http_server
+from http_server import HttpServer
+
+try:
+  from BaseHTTPServer import HTTPServer
+  from urllib2 import (
+      urlopen as urllibUrlopen,
+       HTTPError)
+except ImportError:
+  from http.server import HTTPServer
+  from urllib.request import urlopen as urllibUrlopen
+  from urllib.error import HTTPError
 
 
 class HttpServerTest(unittest.TestCase):
-  @patch('http_server.BaseHTTPServer.HTTPServer.__init__')
+  @patch('http_server.HTTPServer.__init__')
   def test_init_from_options(self, mock_http):
     """Verify we pick up commandline args, and empty host is passed through."""
     options = {'port': 1234, 'host': '',
                'server': {'port': 666, 'host': 'wrong'}}
-    server = http_server.HttpServer(options)
+    server = HttpServer(options)
     mock_http.assert_called_with(server, ('0.0.0.0', 1234), mock.ANY)
 
-  @patch('http_server.BaseHTTPServer.HTTPServer.__init__')
+  @patch('http_server.HTTPServer.__init__')
   def test_init_from_hardcoded_defaults(self, mock_http):
     """Verify if options arent overriden that we get the builtin defaults."""
     options = {'port': None, 'host': None}
-    server = http_server.HttpServer(options)
+    server = HttpServer(options)
     mock_http.assert_called_with(server, ('localhost', 8008), mock.ANY)
 
-  @patch('http_server.BaseHTTPServer.HTTPServer.__init__')
+  @patch('http_server.HTTPServer.__init__')
   def test_init_from_server_options(self, mock_http):
     """Verify that if options arent overriden we get server config."""
     options = {'port': None, 'host': None,
                'server': {'port': 1234, 'host': 'testHost'}}
-    server = http_server.HttpServer(options)
+    server = HttpServer(options)
     mock_http.assert_called_with(server, ('testHost', 1234), mock.ANY)
 
 
@@ -59,7 +68,7 @@ class HttpServerUrlTest(unittest.TestCase):
     self.port = sock.getsockname()[1]
     sock.close()
      
-    server = http_server.HttpServer(
+    server = HttpServer(
         {'port': self.port},
         handlers={'/path/a': self.handler_a, '/path/b': self.handler_b})
     self.thread = threading.Thread(target=server.handle_request)
@@ -71,15 +80,20 @@ class HttpServerUrlTest(unittest.TestCase):
 
   def test_not_found(self):
     """Verify that our server delegates to commands."""
-    with self.assertRaises(urllib2.HTTPError) as context:
-        urllib2.urlopen('http://localhost:{0}/unknown_path'.format(self.port))
+    with self.assertRaises(HTTPError) as context:
+        urllibUrlopen('http://localhost:{0}/unknown_path'.format(self.port))
     self.assertEqual(404, context.exception.code)
 
   def test_delegation(self):
     """Verify that our server delegates to commands."""
+    def xxx(request, *args, **kwargs):
+      print('*** XXX %r | %r | %r\n' %(request, args, kwargs))
+      request.send_response(212)
+      print('*** YYY sent')
+
     self.handler_b.side_effect = (
-        lambda request, *args, **kwargs: request.send_response(212))
-    response = urllib2.urlopen('http://localhost:{0}/path/b'.format(self.port))
+        lambda request, *args, **kwargs: xxx(request, *args, **kwargs))
+    response = urllibUrlopen('http://localhost:{0}/path/b'.format(self.port))
     self.assertEqual(212, response.code)
 
     self.assertEqual(0, self.handler_a.call_count)
@@ -90,7 +104,7 @@ class HttpServerUrlTest(unittest.TestCase):
     """Verify that our server breaks out query parameters."""
     self.handler_a.side_effect = (
         lambda request, *args, **kwargs: request.send_response(200))
-    response = urllib2.urlopen('http://localhost:{0}/path/a?p1=1&p2=test'.format(self.port))
+    response = urllibUrlopen('http://localhost:{0}/path/a?p1=1&p2=test'.format(self.port))
     self.assertEqual(200, response.code)
     self.handler_a.assert_called_with(
         mock.ANY, '/path/a', {'p1': '1', 'p2': 'test'}, None)

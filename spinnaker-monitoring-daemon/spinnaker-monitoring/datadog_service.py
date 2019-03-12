@@ -16,10 +16,14 @@
 
 
 # pip install datadog
-import ConfigParser
 import logging
 import os
 import socket
+
+try:
+  from ConfigParser import ConfigParser
+except ImportError:
+  from configparser import ConfigParser
 
 try:
   import datadog
@@ -44,7 +48,7 @@ class DatadogArgumentsGenerator(object):
     assert 'dd_agent_config' in self.options, \
       'Key "dd_agent_config" is mandatory in supplied options'
 
-    self.datadog_config = ConfigParser.ConfigParser()
+    self.datadog_config = ConfigParser()
     self.datadog_config.read(options['dd_agent_config'])
 
     if not self.datadog_config.sections():

@@ -414,7 +414,7 @@ class ExploreCustomDescriptorsHandler(BaseSpectatorCommandHandler):
                     transforms_to=None, transforms_from=None):
       tag_service_map = self.to_tag_service_map(columns, service_tag_map)
       num_labels = len(tag_service_map)
-      _, info = type_map[meter_name].items()[0]
+      _, info = next(iter(type_map[meter_name].items()))
       kind = info[0].get('kind')
       row_html = ['<tr>']
       row_span = ' rowspan={0}'.format(num_labels) if num_labels > 1 else ''

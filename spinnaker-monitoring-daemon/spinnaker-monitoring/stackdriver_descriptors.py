@@ -45,8 +45,7 @@ def get_descriptor_list(stackdriver):
   type_map = stackdriver.descriptor_manager.fetch_all_descriptors(
       stackdriver.project)
   descriptor_list = type_map.values()
-  descriptor_list.sort(compare_descriptor_types)
-  return descriptor_list
+  return sorted(descriptor_list, key=lambda desc: desc['type'])
 
 
 class AuditResults(object):
@@ -165,7 +164,7 @@ class BatchProcessor(object):
     self.__stackdriver = stackdriver
     self.__audit_results = audit_results
     self.__action = action
-    self.__data_list = data_list
+    self.__data_list = list(data_list)
     self.__num_data = len(self.__data_list)
     self.__invocation_factory = invocation_factory
     self.__get_name = get_name
@@ -532,7 +531,7 @@ class MetricDescriptorManager(object):
       if value_type != 'STRING':
         label_descriptor['valueType'] = value_type
       normalized_result.append(label_descriptor)
-    return sorted(normalized_result)
+    return sorted(normalized_result, key=lambda desc: desc['key'])
 
   def replace_custom_metric_descriptor(self, metric_name, descriptor,
                                        new_descriptor=False):
@@ -761,9 +760,9 @@ class MetricDescriptorManager(object):
     for key, expect in want.items():
       value = descriptor.get(key)
       if isinstance(expect, list):
-        expect = sorted(expect)
+        expect = sorted(expect, key=lambda desc: desc['key'])
         if isinstance(value, list):
-          value = sorted(value)
+          value = sorted(value, key=lambda desc: desc['key'])
       if value != expect:
         # pylint: disable=logging-format-interpolation
         logging.info('{service} expected {key!r} in {type!r}'

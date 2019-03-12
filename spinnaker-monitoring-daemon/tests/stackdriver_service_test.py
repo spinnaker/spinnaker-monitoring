@@ -251,14 +251,13 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'metricKind': 'CUMULATIVE',
         'name': timer_name,
         'type': timer_type,
-
-        'labels': [
+        'labels': sorted([
             {'key': 'spin_service'},
             {'key': 'spin_variant'},
             {'key': 'tag_a'},
             {'key': 'tag_b'},
             {'key': 'success', 'valueType': 'BOOL'}
-        ],
+        ], key=lambda desc: desc['key']),
     }
 
     result = {}
@@ -285,10 +284,10 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'type': meter_name_to_descriptor_type('test_system/test_gauge'),
         'description': 'Sample documentation.',
         'unit': 'By',
-        'labels': [
+        'labels': sorted([
             {'key': 'spin_service'},
             {'key': 'spin_variant'}
-        ]
+        ], key=lambda desc: desc['key'])
     }
     gauge['displayName'] = 'Spinnaker test_system/test_gauge'
     result[gauge['name']] = gauge
@@ -299,10 +298,10 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'name': meter_name_to_descriptor_name('test_system/test_counter'),
         'type': meter_name_to_descriptor_type('test_system/test_counter'),
         'description': 'Counter documentation.',
-        'labels': [
+        'labels': sorted([
             {'key': 'spin_service'},
             {'key': 'spin_variant'}
-        ]
+        ], key=lambda desc: desc['key'])
     }
     counter['displayName'] = 'Spinnaker test_system/test_counter'
     result[counter['name']] = counter
@@ -313,10 +312,10 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'name': meter_name_to_descriptor_name('test_system/test_summary'),
         'type': meter_name_to_descriptor_type('test_system/test_summary'),
         'description': 'Summary documentation.',
-        'labels': [
+        'labels': sorted([
             {'key': 'spin_service'},
             {'key': 'spin_variant'}
-        ]
+        ], key=lambda desc: desc['key'])
     }
     summary['displayName'] = 'Spinnaker test_system/test_summary'
     result[summary['name']] = summary
@@ -327,10 +326,10 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'name': meter_name_to_descriptor_name('test_system/extra'),
         'type': meter_name_to_descriptor_type('test_system/extra'),
         'description': 'Unused Descriptor.',
-        'labels': [
+        'labels': sorted([
             {'key': 'spin_service'},
             {'key': 'spin_variant'}
-        ]
+        ], key=lambda desc: desc['key'])
     }
     unused['displayName'] = 'Spinnaker test_system/extra'
     result[unused['name']] = unused
@@ -466,7 +465,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     )
     # This delete is part of an update
     self.mockMetricDescriptors.delete.side_effect = HttpError(
-        ResponseStatus(400, 'Injected Error'), 'Injected Error')
+        ResponseStatus(400, 'Injected Error'), b'Injected Error')
     self.mockCreateDescriptor.execute.return_value = []
 
     manager = self.service.descriptor_manager
@@ -476,7 +475,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     audit = manager.audit_descriptors(options)
 
     self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
-    self.assertEquals(expect_new, audit.new_descriptors)
+    self.assertEquals(sorted(expect_new.items()), sorted(audit.new_descriptors.items()))
     self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())
     self.assertEquals(expect_changed, audit.changed_descriptors)
     self.assertEquals(expect_unused.keys(), audit.unused_descriptors.keys())
@@ -508,7 +507,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
 
     # This delete is part of an update
     self.mockMetricDescriptors.create.side_effect = HttpError(
-        ResponseStatus(400, 'Injected Error'), 'Injected Error')
+        ResponseStatus(400, 'Injected Error'), b'Injected Error')
     self.mockDeleteDescriptor.execute.return_value = {}
 
     manager = self.service.descriptor_manager

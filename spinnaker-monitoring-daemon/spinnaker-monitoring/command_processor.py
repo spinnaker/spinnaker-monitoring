@@ -150,7 +150,7 @@ class CommandHandler(object):
     """
     do_print = not options.get('quiet', False)
     if do_print:
-      print content
+      print(content)
     output_path = options.get('output_path', None)
 
     if output_path:
@@ -158,7 +158,7 @@ class CommandHandler(object):
       with open(options['output_path'], 'w') as f:
         f.write(content)
       if do_print:
-        print 'Wrote {0}'.format(output_path)
+        print('Wrote {0}'.format(output_path))
 
 
 def process_command(command, options, command_registry):

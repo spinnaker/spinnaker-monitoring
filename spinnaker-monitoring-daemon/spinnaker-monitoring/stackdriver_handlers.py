@@ -16,7 +16,6 @@
 
 import collections
 import datetime
-import httplib
 import json
 import os
 import logging
@@ -38,6 +37,11 @@ try:
   STACKDRIVER_AVAILABLE = True
 except ImportError:
   STACKDRIVER_AVAILABLE = False
+
+try:
+  import httplib
+except ImportError:
+  import http.client as httplib
 
 
 def get_descriptor_list(options):
@@ -569,7 +573,7 @@ class UploadDashboardHandler(BaseStackdriverCommandHandler):
     if not path:
       raise ValueError('No dashboard provided.')
     with open(path, 'r') as infile:
-      specification = json.JSONDecoder().decode(infile.read())
+      specification = json.JSONDecoder().decode(infile.read().decode('utf-8'))
 
     stackdriver = stackdriver_service.make_service(options)
     dashboards = stackdriver.stub.projects().dashboards()

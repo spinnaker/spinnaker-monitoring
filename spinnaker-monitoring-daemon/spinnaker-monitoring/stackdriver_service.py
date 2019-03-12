@@ -553,16 +553,29 @@ def make_stub(options):
     credentials = GoogleCredentials.get_application_default()
 
   http = credentials.authorize(http)
+  discovery_url = options.get('stackdriver', {}).get('discovery_url')
   developer_key = os.environ.get('STACKDRIVER_API_KEY',
                                  options.get('stackdriver', {}).get('api_key'))
-  if developer_key:
-    url = ('https://monitoring.googleapis.com/$discovery/rest'
-           '?labels=DASHBOARD_TRUSTED_TESTER&key=' + developer_key)
-    return apiclient.discovery.build(
-        'monitoring', 'v3', http=http,
-        discoveryServiceUrl=url)
+  kwargs = {}
+  if discovery_url:
+    kwargs['discoveryServiceUrl'] = discovery_url
+    logging.info('Overriding stackdriver discoveryServiceUrl with %r',
+                 discovery_url)
 
-  return apiclient.discovery.build('monitoring', 'v3', http=http)
+  if developer_key:
+    kwargs['developerKey'] = developer_key
+
+    # We're going to assume that an API key also means dashboard access
+    # is available. This isnt necessarily the case but dashboards are only
+    # used for admin commands to install them so no harm done if this is
+    # wrong. Those commands will just 401 or 403 if that is the case.
+    url = kwargs.get('discoveryServiceUrl',
+                     'https://monitoring.googleapis.com/$discovery/rest')
+    sep = '&' if '?' in url else '?'
+    url += sep + 'labels=DASHBOARD_TRUSTED_TESTER'
+    kwargs['discoveryServiceUrl'] = url
+    
+  return apiclient.discovery.build('monitoring', 'v3', http=http, **kwargs)
 
 
 def make_service(options):

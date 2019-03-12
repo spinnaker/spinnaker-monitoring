@@ -26,9 +26,22 @@ import sys
 import threading
 import time
 import traceback
-import urllib2
-import urlparse
 import yaml
+
+try:
+  from urllib2 import (
+      Request as urllibRequest,
+      quote as urllibQuote,
+      urlopen as urllibUrlopen)
+  from urlparse import urlsplit
+
+except ImportError:
+  from urllib.request import (
+      Request as urllibRequest,
+      quote as urllibQuote,
+      urlopen as urllibUrlopen)
+
+  from urllib.parse import urlsplit
 
 from metric_filter import MetricFilter
 from spectator_metric_transformer import SpectatorMetricTransformer
@@ -457,16 +470,16 @@ class SpectatorClient(object):
       authorization: [string] None or the base64 encoded authorization string.
 
     Returns:
-      urllib2.Request instance
+      urllibRequest instance
     """
-    request = urllib2.Request(url)
+    request = urllibRequest(url)
     if authorization:
       request.add_header('Authorization', 'Basic %s' % authorization)
     return request
 
   def collect_metrics(self, service, base_url, params=None):
     """Return JSON metrics from the given server."""
-    info = urlparse.urlsplit(base_url)
+    info = urlsplit(base_url)
     host = info.hostname
     port = info.port or 80
     netloc = host
@@ -478,8 +491,8 @@ class SpectatorClient(object):
 
     authorization = None
     if info.username or info.password:
-      authorization = base64.encodestring(
-          '%s:%s' % (info.username, info.password)).replace('\n', '')
+      text = '%s:%s' % (info.username, info.password)
+      authorization = base64.encodestring(text.encode('utf-8')).replace(b'\n', b'')
 
     query = '?' + info.query if info.query else ''
     sep = '&' if info.query else '?'
@@ -494,17 +507,17 @@ class SpectatorClient(object):
       query_params[key] = params[key]
 
     for key, value in query_params.items():
-      query += sep + key + "=" + urllib2.quote(value)
+      query += sep + key + "=" + urllibQuote(value)
       sep = "&"
 
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
     collect_start_time = time.time()
-    response = urllib2.urlopen(self.create_request(url, authorization))
+    response = urllibUrlopen(self.create_request(url, authorization))
     collect_end_time = time.time()
 
-    json_text = response.read()
+    json_text = response.read().decode('utf-8')
     try:
-      spectator_response = json.JSONDecoder(encoding='utf-8').decode(json_text)
+      spectator_response = json.JSONDecoder().decode(json_text)
       spectator_response['__collectStartTime'] = int(collect_start_time * 1000)
       spectator_response['__collectEndTime'] = int(collect_end_time * 1000)
     except ValueError:

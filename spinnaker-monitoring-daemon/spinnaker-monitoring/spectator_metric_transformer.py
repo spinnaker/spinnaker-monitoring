@@ -81,7 +81,7 @@ class PercentileDecoder(object):
     # It doesnt really matter what the algorithm is here. We are not
     # making this decision. Rather we are decoding the decision already
     # made and given to us.
-    buckets = [1,2,3]
+    buckets = [1, 2, 3]
 
     digits = 2
     exp = digits
@@ -205,7 +205,7 @@ class MetricInfo(object):
 
       augmented_tags = list(sorted_tags)
       augmented_tags.append(tag)
-      sorted_augmented_tags = sorted(augmented_tags)
+      sorted_augmented_tags = sorted(augmented_tags, key=lambda tag: tag['key'])
       normalized_key = str(sorted_augmented_tags)
       info = tag_container.get(normalized_key)
       if not info:
@@ -228,7 +228,8 @@ class MetricInfo(object):
     if self.__per_tag_values:
       response['__per_tag_values'] = {
           key: sorted([v.encode_as_spectator_response()
-                       for v in value.values()])
+                       for v in value.values()],
+                      key=lambda d: (d['values'][0]['t'], d['values'][0]['v']))
           for key, value in self.__per_tag_values.items()
       }
     return response
@@ -272,7 +273,7 @@ class AggregatedMetricsBuilder(object):
         if self.__rule.discard_tag_value(key, find_tag_value(key)):
           return
 
-    sorted_tags = sorted(tags) if tags else None
+    sorted_tags = sorted(tags, key=lambda tag: tag['key']) if tags else None
     normalized_key = str(sorted_tags)
 
     metric = self.__tags_to_metric.get(normalized_key)
@@ -420,7 +421,7 @@ class TransformationRule(object):
           case the <extract_regex> should have a capture group for each
           element. The <oneof_regex> offers multiple capture group
           possibilities, and uses whichever value was matched.
-  
+
         * <type_name_or_names> is the type for the <target_tag_name_or_names>.
           This should match the structure of <target_tag_name_or_names>.
           types are as follows:
@@ -645,7 +646,7 @@ class TransformationRule(object):
     #   (e.g. if the value indicates success we'd probably want AND
     #    but if the value indicates a failure we'd probably want OR)
     self.combine_values = lambda x, y: x + y
-    if (rule_spec.get('value_type') == 'BOOL'):
+    if rule_spec.get('value_type') == 'BOOL':
       self.combine_values = {
           True: lambda x, y: x or y,    # Any are true
           False: lambda x, y: x and y,  # All are true
@@ -835,7 +836,7 @@ class TransformationRule(object):
        # extraction above, then that application tag will be dropped.
 
       if target_tags:
-        target_metric['tags'] = sorted(target_tags)
+        target_metric['tags'] = sorted(target_tags, key=lambda tag: tag['key'])
 
       metric_builder.add(
           self.determine_measurement(target_metric['values'][-1]),
@@ -976,7 +977,7 @@ class SpectatorMetricTransformer(object):
         response[meter_name]['values'].extend(spectator_metric['values'])
       else:
         response[meter_name] = spectator_metric
-      
+
     rule_list = self.__rulebase.get(meter_name, self.__default_rule_list)
     if not rule_list:
       # if None then discard if not mentioned and default rule was discard
@@ -991,7 +992,7 @@ class SpectatorMetricTransformer(object):
         continue
 
       transformed = {
-        'kind': rule.rule_specification.get('kind') or spectator_metric['kind'],
-        'values': rule.apply(spectator_metric)
+          'kind': rule.rule_specification.get('kind') or spectator_metric['kind'],
+          'values': rule.apply(spectator_metric)
       }
       add_meter_mapping(transformed_name, transformed, response)

@@ -21,12 +21,20 @@ import sys
 import yaml
 import shutil
 import unittest
-from StringIO import StringIO
 import mock
 
 from mock import patch
-from urllib2 import Request
 from tempfile import mkdtemp
+
+from io import BytesIO
+try:
+  from urllib2 import (
+      Request,
+      urlopen as urllibUrlopen)
+except ImportError:
+  from urllib.request import (
+      Request,
+      urlopen as urllibUrlopen)
 
 import spectator_client
 
@@ -82,8 +90,8 @@ CLOUDDRIVER_RESPONSE_OBJ = {
 }
 
 
-CLOUDDRIVER_RESPONSE_TEXT = json.JSONEncoder(encoding='utf-8').encode(
-    CLOUDDRIVER_RESPONSE_OBJ)
+CLOUDDRIVER_RESPONSE_TEXT = json.JSONEncoder().encode(
+    CLOUDDRIVER_RESPONSE_OBJ).encode('utf-8')
 
 
 GATE_RESPONSE_OBJ = {
@@ -118,8 +126,8 @@ GATE_RESPONSE_OBJ = {
   'startTime': 87654321
 }
 
-GATE_RESPONSE_TEXT = json.JSONEncoder(encoding='utf-8').encode(
-    GATE_RESPONSE_OBJ)
+GATE_RESPONSE_TEXT = json.JSONEncoder().encode(
+    GATE_RESPONSE_OBJ).encode('utf-8')
 
 
 class TestableSpectatorClient(spectator_client.SpectatorClient):
@@ -180,8 +188,9 @@ class SpectatorClientHelperTest(unittest.TestCase):
     self.assertEquals('myMetric', name)
     self.assertEquals(sorted([{'key': 'myTag', 'value': 'myTagValue'},
                               {'key': 'spin_service', 'value': 'myService'},
-                              {'key': 'spin_variant', 'value': 'ro'}]),
-                      sorted(tags))
+                              {'key': 'spin_variant', 'value': 'ro'}],
+                             key=lambda d: d['key']),
+                      sorted(tags, key=lambda d: d['key']))
 
   def test_normalize_name_and_tags_simple_with_service_tag_and_decoration(self):
     options = {'spectator': {'inject_service_tag': True,
@@ -192,8 +201,9 @@ class SpectatorClientHelperTest(unittest.TestCase):
     self.assertEquals('myService-ro/myMetric', name)
     self.assertEquals(sorted([{'key': 'myTag', 'value': 'myTagValue'},
                               {'key': 'spin_service', 'value': 'myService'},
-                              {'key': 'spin_variant', 'value': 'ro'}]),
-                      sorted(tags))
+                              {'key': 'spin_variant', 'value': 'ro'}],
+                             key=lambda d: d['key']),
+                      sorted(tags, key=lambda d: d['key']))
 
 
 class SpectatorClientTest(unittest.TestCase):
@@ -284,7 +294,7 @@ class SpectatorClientTest(unittest.TestCase):
                       got_urls)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_collect_metrics_no_params(self, mock_urlopen, mock_time):
     now_time = 1.234
     port = 80
@@ -296,8 +306,8 @@ class SpectatorClientTest(unittest.TestCase):
     expect['__collectStartTime'] = 1232
     expect['__collectEndTime'] = 1233
 
-    text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
-    mock_http_response = StringIO(text)
+    text = json.JSONEncoder().encode(metrics_response).encode('utf-8')
+    mock_http_response = BytesIO(text)
     mock_urlopen.return_value = mock_http_response
     mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
@@ -307,7 +317,7 @@ class SpectatorClientTest(unittest.TestCase):
     self.assertEqual(expect, response)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_collect_metrics_filter_no_jvm(self, mock_urlopen, mock_time):
     spec = {'monitoring': {
               'filters': {
@@ -339,8 +349,8 @@ class SpectatorClientTest(unittest.TestCase):
     del expect['metrics']['jvm.buffer.memoryUsed']
     del expect['metrics']['jvm.gc.maxDataSize']
 
-    text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
-    mock_http_response = StringIO(text)
+    text = json.JSONEncoder().encode(metrics_response).encode('utf-8')
+    mock_http_response = BytesIO(text)
     mock_urlopen.return_value = mock_http_response
     mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
@@ -351,7 +361,7 @@ class SpectatorClientTest(unittest.TestCase):
                       test_spectator.requests)
     self.assertEqual(expect, response)
 
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_collect_metrics_with_params(self, mock_urlopen):
     port = 13246
     url = 'http://{0}:{1}/spectator-metrics'.format(TEST_HOST, port)
@@ -366,8 +376,8 @@ class SpectatorClientTest(unittest.TestCase):
           key=key,
           value=encoded_params[key])
 
-    text = json.JSONEncoder(encoding='utf-8').encode(CLOUDDRIVER_RESPONSE_OBJ)
-    mock_http_response = StringIO(text)
+    text = json.JSONEncoder().encode(CLOUDDRIVER_RESPONSE_OBJ).encode('utf-8')
+    mock_http_response = BytesIO(text)
     mock_urlopen.return_value = mock_http_response
 
     self.spectator.collect_metrics('testService', url, params)
@@ -375,7 +385,7 @@ class SpectatorClientTest(unittest.TestCase):
                       self.spectator.requests)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_collect_metrics_with_password(self, mock_urlopen, mock_time):
     now_time = 1.234
     port = 80
@@ -387,8 +397,8 @@ class SpectatorClientTest(unittest.TestCase):
     expect['__collectStartTime'] = 1232
     expect['__collectEndTime'] = 1233
 
-    text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
-    mock_http_response = StringIO(text)
+    text = json.JSONEncoder().encode(metrics_response).encode('utf-8')
+    mock_http_response = BytesIO(text)
     mock_urlopen.return_value = mock_http_response
     mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
@@ -396,12 +406,12 @@ class SpectatorClientTest(unittest.TestCase):
     self.assertEquals([
       ('https://{0}/spectator-metrics{1}'.format(TEST_HOST,
                                                  self.default_query_params),
-           base64.encodestring('TESTUSER:TESTPASSWORD').replace('\n', ''))],
+           base64.encodestring(b'TESTUSER:TESTPASSWORD').replace(b'\n', b''))],
        self.spectator.requests)
     self.assertEqual(expect, response)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_scan_by_service_one(self, mock_urlopen, mock_time):
     now_time = 1.234
     url = 'http://{0}:7002/spectator-metrics'.format(TEST_HOST)
@@ -412,8 +422,8 @@ class SpectatorClientTest(unittest.TestCase):
     expect['__collectStartTime'] = now_time * 1000
     expect['__collectEndTime'] = now_time * 1000
 
-    text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
-    mock_http_response = StringIO(text)
+    text = json.JSONEncoder().encode(metrics_response).encode('utf-8')
+    mock_http_response = BytesIO(text)
     mock_urlopen.return_value = mock_http_response
     mock_time.return_value = now_time
 
@@ -425,7 +435,7 @@ class SpectatorClientTest(unittest.TestCase):
     self.assertEqual({'clouddriver': [expect]}, response)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_scan_by_service_two(self, mock_urlopen, mock_time):
     now_time = 1.234
     url_one = 'http://FirstHost:7002/spectator/metrics'
@@ -443,11 +453,11 @@ class SpectatorClientTest(unittest.TestCase):
     expect_two['__host'] = 'secondhost'
     expect_two['random'] = two_response['random']
 
-    text_one = json.JSONEncoder(encoding='utf-8').encode(one_response)
-    text_two = json.JSONEncoder(encoding='utf-8').encode(two_response)
+    text_one = json.JSONEncoder().encode(one_response).encode('utf-8')
+    text_two = json.JSONEncoder().encode(two_response).encode('utf-8')
 
     expect = [expect_one, expect_two]
-    mock_urlopen.side_effect = [StringIO(text_one), StringIO(text_two)]
+    mock_urlopen.side_effect = [BytesIO(text_one), BytesIO(text_two)]
     mock_time.return_value = now_time
 
     response = self.spectator.scan_by_service(
@@ -464,7 +474,7 @@ class SpectatorClientTest(unittest.TestCase):
     self.assertEqual({'clouddriver': expect}, response)
 
   @patch('spectator_client.time.time')
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_scan_by_service_list(self, mock_urlopen, mock_time):
     now_time = 1.234
     clouddriver_url = 'http://{0}:7002/spectator/metrics'.format(TEST_HOST)
@@ -483,17 +493,17 @@ class SpectatorClientTest(unittest.TestCase):
     expect_gate['__collectStartTime'] = now_time * 1000
     expect_gate['__collectEndTime'] = now_time * 1000
 
-    clouddriver_text = json.JSONEncoder(encoding='utf-8').encode(
-        clouddriver_response)
-    gate_text = json.JSONEncoder(encoding='utf-8').encode(gate_response)
+    clouddriver_text = json.JSONEncoder().encode(
+        clouddriver_response).encode('utf-8')
+    gate_text = json.JSONEncoder().encode(gate_response).encode('utf-8')
 
     mock_time.return_value = now_time
     # The order is sensitive to the order we'll call in.
     # To get the call order, we'll let the dict tell us,
     # since that is the order we'll be calling internally.
     # Ideally this can be specified a different way, but I cant find how.
-    mock_urlopen.side_effect = {'clouddriver': StringIO(clouddriver_text),
-                                'gate': StringIO(gate_text)}.values()
+    mock_urlopen.side_effect = {'clouddriver': BytesIO(clouddriver_text),
+                                'gate': BytesIO(gate_text)}.values()
 
     response = self.spectator.scan_by_service(
         {'clouddriver': {'metrics_url': [clouddriver_url]},
@@ -542,13 +552,13 @@ class SpectatorClientTest(unittest.TestCase):
         'clouddriver', another, expect)
     self.assertEquals(expect, got)
 
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_scan_by_type_base_case(self, mock_urlopen):
     expect = {}
     self.spectator.ingest_metrics(
         'clouddriver', CLOUDDRIVER_RESPONSE_OBJ, expect)
 
-    mock_http_response = StringIO(CLOUDDRIVER_RESPONSE_TEXT)
+    mock_http_response = BytesIO(CLOUDDRIVER_RESPONSE_TEXT)
     mock_urlopen.return_value = mock_http_response
 
     url = 'http://{0}:7002/spectator/metrics'.format(TEST_HOST)
@@ -558,7 +568,7 @@ class SpectatorClientTest(unittest.TestCase):
                       self.spectator.requests)
     self.assertEqual(expect, response)
 
-  @patch('spectator_client.urllib2.urlopen')
+  @patch('spectator_client.urllibUrlopen')
   def test_scan_by_type_incremental_case(self, mock_urlopen):
     expect = {}
     self.spectator.ingest_metrics(
@@ -566,8 +576,8 @@ class SpectatorClientTest(unittest.TestCase):
     self.spectator.ingest_metrics(
         'gate', GATE_RESPONSE_OBJ, expect)
 
-    mock_clouddriver_response = StringIO(CLOUDDRIVER_RESPONSE_TEXT)
-    mock_gate_response = StringIO(GATE_RESPONSE_TEXT)
+    mock_clouddriver_response = BytesIO(CLOUDDRIVER_RESPONSE_TEXT)
+    mock_gate_response = BytesIO(GATE_RESPONSE_TEXT)
 
     # The order is sensitive to the order we'll call in.
     # To get the call order, we'll let the dict tell us,

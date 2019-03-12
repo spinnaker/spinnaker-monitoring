@@ -65,6 +65,10 @@ tags:
 
 import logging
 import re
+import sys
+
+if sys.version_info[0] > 2:
+  basestring = str
 
 
 def get_as_list(container, key):

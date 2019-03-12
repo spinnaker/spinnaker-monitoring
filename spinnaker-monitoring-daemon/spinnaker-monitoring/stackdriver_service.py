@@ -13,7 +13,6 @@
 # limitations under the License.
 
 # pylint: disable=missing-docstring
-
 import copy
 import json
 import logging
@@ -24,7 +23,17 @@ import traceback
 import google_service
 import spectator_client
 import stackdriver_descriptors
+import httplib2
 
+try:
+  from urllib2 import (
+      Request as urllibRequest,
+      urlopen as urllibUrlopen)
+
+except ImportError:
+  from urllib.request import (
+      Request as urllibRequest,
+      urlopen as urllibUrlopen)
 
 try:
   from googleapiclient.errors import HttpError

@@ -43,14 +43,14 @@ class HomePageHandler(command_processor.CommandHandler):
   def process_web_request(self, request, path, params, fragment):
     """Implements CommandHandler."""
     query = self.params_to_query(params)
-    rows = [(handler.url_path, handler.description)
+    rows = [(handler.url_path or '', handler.description)
             for handler in self.__all_handlers]
     rows = sorted(rows)
     row_html = [('<tr>'
                  '<td><A href="{path}{params}">{path}</A></td>'
                  '<td>{info}</td>'
                  '</tr>'.format(path=row[0], params=query, info=row[1]))
-                for row in rows if row[0] is not None]
+                for row in rows if row[0]]
 
     html_body = ('<table>\n'
                  '<tr><th>Path</th><th>Description</th></tr>'

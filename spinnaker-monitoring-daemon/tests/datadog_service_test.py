@@ -42,7 +42,7 @@ def service_generation_helper(config_data=[], datadog_options={},
     if use_types:
       options['datadog'] = {'use_types': True}
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       options['dd_agent_config'] = config.name
       service = datadog_service.make_datadog_service(options)
@@ -57,7 +57,7 @@ def arguments_generator_helper(config_data=[], options={}, set_dd_agent_conf=Tru
 
     data = config_data
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       if set_dd_agent_conf:
         options['dd_agent_config'] = config.name
@@ -92,7 +92,7 @@ class DatadogServiceTest(unittest.TestCase):
     data = ["[Main]", "#api_key: COMMENT", "api_key: FOUND_KEY",
             "hostname: FOUND_HOST"]
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       options['dd_agent_config'] = config.name
       service = datadog_service.make_datadog_service(options)
@@ -109,7 +109,7 @@ class DatadogServiceTest(unittest.TestCase):
     options = {'datadog': {}, 'dd_agent_config': ''}
     data = ["[Main]", "api_key: testApi", "app_key: testApi", "hostname: testHost"]
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       options['dd_agent_config'] = config.name
       service = datadog_service.make_datadog_service(options)
@@ -128,7 +128,7 @@ class DatadogServiceTest(unittest.TestCase):
     mock_getfqdn.return_value = 'testFQDN'
 
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       options['dd_agent_config'] = config.name
       options['datadog_host'] = "wrongHOST"
@@ -146,7 +146,7 @@ class DatadogServiceTest(unittest.TestCase):
     data = ["[Main]", "api_key: FOUND_KEY", "app_key: testApi"]
     options = {'datadog': {}, 'dd_agent_config': ''}
     with tempfile.NamedTemporaryFile() as config:
-      config.write('\n'.join(data))
+      config.write('\n'.join(data).encode('utf-8'))
       config.flush()
       options['dd_agent_config'] = config.name
       options['datadog_host'] = 'testHost'
@@ -213,8 +213,8 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
                                         }
                                         )
 
-    self.assertItemsEqual(service._DatadogMetricsService__arguments['tags'],
-                          ['foo:bar', 'ham:spam'])
+    self.assertEqual(service._DatadogMetricsService__arguments['tags'],
+                     ['foo:bar', 'ham:spam'])
 
   @patch.dict(os.environ, {})
   def test_passing_datadog_tags_from_options(self):
@@ -232,8 +232,8 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
                                         }
                                         )
 
-    self.assertItemsEqual(service._DatadogMetricsService__arguments['tags'],
-                          ['kung:fu', 'star:wars'])
+    self.assertEqual(service._DatadogMetricsService__arguments['tags'],
+                     ['kung:fu', 'star:wars'])
 
   @patch.dict(os.environ, {})
   def test_passing_datadog_tags_from_datadog_options(self):
@@ -249,8 +249,8 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
                                         },
                                         )
 
-    self.assertItemsEqual(service._DatadogMetricsService__arguments['tags'],
-                          ['this:is', 'a', 'drill'])
+    self.assertEqual(service._DatadogMetricsService__arguments['tags'],
+                     ['this:is', 'a', 'drill'])
 
   @patch.dict(os.environ, {})
   def test_passing_datadog_tags_from_dd_agent_config(self):
@@ -261,8 +261,8 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
 
     service = service_generation_helper(config_data=["tags: mytag, env:prod, role:database"])
 
-    self.assertItemsEqual(service._DatadogMetricsService__arguments['tags'],
-                          ['mytag', 'env:prod', 'role:database'])
+    self.assertEqual(service._DatadogMetricsService__arguments['tags'],
+                     ['mytag', 'env:prod', 'role:database'])
 
   @patch('datadog_service.datadog.initialize')
   def test_publish_metrics_with_type(self, mock_initialize):
@@ -332,11 +332,11 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
 
       service.publish_metrics(service_metrics=service_metrics)
 
-      self.assertItemsEqual(mock_send.call_args[0][0][0]['tags'],
-                            ['foo', 'bar', 'ham', 'spam'])
+      self.assertEqual(mock_send.call_args[0][0][0]['tags'],
+                       ['foo', 'bar', 'ham', 'spam'])
 
-      self.assertItemsEqual(mock_send.call_args[0][0][1]['tags'],
-                            ['foo', 'bar', 'ham', 'spam'])
+      self.assertEqual(mock_send.call_args[0][0][1]['tags'],
+                       ['foo', 'bar', 'ham', 'spam'])
 
       # Now add tags into metrics
       for entry in (service_metrics['clouddriver'][0]['metrics']
@@ -344,8 +344,8 @@ class DatadogServiceExternalTagsTest(unittest.TestCase):
           entry['tags'] = [{'key': 'id', 'value': 'direct'}]
       service.publish_metrics(service_metrics=service_metrics)
 
-      self.assertItemsEqual(mock_send.call_args[0][0][0]['tags'],
-                            ['foo', 'bar', 'ham', 'spam', 'id:direct'])
+      self.assertEqual(sorted(mock_send.call_args[0][0][0]['tags']),
+                       sorted(['foo', 'bar', 'ham', 'spam', 'id:direct']))
 
 
 class DatadogArgumentsGeneratorTest(unittest.TestCase):

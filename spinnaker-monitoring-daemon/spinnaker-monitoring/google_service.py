@@ -16,14 +16,24 @@
 
 from datetime import datetime
 import collections
+import httplib2
 import json
 import logging
 import os
-import urllib2
-import httplib2
 
 import spectator_client
 from spectator_metric_transformer import PercentileDecoder
+
+try:
+  from urllib2 import (
+      Request as urllibRequest,
+      urlopen as urllibUrlopen
+  )
+
+except ImportError:
+  from urllib.request import (
+      Request as urllibRequest,
+      urlopen as urllibUrlopen)
 
 
 try:
@@ -95,31 +105,31 @@ def normalize_options(options, embedded_options_key='stackdriver'):
 # http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-identity-documents.html
 def get_aws_identity_document():
   url = 'http://169.254.169.254/latest/dynamic/instance-identity/document'
-  request = urllib2.Request(url)
+  request = urllibRequest(url)
   try:
-    response = urllib2.urlopen(request)
+    response = urllibUrlopen(request)
   except IOError as ioex:
     logging.info('Cannot read AWS Identity Document,'
                  ' probably not on Amazon Web Services.'
                  ' url=%s: %s', url, ioex)
     raise ioex
-  return json.JSONDecoder().decode(response.read())
+  return json.JSONDecoder().decode(response.read().decode('utf-8'))
 
 
 # https://cloud.google.com/compute/docs/storing-retrieving-metadata
 def get_google_metadata(attribute):
   url = 'http://169.254.169.254/computeMetadata/v1/' + attribute
-  request = urllib2.Request(url)
+  request = urllibRequest(url)
   request.add_header('Metadata-Flavor', 'Google')
   try:
-    response = urllib2.urlopen(request)
+    response = urllibUrlopen(request)
   except IOError as ioex:
     logging.info('Cannot read google metadata,'
                  ' probably not on Google Cloud Platform.'
                  ' url=%s: %s', url, ioex)
     raise ioex
 
-  return response.read()
+  return response.read().decode('utf-8')
 
 
 def determine_local_project():
@@ -198,7 +208,7 @@ class GoogleMonitoringService(object):
 
   @staticmethod
   def millis_to_time(millis):
-    return datetime.fromtimestamp(millis / 1000).isoformat('T') + 'Z'
+    return datetime.fromtimestamp(millis // 1000).isoformat('T') + 'Z'
 
   @property
   def project(self):

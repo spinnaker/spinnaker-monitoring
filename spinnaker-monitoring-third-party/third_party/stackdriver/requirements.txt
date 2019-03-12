@@ -1,6 +1,6 @@
 # sudo apt-get install python-dev
 --index-url https://pypi.python.org/simple/
 
-google-api-python-client
-oauth2client
+google-api-python-client >= 1.7.8
+oauth2client >= 4.1.3
 

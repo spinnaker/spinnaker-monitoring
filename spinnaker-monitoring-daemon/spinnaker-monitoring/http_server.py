@@ -15,11 +15,20 @@
 """Implements HTTP Server."""
 
 import textwrap
-import BaseHTTPServer
 import logging
 import traceback
-import urllib2
 
+try:
+  from BaseHTTPServer import (
+      HTTPServer,
+      BaseHTTPRequestHandler)
+  from urllib2 import unquote as urllibUnquote
+except ImportError:
+  from http.server import (
+      HTTPServer,
+      BaseHTTPRequestHandler)
+  from urllib.request import unquote as urllibUnquote
+    
 
 def build_html_document(body, title=None):
   """Produces the HTML document wrapper for a text/html response."""
@@ -54,7 +63,7 @@ def build_html_document(body, title=None):
   return '\n'.join(html)
 
 
-class DelegatingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class DelegatingRequestHandler(BaseHTTPRequestHandler):
   """An HttpServer request handler that delegates to our CommandHandler."""
 
   def respond(self, code, headers, body=None):
@@ -64,6 +73,8 @@ class DelegatingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       self.send_header(key, value)
     self.end_headers()
     if body:
+      if isinstance(body, str):
+        body = body.encode('utf-8')
       self.wfile.write(body)
 
   def decode_request(self, request):
@@ -76,7 +87,7 @@ class DelegatingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     for part in query.split('&'):
       key, _, value = part.partition('=')
-      parameters[key] = urllib2.unquote(value)
+      parameters[key] = urllibUnquote(value)
 
     return path, parameters, fragment or None
 
@@ -110,7 +121,7 @@ class DelegatingRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     pass
 
 
-class HttpServer(BaseHTTPServer.HTTPServer):
+class HttpServer(HTTPServer):
   """Implements HTTP Server that will delegate to injected request handlers."""
 
   PATH_HANDLERS = {}
@@ -125,6 +136,6 @@ class HttpServer(BaseHTTPServer.HTTPServer):
     host = get_option('host') or '0.0.0.0'
 
     logging.info('Starting HTTP server on host=%s, port=%d', host, port)
-    BaseHTTPServer.HTTPServer.__init__(
+    HTTPServer.__init__(
         self, (host, port), DelegatingRequestHandler)
     HttpServer.PATH_HANDLERS.update(handlers or {})

@@ -47,6 +47,13 @@ EXAMPLE_MEMORY_USED_RESPONSE = {
 }
 
 
+def sort_tag_dictionaries(list_of_dict):
+  return sorted(list_of_dict, key=lambda d: d['key'])
+
+def sort_dictionaries(list_of_dict):
+  return sorted(list_of_dict, key=lambda d: str(d))
+
+
 class AggregatedBuilderTest(unittest.TestCase):
   TIMESTAMP = 987654321
   def _make_values(self, count):
@@ -95,7 +102,7 @@ class AggregatedBuilderTest(unittest.TestCase):
       if entry['key'] == 'statistic':
         del expect_tags[i]
         break
-    return sorted(expect_tags)
+    return sorted(expect_tags, key=lambda d: d['key'])
 
   def do_test_compound_kind_as_is(self, builder):
     # This test is just showing nothing interesting happening
@@ -103,19 +110,19 @@ class AggregatedBuilderTest(unittest.TestCase):
     for measurement in self._make_timer_measurements():
       builder.add(measurement['values'][0], measurement['tags'])
     self.assertEquals(
-        sorted([
+        sort_dictionaries([
             {
                 'values': [{'v': 123, 't': self.TIMESTAMP}],
-                'tags': sorted([{'key': 'status', 'value': '2xx'},
+                'tags': sort_tag_dictionaries([{'key': 'status', 'value': '2xx'},
                                 {'key': 'statistic', 'value': 'count'}])
             },
             {
                 'values': [{'v': 321, 't': self.TIMESTAMP}],
-                'tags': sorted([{'key': 'status', 'value': '2xx'},
+                'tags': sort_tag_dictionaries([{'key': 'status', 'value': '2xx'},
                                 {'key': 'statistic', 'value': 'totalTime'}])
             }
         ]),
-        sorted(builder.build()))
+        sort_dictionaries(builder.build()))
 
   def test_timer(self):
     builder = self._make_simple_rule_builder()
@@ -153,7 +160,7 @@ class AggregatedBuilderTest(unittest.TestCase):
                         't': self.TIMESTAMP}],
             'tags': [{'key': 'status', 'value': '2xx'}]
         }],
-        sorted(builder.build())
+        sort_dictionaries(builder.build())
     )
 
   def test_collate_one_measurement(self):
@@ -164,18 +171,18 @@ class AggregatedBuilderTest(unittest.TestCase):
     for measurement in measurements:
       builder._collate_metric_info(
           MetricInfo(measurement['values'][0],
-                     sorted(measurement['tags']),
+                     sort_tag_dictionaries(measurement['tags']),
                      rule),
           output)
 
     self.assertEquals(
-        sorted([
+        sort_dictionaries([
             MetricInfo({'t': self.TIMESTAMP,
                         'v': {'count': 123, 'totalTime': 321}},
                        self._determine_expected_tags(measurements[0]),
                        rule)
         ]),
-        sorted(output.values()))
+        sort_dictionaries(output.values()))
 
   def test_collate_multiple_measurements(self):
     builder = self._make_simple_rule_builder()
@@ -195,7 +202,7 @@ class AggregatedBuilderTest(unittest.TestCase):
     for measurement in measurements:
       builder._collate_metric_info(
           MetricInfo(measurement['values'][0],
-                     sorted(measurement['tags']),
+                     sort_tag_dictionaries(measurement['tags']),
                      rule),
           output)
 
@@ -249,7 +256,7 @@ class AggregatedBuilderTest(unittest.TestCase):
       builder.add(measurement['values'][0], measurement['tags'])
 
     self.assertEquals(
-        sorted([
+        sort_dictionaries([
             # 2xx and 0xx got combined together because tags are same
             # timestamp is bumped to 0xx's which was later.
             {
@@ -270,7 +277,7 @@ class AggregatedBuilderTest(unittest.TestCase):
                 'tags': self._determine_expected_tags(measurements5xx[0])
             }
         ]),
-        sorted(builder.build())
+        sort_dictionaries(builder.build())
     )
 
 
@@ -285,7 +292,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     for _, got_meter_data in got_response.items():
       values = got_meter_data.get('values')
       if values:
-        values.sort()
+        got_meter_data['values'] = sort_dictionaries(values)
 
     self.assertResponseEquals(expect_response, got_response)
 
@@ -404,7 +411,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
   def test_change_tag_names(self):
     transformed_value = copy.deepcopy(
         EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used'])
-    transformed_value['values'][0]['tags'] = sorted([
+    transformed_value['values'][0]['tags'] = sort_tag_dictionaries([
         {'key': 'segment', 'value': 'PS Eden Space'},
         {'key': 'scope', 'value': 'HEAP'},
     ])
@@ -441,7 +448,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
     transformed_value = copy.deepcopy(
         EXAMPLE_MEMORY_USED_RESPONSE['jvm.memory.used'])
-    transformed_value['values'][0]['tags'] = sorted(
+    transformed_value['values'][0]['tags'] = sort_tag_dictionaries(
         transformed_value['values'][0]['tags']
         + [
             {'key': 'first', 'value': 'FIRST'},
@@ -452,7 +459,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         ])
 
     normalized_orig = copy.deepcopy(EXAMPLE_MEMORY_USED_RESPONSE)
-    normalized_orig['jvm.memory.used']['values'][0]['tags'] = sorted(
+    normalized_orig['jvm.memory.used']['values'][0]['tags'] = sort_tag_dictionaries(
        normalized_orig['jvm.memory.used']['values'][0]['tags'])
 
     self.do_test(
@@ -525,14 +532,14 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
             'kind': 'Timer',
             'values': [{
                 'values': [{'t': 1540224536920, 'v': 10000.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'objectType', 'value': 'PIPELINES'},
                     {'key': 'statistic', 'value': 'totalTime'},
                     {'key': 'scheduled', 'value': 'false'}
                 ])
             }, {
                 'values': [{'t': 1540224536922, 'v': 1489720024.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'objectType', 'value': 'PIPELINES'},
                     {'key': 'statistic', 'value': 'totalTime'},
                     {'key': 'scheduled', 'value': 'true'}
@@ -553,7 +560,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': 1489720024.0}],
                  'tags': [
                      {'key': 'id', 'value': 'PS Eden Space'},
@@ -567,13 +574,13 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': 1489720024}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'id', 'value': 'PS Eden Space'},
                  ])},
                 {'values': [{'t': 1540224536923, 'v': 12345}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'id', 'value': 'Code Cache'},
                  ])},
             ])},
@@ -591,7 +598,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
         """),
         {'is_on': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': 1.0}],
                  'tags': [
                      {'key': 'note', 'value': 'on'},
@@ -605,13 +612,13 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'is_on': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': True}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'note', 'value': 'on'},
                  ])},
                 {'values': [{'t': 1540224536923, 'v': False}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'note', 'value': 'off'},
                  ])},
             ])},
@@ -634,7 +641,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': 1489720024.0}],
                  'tags': [
                      {'key': 'id', 'value': 'PS Eden Space'},
@@ -650,14 +657,14 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([
+            'values': sort_dictionaries([
                 {'values': [{'t': 1540224536922, 'v': 1489720024.0}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'id', 'value': 'PS Eden Space'},
                      {'key': 'heap', 'value': True},
                  ])},
                 {'values': [{'t': 1540224536923, 'v': 12345.0}],
-                 'tags': sorted([
+                 'tags': sort_tag_dictionaries([
                      {'key': 'id', 'value': 'Code Cache'},
                      {'key': 'heap', 'value': False},
                  ])},
@@ -725,7 +732,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'onDemand_count': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1.0}],
                 'tags': [
                     {'key': 'providerName',
@@ -743,15 +750,15 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'onDemand_count': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider', 'value': 'MyProvider'},
                 ])
             },
             {
                 'values': [{'t': 1540224536923, 'v': 2.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider', 'value': 'kubernetes'},
                 ])
             }
@@ -772,7 +779,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'onDemand_count': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1.0}],
                 'tags': [
                     {'key': 'providerName',
@@ -790,15 +797,15 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'onDemand_count': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider', 'value': 'MyProvider'},
                 ])
             },
             {
                 'values': [{'t': 1540224536923, 'v': 2.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider', 'value': 'kubernetes'},
                 ])
             }
@@ -822,7 +829,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'executionCount': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540318956422, 'v': 23258.0}],
                 'tags': [
                     {'key': 'agent',
@@ -842,9 +849,9 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'executionCount': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540318956422, 'v': 23258.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider',
                      'value': 'com.netflix.spinnaker.clouddriver.google.provider.GoogleInfrastructureProvider'},
                     {'key': 'account', 'value': 'my-google-account'},
@@ -854,7 +861,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             }, {
                 'values': [{'t': 1540318956422, 'v': 9.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'provider',
                      'value': 'com.netflix.spinnaker.clouddriver.appengine.provider.AppengineProvider'},
                     {'key': 'account', 'value': 'my-appengine-account'},
@@ -922,9 +929,9 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'controller.invocations': {
             'kind': 'Timer',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 12347, 'v': 5555.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'controller', 'value': 'ClusterController'},
                     {'key': 'method', 'value': 'getServerGroup'},
                     {'key': 'statistic', 'value': 'totalTime'},
@@ -932,7 +939,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             }, {
                 'values': [{'t': 12346, 'v': 2222.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'controller', 'value': 'ClusterController'},
                     {'key': 'method', 'value': 'getServerGroup'},
                     {'key': 'statistic', 'value': 'totalTime'},
@@ -940,7 +947,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
                 ])
             }, {
                 'values': [{'t': 12348, 'v': 8888.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'controller', 'value': 'ClusterController'},
                     {'key': 'method', 'value': 'getServerGroup'},
                     {'key': 'statistic', 'value': 'count'},
@@ -968,7 +975,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'is_on': {
             'kind': 'Gauge',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 0.0}],
                 'tags': [
                     {'key': 'discard', 'value': 'false'},
@@ -989,7 +996,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'is_on': {
             'kind': 'Gauge',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536923, 'v': expect}],
             },
                              ])}
@@ -1025,7 +1032,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1489720024.0}],
                 'tags': [
                     {'key': 'id', 'value': 'PS Eden Space'},
@@ -1043,9 +1050,9 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'jvm.memory.used': {
             'kind': 'Gauge',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 1489720024.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'id', 'value': 'PS Eden Space'},
                     # This test is not using tag types, so
                     # the BOOL value will be a string value.
@@ -1074,7 +1081,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'executions.started': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536922, 'v': 12.0}],
                 'tags': [
                     {'key': 'source', 'value': 'MyApplication'},
@@ -1092,27 +1099,27 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
 
         {'executions.started': {
             'kind': 'Counter',
-            'values': sorted([{
+            'values': sort_dictionaries([{
                 'values': [{'t': 1540224536923, 'v': 33.0}],
-                'tags': sorted([
+                'tags': sort_tag_dictionaries([
                     {'key': 'executionType', 'value': 'Pipeline'},
                 ]),
                 '__per_tag_values': {
-                    'application': sorted([
+                    'application': sort_dictionaries([
                         {
                             'values': [{'t': 1540224536922, 'v': 12.0}],
-                            'tags': [
+                            'tags': sort_tag_dictionaries([
                                 {'key': 'application',
                                  'value': 'MyApplication'},
                                 {'key': 'executionType', 'value': 'Pipeline'}
-                            ]
+                            ])
                         }, {
                             'values': [{'t': 1540224536923, 'v': 21.0}],
-                            'tags': [
+                            'tags': sort_tag_dictionaries([
                                 {'key': 'application',
                                  'value': 'YourApplication'},
                                 {'key': 'executionType', 'value': 'Pipeline'}
-                            ]
+                            ])
                         }
                     ]),
                 }}]),

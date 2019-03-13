@@ -27,6 +27,7 @@ import sys
 import command_processor
 import datadog_service
 import datadog_handlers
+import gcp_service_control_service
 import prometheus_service
 import server_handlers
 import spectator_client
@@ -119,6 +120,8 @@ def prepare_commands():
       datadog_service.DatadogServiceFactory())
   server_handlers.MonitorCommandHandler.register_metric_service_factory(
       stackdriver_service.StackdriverServiceFactory())
+  server_handlers.MonitorCommandHandler.register_metric_service_factory(
+      gcp_service_control_service.GcpServiceControlServiceFactory())
   server_handlers.add_handlers(all_command_handlers, subparsers)
 
   return all_command_handlers, parser

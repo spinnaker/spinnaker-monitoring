@@ -71,7 +71,8 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
                'zone': 'us-central1-f',
                'instance_id': instance,
                'config_dir': '/notfound',
-               'metric_filter_dir': self.filter_dir}
+               'spectator': {'metric_filter_dir': self.filter_dir}
+    }
 
     self.options = options
     self.mockStub = mock.create_autospec(['projects'])
@@ -103,6 +104,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.mockMetricDescriptors.list_next = Mock(return_value=None)
 
     self.mockTimeSeries.create = Mock(return_value=self.mockCreateTimeSeries)
+
     self.service = stackdriver_service.StackdriverMetricsService(
         lambda: self.mockStub, options)
 
@@ -496,6 +498,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     expect_same, expect_new, expect_changed, expect_unused = (
         self.prepare_audit_scenario()
     )
+
     # This delete is part of an update
     self.mockMetricDescriptors.create.side_effect = HttpError(
         ResponseStatus(400, 'Injected Error'), 'Injected Error')
@@ -506,7 +509,6 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         {'manage_stackdriver_descriptors': 'create'}
     )
     audit = manager.audit_descriptors(options)
-
     self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
     self.assertEquals(expect_new, audit.new_descriptors)
     self.assertEquals(expect_changed.keys(), audit.changed_descriptors.keys())

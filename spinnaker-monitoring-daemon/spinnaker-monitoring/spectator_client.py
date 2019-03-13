@@ -498,11 +498,15 @@ class SpectatorClient(object):
       sep = "&"
 
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
+    collect_start_time = time.time()
     response = urllib2.urlopen(self.create_request(url, authorization))
+    collect_end_time = time.time()
 
     json_text = response.read()
     try:
       spectator_response = json.JSONDecoder(encoding='utf-8').decode(json_text)
+      spectator_response['__collectStartTime'] = int(collect_start_time * 1000)
+      spectator_response['__collectEndTime'] = int(collect_end_time * 1000)
     except ValueError:
       if len(json_text) > 200:
         snippet = '%s ... %s' % (json_text[:100], json_text[:-100])

@@ -243,7 +243,7 @@ class GoogleMonitoringService(object):
   def __update_monitored_generic_task_resources(self, service_map):
     deployed = DeployedMonitoredResourceBuilder(
         self.__service_options, self.__project).build()
-    my_task_id = (deployed['labels'].get('pod_id')          # from gke_container
+    deployed_task_id = (deployed['labels'].get('pod_id')    # from gke_container
                   or deployed['labels'].get('pod_name')     # from k8s_container
                   or deployed['labels'].get('instance_id')  # from gce or ec2
                   or None)
@@ -263,7 +263,7 @@ class GoogleMonitoringService(object):
         if info is None:
           resource = GenericTaskResourceBuilder(
               self.__service_options, self.__project).build(
-                  service, task_id, service_metrics)
+                  service, deployed_task_id, task_id)
           service_resource[task_id] = GenericTaskInfo(resource, start_time)
 
   def get_monitored_resource(self, service, service_metadata):
@@ -475,7 +475,16 @@ class GenericTaskResourceBuilder(object):
                     ' Please provide an explicit --zone.')
       raise ValueError('Unable to determine location or --zone.')
 
-  def build(self, service, task_id, service_metadata):
+  def build(self, service, monitored_resource_id, instance_id):
+    """Build the GenericTask resource descriptor.
+
+       Args:
+         service: The name of the service this is for
+         monitored_resource_id: Some specific identifier that is part of
+              the deployment monitored resource sufficient to associate it.
+         instance_id: Another id making this instance unique within
+              the monitored_resource_id.
+    """
     location = self.determine_location()
     monitored_resource = {
         'type': 'generic_task',
@@ -483,8 +492,8 @@ class GenericTaskResourceBuilder(object):
             'project_id': self.__project,
             'location': location,
             'namespace':  determine_local_project() or 'default',
-            'job': 'default',   # placeholder for future use
-            'task_id': task_id
+            'job': instance_id,
+            'task_id': monitored_resource_id
         }
     }
     logging.info('%r monitored resource is %r',

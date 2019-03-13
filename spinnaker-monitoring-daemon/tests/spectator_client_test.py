@@ -293,11 +293,13 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
+    expect['__collectStartTime'] = 1232
+    expect['__collectEndTime'] = 1233
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
     mock_urlopen.return_value = mock_http_response
-    mock_time.return_value = now_time
+    mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
     response = self.spectator.collect_metrics('testService', url)
     self.assertEquals([(url + self.default_query_params, None)],
@@ -331,13 +333,16 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
+    expect['__collectStartTime'] = 1232
+    expect['__collectEndTime'] = 1233
+
     del expect['metrics']['jvm.buffer.memoryUsed']
     del expect['metrics']['jvm.gc.maxDataSize']
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
     mock_urlopen.return_value = mock_http_response
-    mock_time.return_value = now_time
+    mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
     response = test_spectator.collect_metrics('filterTestService', url)
     shutil.rmtree(temp_dir)
@@ -379,11 +384,13 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = port
+    expect['__collectStartTime'] = 1232
+    expect['__collectEndTime'] = 1233
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
     mock_urlopen.return_value = mock_http_response
-    mock_time.return_value = now_time
+    mock_time.side_effect = (now_time - .002,  now_time - .001, now_time)
 
     response = self.spectator.collect_metrics('testService', url)
     self.assertEquals([
@@ -402,6 +409,8 @@ class SpectatorClientTest(unittest.TestCase):
     expect = copy.deepcopy(metrics_response)
     expect['__host'] = TEST_HOST
     expect['__port'] = 7002
+    expect['__collectStartTime'] = now_time * 1000
+    expect['__collectEndTime'] = now_time * 1000
 
     text = json.JSONEncoder(encoding='utf-8').encode(metrics_response)
     mock_http_response = StringIO(text)
@@ -412,6 +421,7 @@ class SpectatorClientTest(unittest.TestCase):
         {'clouddriver': {'metrics_url': [url]}})
     self.assertEquals([(url + self.default_query_params, None)],
                       self.spectator.requests)
+
     self.assertEqual({'clouddriver': [expect]}, response)
 
   @patch('spectator_client.time.time')
@@ -423,6 +433,8 @@ class SpectatorClientTest(unittest.TestCase):
     expect_one = copy.deepcopy(one_response)
     expect_one['__host'] = 'firsthost'
     expect_one['__port'] = 7002
+    expect_one['__collectStartTime'] = now_time * 1000
+    expect_one['__collectEndTime'] = now_time * 1000
 
     url_two = 'http://SecondHost:7002/spectator/metrics'
     two_response = dict(one_response)
@@ -460,12 +472,16 @@ class SpectatorClientTest(unittest.TestCase):
     expect_clouddriver = copy.deepcopy(clouddriver_response)
     expect_clouddriver['__host'] = TEST_HOST
     expect_clouddriver['__port'] = 7002
+    expect_clouddriver['__collectStartTime'] = now_time * 1000
+    expect_clouddriver['__collectEndTime'] = now_time * 1000
 
     gate_url = 'http://{0}:8084/spectator/metrics'.format(TEST_HOST)
     gate_response = GATE_RESPONSE_OBJ
     expect_gate = copy.deepcopy(gate_response)
     expect_gate['__host'] = TEST_HOST
     expect_gate['__port'] = 8084
+    expect_gate['__collectStartTime'] = now_time * 1000
+    expect_gate['__collectEndTime'] = now_time * 1000
 
     clouddriver_text = json.JSONEncoder(encoding='utf-8').encode(
         clouddriver_response)

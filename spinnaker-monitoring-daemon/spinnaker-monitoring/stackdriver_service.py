@@ -28,6 +28,7 @@ import httplib2
 
 import spectator_client
 import stackdriver_descriptors
+from spectator_metric_transformer import PercentileDecoder
 
 
 try:
@@ -364,7 +365,6 @@ class StackdriverMetricsService(object):
     while offset < len(time_series):
       last = min(offset + self.MAX_BATCH, len(time_series))
       chunk = time_series[offset:last]
-
       try:
         (method(name=self.project_to_resource(self.__project),
                 body={'timeSeries': chunk})
@@ -476,6 +476,7 @@ class StackdriverMetricsService(object):
         for elem in counter_points:
           elem['interval']['startTime'] = start_time
           elem['value'] = {'int64Value': int(elem['value'][value_key]['count'])}
+
         counter_metric = copy.deepcopy(metric)
         counter_metric['type'] += '__count'
         result.append({
@@ -491,22 +492,22 @@ class StackdriverMetricsService(object):
         # Change points from assumed |value_key| to distributionValue
         # The |value_key| we encoded above was a dict
         raw_value = point['value'][value_key]
-        count = raw_value['count']
+        bucket_bounds, bucket_counts, count = self.compute_buckets(raw_value)
+
+        # Use the reported count for the mean so it will be more accurate
+        raw_count = raw_value['count']
         # Summary was either a timer (totalTime) or summary (totalAmount).
         total = raw_value.get('totalTime') or raw_value.get('totalAmount', 0)
-        mean = float(total) / float(count) if count else 0
+        mean = float(total) / float(raw_count) if count else 0
 
-        # Using explicitBuckets with bounds[0] is recommendation of stackdriver.
-        #    linearBuckets {'numFiniteBuckets':1, 'width':1, 'offset':mean}
-        #    also works
         bucketOptions = {
-            'explicitBuckets': {'bounds': [0]}
+            'explicitBuckets': {'bounds': bucket_bounds}
         }
         distribution_value = {
-            'count': count,
+            'count': count,  # agree with bucket_counts to pass Stackdriver check
             'mean': mean,
             'bucketOptions': bucketOptions,
-            'bucketCounts': [count]
+            'bucketCounts': bucket_counts
         }
         point['value'] = {'distributionValue': distribution_value}
         if metric_kind == 'CUMULATIVE':
@@ -525,6 +526,54 @@ class StackdriverMetricsService(object):
         'metricKind': metric_kind,
         'valueType': value_type,
         'points': points})
+
+  def compute_buckets(self, raw_value):
+    """Convert the distribution from spectator into one for Stackdriver.
+
+       There is a race condition in spectator where these percentile
+       distributions are not thread safe. This means that the total count
+       and bucket count might not agree.
+
+       This makes Stackdriver unhappy, justifiably so, and will 400.
+       Since this means we lose visibility, we'll just tweak the count to
+       what is counted by the buckets.
+
+    Args:
+       raw_value is {'buckets': {bucket_num: count}, 'count': total}
+
+    Returns:
+       bounds, counts, total_count
+    """
+    buckets = raw_value.get('buckets')
+
+    if not buckets:
+      # Using explicitBuckets with bounds[0] is recommendation of stackdriver.
+      return [0], [raw_value.get('count')], raw_value.get('count')
+
+    decoder = PercentileDecoder.singleton()
+    bounds = []
+    counts = []
+    last_key = -1
+
+    total_count = 0
+    for key, value in sorted(buckets.items()):
+      min_value, max_value = decoder.bucket_to_min_max(key)
+      if key != last_key + 1:
+        # Join adjecent 0-count buckets together into a single 0-count bucket.
+        counts.append(0)
+        bounds.append(min_value - 1)
+      last_key = key
+      bounds.append(max_value)
+      counts.append(int(value))
+      total_count += value
+
+    # Stackdriver interprets the last bucket as a lower bound rather than upper.
+    # Add another 0-bucket so we dont misinteret the last bucket we added to be
+    # a lower bound rather than capping the upper bound.
+    bounds.append(max_value + 1)
+    counts.append(0)
+
+    return bounds, counts, total_count
 
 
 def make_stub(options):

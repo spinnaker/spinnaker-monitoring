@@ -220,7 +220,7 @@ class BatchProcessor(object):
     audit_results.lines.append(
         '  - {status}: {action} {name!r}{details}'.format(
             status=status, action=self.__action,
-            name=name[len(internal_name_prefix)],
+            name=name[len(internal_name_prefix):],
             details=details))
 
   def process(self):

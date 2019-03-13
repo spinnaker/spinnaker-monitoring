@@ -22,6 +22,7 @@ to refactor the data model without having to make global code changes.
 import collections
 import logging
 import re
+import sys
 import yaml
 
 
@@ -33,6 +34,84 @@ _SNAKE_CASE_RE = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)(?<!_)[A-Z](?=[a-z]))')
 def _snakeify(text):
   """Turn text into snake-case."""
   return _SNAKE_CASE_RE.sub(r'_\1', text).lower()
+
+
+class PercentileDecoder(object):
+  """Interprets the implied value ranges for Spectator Percentile* meters.
+
+  When Spectator writes a Percentile* measurement it sets the followign tags:
+      "statistic" = "percentile"
+      "percentile" = <type><hex> where:
+                     <type> is some character indicating the measurement type
+                            ('T' for timer, 'D' for distribution)
+                     <hex> is a hex encoded number indicating the bucket
+  The value of these measurements are the number of items in the bucket.
+
+  The problem is, the ranges denoted by the buckets are implied.
+  This class provides the knowledge of what the implied value ranges are
+  for each bucket. These value ranges are hard coded into the
+  spectator PercentileBucket class
+
+   https://github.com/Netflix/spectator/blob/master/spectator-api/src
+         /main/java/com/netflix/spectator/api/histogram/PercentileBuckets.java
+
+  """
+
+  # We'll use a singelton. This coudl all be static but if we dont need it
+  # then there is no point of computing and storing the tables involved.
+  __SINGLETON = None
+
+  @staticmethod
+  def singleton():
+    """Returns the decoder instance."""
+    if not PercentileDecoder.__SINGLETON:
+      PercentileDecoder.__SINGLETON = PercentileDecoder()
+    return PercentileDecoder.__SINGLETON
+
+  def __init_buckets(self):
+    """Initialize the bucket mappings.
+
+    Returns a list of integers denoting the max value in the bucket
+    keyed by the bucket index.
+    """
+
+    # Based on static initialization in
+    # https://github.com/Netflix/spectator/blob/master/spectator-api/src
+    #        /main/java/com/netflix/spectator/api/histogram/PercentileBuckets.java
+    # It doesnt really matter what the algorithm is here. We are not
+    # making this decision. Rather we are decoding the decision already
+    # made and given to us.
+    buckets = [1,2,3]
+
+    digits = 2
+    exp = digits
+    while (exp < 64):
+      current = 1 << exp
+      delta = current / 3
+      next = (current << digits) - delta
+
+      while current < next:
+        buckets.append(current)
+        current += delta
+      exp += digits
+
+    buckets.append(sys.maxsize)
+    return buckets
+
+  def __init__(self):
+    self.__bucket_values = self.__init_buckets()
+
+  def percentile_label_to_bucket(self, percentile_label):
+    """Given the value of a "percentile" tag, return the bucket index.
+
+    Recall the tag value is in the form <type><hex>.
+    """
+    return int(percentile_label[1:], 16)
+
+  def bucket_to_min_max(self, bucket):
+    """Given a bucket index, return the min, max value range for the bucket."""
+    prev = bucket - 1 if bucket > 0 else 0
+    return self.__bucket_values[prev], self.__bucket_values[bucket]
 
 
 class TimestampedMetricValue(
@@ -235,31 +314,56 @@ class AggregatedMetricsBuilder(object):
       collated_metric_infos: map keyed by normalized tag bindings
          whose values are the [collated] MetricInfo for a given composite meter.
     """
+    def get_tag_value_and_remove_from_list(name, tags):
+      for index, key_value in enumerate(tags):
+        # For this particular binding, find the statistic tag
+        if key_value['key'] == name:
+          value = key_value['value']
+          del(tags[index])
+          return value
+      logging.error('Expected to find %s in %r', name, tags)
+      return None
+
     # Iterate over all the metric tag binding combinations
     key = None
     tags = list(metric_info.tags)
-    for index, key_value in enumerate(tags):
-      # For this particular binding, find the statistic tag
-      if key_value['key'] == 'statistic':
-        key = key_value['value']
-        del(tags[index])
-        break
+    key = get_tag_value_and_remove_from_list('statistic', tags)
+
+    bucket_key = None
+    if key == 'percentile':
+      percentile = get_tag_value_and_remove_from_list('percentile', tags)
+      bucket_key = PercentileDecoder.singleton().percentile_label_to_bucket(
+          percentile)
 
     # Produce our normalized metric instance without the 'statistic' tag
     # but with a composite value adding the statistic value mapped to
-    # instance value (e.g. count: <value> or mean: <value>)
+    # instance value (e.g. count: <value> or mean: <value>).
+    # If this is a percentile based metric then there will be
+    # a 'buckets' key whose <value> is a dict of bucket counts keyed by
+    # bucket num. The bucket num denotes a range of values as returned by
+    # PercentileDecoder.bucket_to_min_max(bucket_num)
     #
     # We'll need to align the timestamps across the different statistic values
     # to correlate their composite elements correctly.
     normalized_key = str(tags)
     normalized_info = collated_metric_infos.get(normalized_key)
+
     if not normalized_info:
+      the_value = ({key: metric_info.value}
+                   if bucket_key is None
+                   else {'buckets': {bucket_key: metric_info.value}})
       json_value = {'t': metric_info.timestamp,
-                    'v': {key: metric_info.value}}
+                    'v': the_value}
       normalized_info = MetricInfo(json_value, tags, self.__rule)
       collated_metric_infos[normalized_key] = normalized_info
       return
-    normalized_info.value[key] = metric_info.value
+    if bucket_key is None:
+      normalized_info.value[key] = metric_info.value
+    else:
+      if 'buckets' not in normalized_info.value:
+        normalized_info.value['buckets'] = {bucket_key: metric_info.value}
+      else:
+        normalized_info.value['buckets'][bucket_key] = metric_info.value
 
   def build(self):
     """Encode all the measurements for the meter."""
@@ -546,6 +650,9 @@ class TransformationRule(object):
     if rule_spec is None:
       rule_spec = {}
 
+    # Indicates whether we should look for percentile tags
+    self.__is_percentile = rule_spec.get('kind', '').startswith('Percentile')
+
     per_tags = []
 
     # 'statistic' will always be kept implicitly
@@ -680,6 +787,9 @@ class TransformationRule(object):
         # "statistic" is required to be preserved while transforming.
         # It will be removed later when the metrics are exported.
         add_if_present('statistic', tag_dict, target_tags)
+        if self.__is_percentile:
+          # also keep the "percentile" tag, which indicates bucket counts
+          add_if_present('percentile', tag_dict, target_tags)
 
         # NOTE(ewiseblatt): 20181123
         # We're not handling per-* attributes yet.

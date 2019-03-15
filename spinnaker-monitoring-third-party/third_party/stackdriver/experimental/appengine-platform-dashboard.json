@@ -12,7 +12,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies__count\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -43,7 +43,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\" AND metric.label.success=False",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies__count\" AND metric.label.success=False",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -73,15 +73,11 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -103,30 +99,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/repository/downloads__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.repositoryType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/repository/downloads__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.repositoryType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/repository/download_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.repository_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],

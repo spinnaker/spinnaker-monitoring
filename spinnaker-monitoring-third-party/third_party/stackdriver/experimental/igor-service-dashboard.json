@@ -12,7 +12,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rollingCount/fallback\" AND metric.label.spin_service=\"igor\" AND metric.label.success!=True",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service=\"igor\" AND metric.label.success!=True",
                       "perSeriesAligner": "ALIGN_SUM",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -39,7 +39,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rollingCount/fallback\" AND metric.label.spin_service\"igor\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service\"igor\"",
                       "perSeriesAligner": "ALIGN_SUM",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -161,7 +161,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status_code_class=\"2xx\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -180,7 +180,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status!=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status_code_class!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -203,15 +203,11 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\" AND metric.label.spin_service=\"igor\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"igor\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"igor\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
                     }
                   }
                 ],

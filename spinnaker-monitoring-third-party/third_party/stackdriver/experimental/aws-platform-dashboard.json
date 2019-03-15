@@ -68,13 +68,13 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/equests__count\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceName"
+                          "metric.label.service_name"
                       ],
                       "unitOverride": "1"
                     }
@@ -99,14 +99,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.status!=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.statusCode"
+                          "metric.label.service_endpoint",
+                          "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -130,29 +130,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -175,14 +162,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonEC2\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonEC2\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -207,15 +194,15 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.status!=\"2xx\" AND metric.label.serviceName=\"AmazonEC2\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonEC2\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType",
-                          "metric.label.statusCode"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -239,29 +226,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\" AND metric.label.serviceName=\"AmazonEC2\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonEC2\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonEC2\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -284,14 +258,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonAutoScaling\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonAutoScaling\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -316,15 +290,15 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.status!=\"2xx\" AND metric.label.serviceName=\"AmazonAutoScaling\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonAutoScaling\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType",
-                          "metric.label.statusCode"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -348,29 +322,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\" AND metric.label.serviceName=\"AmazonAutoScaling\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonEC2\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonAutoScaling\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -393,14 +354,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonElasticLoadBalancing\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -425,15 +386,15 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.status!=\"2xx\" AND metric.label.serviceName=\"AmazonElasticLoadBalancing\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType",
-                          "metric.label.statusCode"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -457,29 +418,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\" AND metric.label.serviceName=\"AmazonElasticLoadBalancing\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName=\"AmazonElasticLoadBalancing\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -502,14 +450,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName!=\"AmazonEC2\" AND metric.label.serviceName!=\"AmazonAutoScaling\" AND metric.label.serviceName!=\"AmazonElasticLoadBalancing\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -534,15 +482,15 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.status!=\"2xx\" AND metric.label.serviceName!=\"AmazonEC2\" AND metric.label.serviceName!=\"AmazonAutoScaling\" AND metric.label.serviceName!=\"AmazonElasticLoadBalancing\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.serviceEndpoint",
-                          "metric.label.requestType",
-                          "metric.label.statusCode"
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -566,31 +514,17 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\" AND metric.label.serviceName!=\"AmazonEC2\" AND metric.label.serviceName!=\"AmazonAutoScaling\" AND metric.label.serviceName!=\"AmazonElasticLoadBalancing\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.serviceEndpoint",
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.serviceName!=\"AmazonEC2\" AND metric.label.serviceName!=\"AmazonAutoScaling\" AND metric.label.serviceName!=\"AmazonElasticLoadBalancing\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.serviceEndpoint",
-                                "metric.label.requestType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.service_endpoint",
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],

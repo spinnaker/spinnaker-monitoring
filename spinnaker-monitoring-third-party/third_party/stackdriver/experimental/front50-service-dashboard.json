@@ -12,7 +12,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rollingCount/fallback\" AND metric.label.spin_service=\"front50\" AND metric.label.success!=True",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service=\"front50\" AND metric.label.success!=True",
                       "perSeriesAligner": "ALIGN_SUM",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -39,7 +39,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rollingCount/fallback\" AND metric.label.spin_service\"front50\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service\"front50\"",
                       "perSeriesAligner": "ALIGN_SUM",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -72,7 +72,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status!=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completion_latencies__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status_code_class!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_SUM",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -80,7 +80,7 @@
                       "groupByFields": [
                          "metric.label.spin_variant",
                          "metric.label.method",
-                         "metric.label.statusCode"
+                         "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -111,7 +111,7 @@
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                         "metric.label.objectType"
+                         "metric.label.object_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -137,7 +137,7 @@
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                         "metric.label.objectType"
+                         "metric.label.object_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -161,29 +161,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh__totalTime\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled=True",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.objectType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh__count\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled=True",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.objectType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh_latencies\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled=True",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                           "metric.label.object_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ]
@@ -194,29 +181,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh__totalTime\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled!=True",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.objectType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh__count\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled=True",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.objectType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/front50/cache/refresh_latencies\" AND metric.label.spin_service=\"front50\" AND metric.label.scheduled!=True",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                           "metric.label.object_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -321,29 +295,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/operation/retryable__totalTime\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_RATE",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.action"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/operation/retryable__count\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_RATE",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.action"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/operation/retryable_latencies\" AND metric.label.spin_service=\"front50\"",
+                        "perSeriesAligner": "ALIGN_RATE",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.action"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -360,29 +321,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__totalTime\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_RATE",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.method"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_RATE",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.method"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completion_latencies\" AND metric.label.spin_service=\"front50\"",
+                        "perSeriesAligner": "ALIGN_RATE",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -406,7 +354,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status_code_class=\"2xx\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -425,7 +373,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status!=\"2xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"front50\" AND metric.label.status_code_class!=\"2xx\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -449,15 +397,11 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"front50\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"front50\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
                     }
                   }
                 ],

@@ -12,7 +12,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.status=\"5xx\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.status_code_class=\"5xx\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -44,7 +44,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -75,31 +75,17 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -122,7 +108,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operations__count\" AND metric.label.success=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operation_latencies__count\" AND metric.label.success=True",
                     "perSeriesAligner": "ALIGN_DELTA",
                     "crossSeriesReducer": "REDUCE_SUM",
                     "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -137,7 +123,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operations__count\" AND metric.label.success!=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/operation_latencies__count\" AND metric.label.success!=True",
                     "perSeriesAligner": "ALIGN_DELTA",
                     "crossSeriesReducer": "REDUCE_SUM",
                     "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -170,7 +156,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\" AND metric.label.success!=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/with_type_latencies__count\" AND metric.label.success!=True",
                     "perSeriesAligner": "ALIGN_DELTA",
                     "crossSeriesReducer": "REDUCE_SUM",
                     "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -240,7 +226,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/with_type_latencies__count\"",
                     "perSeriesAligner": "ALIGN_DELTA",
                     "crossSeriesReducer": "REDUCE_SUM",
                     "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -265,29 +251,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/with_type_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -310,7 +283,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag_latencies__count\"",
                     "perSeriesAligner": "ALIGN_DELTA",
                     "crossSeriesReducer": "REDUCE_SUM",
                     "secondaryCrossSeriesReducer": "REDUCE_NONE",
@@ -335,29 +308,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -380,7 +340,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completions__count\" AND metric.label.success!=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completion_latencies__count\" AND metric.label.success!=True",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -388,7 +348,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\" AND metric.label.status!=\"2xx\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -396,7 +356,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\" AND metric.label.status!=\"2xx\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -404,7 +364,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\" AND metric.label.success!=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies__count\" AND metric.label.success!=True",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -412,7 +372,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\" AND metric.label.success!=\"true\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.success!=True",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -437,7 +397,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completions__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completion_latencies__count\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -445,7 +405,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completion_latencies__count\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -453,7 +413,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completion_latencies__count\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -461,7 +421,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies__count\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -469,7 +429,7 @@
                   },
                   {
                     "timeSeriesFilter": {
-                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\"",
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\"",
                     "perSeriesAligner": "ALIGN_RATE",
                     "crossSeriesReducer": "REDUCE_SUM"
                     },
@@ -495,146 +455,73 @@
                   {
                     "timeSeriesFilterRatio": {
                         "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completions__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/appengine/deploy/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   },
                   {
                     "timeSeriesFilterRatio": {
                         "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completions__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   },
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completions__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/compute/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   },
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completions__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/google/api/storage/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   },
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completions__totalTime\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completions__count\"",
-
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.spin_service",
-                                "metric.label.spin_variant"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],

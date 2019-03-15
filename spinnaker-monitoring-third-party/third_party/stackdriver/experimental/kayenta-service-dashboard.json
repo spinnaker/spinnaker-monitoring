@@ -31,29 +31,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/canary/repository/stackriver/fetch__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_SUM",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.metricStore"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/canary/repository/stackriver/fetch__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_SUM",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.metricStore"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/canary/repository/stackriver/fetch_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_SUM",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.metric_store"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ]
@@ -89,7 +76,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/canary/pipeline/startupFailures\" AND metric.label.spin_service=\"kayenta\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/canary/pipeline/startup_failures\" AND metric.label.spin_service=\"kayenta\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -113,7 +100,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/activeThreads\" AND metric.label.spin_service=\"kayenta\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/active_threads\" AND metric.label.spin_service=\"kayenta\"",
                       "perSeriesAligner": "ALIGN_MEAN"
                     }
                   }
@@ -126,7 +113,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/blockedSize\" AND metric.label.spin_service=\"kayenta\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/threadpool/blocked_size\" AND metric.label.spin_service=\"kayenta\"",
                       "perSeriesAligner": "ALIGN_MEAN"
                     }
                   }
@@ -229,15 +216,11 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/queue/message/lag_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -326,7 +309,7 @@
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.executionType"
+                          "metric.label.execution_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -352,7 +335,7 @@
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
-                          "metric.label.executionType"
+                          "metric.label.execution_type"
                       ],
                       "unitOverride": "1"
                     }
@@ -376,29 +359,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.executionType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/withType__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.executionType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/execution/completions/with_type_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.execution_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -415,29 +385,16 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/invocation/completions/withType__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.executionType"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/invocation/completions/withType__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                                "metric.label.executionType"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/task/invocation/completions/with_type_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.execution_type"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -484,7 +441,7 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/stage/durationBucket\" AND metric.label.spin_service=\"kayenta\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/stage/duration_bucket\" AND metric.label.spin_service=\"kayenta\"",
                       "perSeriesAligner": "ALIGN_RATE"
                     }
                   }
@@ -508,14 +465,14 @@
                 "dataSets": [
                   {
                     "timeSeriesFilter": {
-                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__count\" AND metric.label.spin_service=\"gate\"",
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completion_latencies__count\" AND metric.label.spin_service=\"gate\"",
                       "perSeriesAligner": "ALIGN_RATE",
                       "crossSeriesReducer": "REDUCE_SUM",
                       "secondaryCrossSeriesReducer": "REDUCE_NONE",
                       "minAlignmentPeriod": "60s",
                       "groupByFields": [
                          "metric.label.spin_variant",
-                         "metric.label.statusCode"
+                         "metric.label.status_code"
                       ],
                       "unitOverride": "1"
                     }
@@ -539,31 +496,17 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.spin_variant",
-                               "metric.label.statusCode"
-                            ],
-                            "unitOverride": "1"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completions__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA",
-                            "crossSeriesReducer": "REDUCE_SUM",
-                            "secondaryCrossSeriesReducer": "REDUCE_NONE",
-                            "minAlignmentPeriod": "60s",
-                            "groupByFields": [
-                               "metric.label.spin_variant",
-                               "metric.label.statusCode"
-                            ],
-                            "unitOverride": "1"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completion_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                           "metric.label.spin_variant",
+                           "metric.label.status_code"
+                        ],
+                        "unitOverride": "ns"
                     }
                   }
                 ],
@@ -585,15 +528,11 @@
               "xyChart": {
                 "dataSets": [
                   {
-                    "timeSeriesFilterRatio": {
-                        "numerator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__totalTime\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        },
-                        "denominator_filter": {
-                            "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completions__count\" AND metric.label.spin_service=\"kayenta\"",
-                            "perSeriesAligner": "ALIGN_DELTA"
-                        }
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"kayenta\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
                     }
                   }
                 ],

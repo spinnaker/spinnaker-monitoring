@@ -68,6 +68,22 @@ def merge_specifications(baseline, derived):
   return result
 
 
+def normalize_options(options):
+  options_copy = dict(options)
+  if 'spectator' in options_copy:
+    spectator_options = dict(options_copy['spectator'])
+  else:
+    spectator_options = {}
+
+  for key in ['disable_metric_filter',
+              'disable_metric_transform',
+              'metric_filter_dir']:
+    if key not in spectator_options and key in options_copy:
+      spectator_options[key] = options_copy[key]
+  options_copy['spectator'] = spectator_options
+  return options_copy
+
+
 class ResponseProcessor(object):
   @property
   def spectator_options(self):
@@ -75,10 +91,12 @@ class ResponseProcessor(object):
     return self.__spectator_options
 
   def __init__(self, options):
-    self.__spectator_options = options.get('spectator', {})
-    self.__disable_filter = options.get('disable_metric_filter', False)
-    self.__disable_transform = options.get('disable_metric_transform', False)
-    self.__filter_dir = options.get('metric_filter_dir')
+    self.__spectator_options = normalize_options(options)['spectator']
+    self.__disable_filter = self.__spectator_options.get(
+        'disable_metric_filter', False)
+    self.__disable_transform = self.__spectator_options.get(
+        'disable_metric_transform', False)
+    self.__filter_dir = self.__spectator_options.get('metric_filter_dir')
     if self.__filter_dir:
       logging.info('Using explicit --metric_filter_dir=%s', self.__filter_dir)
     else:

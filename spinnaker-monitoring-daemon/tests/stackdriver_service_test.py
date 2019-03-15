@@ -27,6 +27,7 @@ from googleapiclient.errors import HttpError
 import mock
 from mock import Mock
 
+import google_service
 import stackdriver_service
 
 
@@ -377,7 +378,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     )
 
     manager = self.service.descriptor_manager
-    options = stackdriver_service.normalize_options({})
+    options = google_service.normalize_options({})
     audit = manager.audit_descriptors(options)
 
     self.assertEquals(expect_new.keys(), audit.new_descriptors.keys())
@@ -412,7 +413,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     )
 
     manager = self.service.descriptor_manager
-    options = stackdriver_service.normalize_options(
+    options = google_service.normalize_options(
         {'manage_stackdriver_descriptors': 'create'}
     )
     audit = manager.audit_descriptors(options)
@@ -460,7 +461,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.mockCreateDescriptor.execute.return_value = []
 
     manager = self.service.descriptor_manager
-    options = stackdriver_service.normalize_options(
+    options = google_service.normalize_options(
         {'manage_stackdriver_descriptors': 'create'}
     )
     audit = manager.audit_descriptors(options)
@@ -501,7 +502,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     self.mockDeleteDescriptor.execute.return_value = {}
 
     manager = self.service.descriptor_manager
-    options = stackdriver_service.normalize_options(
+    options = google_service.normalize_options(
         {'manage_stackdriver_descriptors': 'create'}
     )
     audit = manager.audit_descriptors(options)

@@ -291,6 +291,10 @@ class SpectatorClientHelper(object):
 
   STANDARD_VARIANT = ''  # Tag value for a 'Normal' / full mode deployment
 
+  @property
+  def options(self):
+    return self.__options
+
   def __init__(self, options):
     self.__options = options.get('spectator', {})
     self.__summarize_compound_kinds = self.__options.get(

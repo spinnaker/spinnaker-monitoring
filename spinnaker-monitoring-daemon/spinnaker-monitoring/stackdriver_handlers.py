@@ -26,6 +26,7 @@ from multiprocessing.pool import ThreadPool
 
 from command_processor import CommandHandler
 from command_processor import get_global_options
+import google_service
 import http_server
 import stackdriver_descriptors
 import stackdriver_service
@@ -87,7 +88,7 @@ class UpsertCustomDescriptorsHandler(BaseStackdriverCommandHandler):
 
   def process_commandline_request(self, options):
     """Implements CommandHandler."""
-    options = stackdriver_service.normalize_options(options)
+    options = google_service.normalize_options(options)
     if not options.get('manage_stackdriver_descriptors'):
       options['manage_stackdriver_descriptors'] = 'create'
     stackdriver = stackdriver_service.make_service(options)

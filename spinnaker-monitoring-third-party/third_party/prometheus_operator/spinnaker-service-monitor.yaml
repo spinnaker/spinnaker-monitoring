@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: spinnaker-all-metrics
+  labels:
+    app: spin
+    # this label is here to match the prometheus operator serviceMonitorSelector attribute
+    # prometheus.prometheusSpec.serviceMonitorSelector
+    # https://github.com/helm/charts/tree/master/stable/prometheus-operator
+    release: prometheus-operator
+spec:
+  selector:
+    matchLabels:
+      app: spin
+    namespaceSelector:
+      any: true
+  endpoints:
+  # "port" is string only. "targetPort" is integer or string.
+  - targetPort: 8008
+    interval: 10s
+    path: "/prometheus_metrics"

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: %DASHBOARD%
+  labels:
+    grafana_dashboard: "true"
+data:

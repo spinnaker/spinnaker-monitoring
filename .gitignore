@@ -14,3 +14,4 @@ var/
 .gradle
 .idea
 spinnaker-monitoring.iml
+generated_dashboards

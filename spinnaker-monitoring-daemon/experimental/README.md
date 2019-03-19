@@ -318,6 +318,30 @@ spectator:
   inject_service_tag: true
 ```
 
+The supplied dashboards assume the following configuration recommendations
+over the original defaults:
+
+spectator:
+  inject_service_tag: true
+  decorate_metric_name: false
+  use_base_service_name_only: false
+
+stackdriver:
+  distributions_also_have_count: true
+  fix_custom_metrics_unsafe: false
+  spectator:
+    use_snake_case: true
+    enforce_stackdriver_names: true
+    summarize_compound_kinds: true
+    transform_values: true   
+
+prometheus:
+  use_standard_notation: true
+
+datadog:
+  use_types: true
+
+
 ## Location
 
 

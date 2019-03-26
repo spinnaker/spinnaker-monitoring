@@ -320,6 +320,13 @@ class MetricDescriptorManager(object):
     """Determine Custom Descriptor type name for the given metric type name."""
     return self.__metric_name_prefix + name
 
+  def distribution_to_counter(self, name):
+    """Converts a distribution name (or type) into a corresponding counter.
+    
+    The counter is used for convienence in determine the count in the distribution.
+    """
+    return name + '_count'
+
   def fetch_all_descriptors(self, project):
     """Get all the spinnaker descriptors already known in Stackdriver."""
     project_name = 'projects/' + (project or self.__stackdriver.project)
@@ -478,8 +485,9 @@ class MetricDescriptorManager(object):
           'Counter mirroring number of measurements in %s.'
           ' This metric may soon be deprecated.'
           % meter_name)
-      component['name'] += '__count'
-      component['type'] += '__count'
+      component['type'] = self.distribution_to_counter(component['type'])
+      component['name'] = self.distribution_to_counter(component['name'])
+
       if 'unit' in component:
         del component['unit']
       component['valueType'] = 'INT64'

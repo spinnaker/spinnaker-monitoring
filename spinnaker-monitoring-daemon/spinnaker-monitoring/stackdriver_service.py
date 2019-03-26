@@ -194,7 +194,8 @@ class StackdriverMetricsService(google_service.GoogleMonitoringService):
         }
 
       counter_metric = copy.deepcopy(metric)
-      counter_metric['type'] += '__count'
+      counter_metric['type'] = self.__descriptor_manager.distribution_to_counter(
+          counter_metric['type'])
       result.append({
           'metric': counter_metric,
           'resource': monitored_resource,

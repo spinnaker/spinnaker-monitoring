@@ -311,6 +311,9 @@ class MetricDescriptorManager(object):
         'summarize_compound_kinds')
     self.__distributions_also_have_count = stackdriver.stackdriver_options.get(
         'distributions_also_have_count')
+    # When you are familiar with the internal metrics, using the display name
+    # get's confusing so let's require that to be explicitly enabled.
+    self.__add_display_name = stackdriver.stackdriver_options.get('add_display_name')
 
     self.__internal_name_prefix = (
         'projects/{project}/metricDescriptors/'
@@ -413,7 +416,7 @@ class MetricDescriptorManager(object):
     unit = self.UNIT_MAP.get(spec.get('unit'))
     if unit:
       want['unit'] = unit
-    if spec.get('display_name'):
+    if self.__add_display_name and spec.get('display_name'):
       want['displayName'] = spec.get('display_name')
     if spec.get('docs'):
       want['description'] = spec.get('docs')

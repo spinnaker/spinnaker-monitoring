@@ -289,7 +289,7 @@ class GoogleMonitoringService(object):
     self.__stub_factory = stub_factory
     self.__stub = None
     self.__project = (self.__service_options.get('project')
-                      or determine_local_project())
+                      or str(determine_local_project()))
     logging.info('Using stackdriver project %r', self.__project)
 
     spectator_options = options_copy.get('spectator', {})
@@ -491,7 +491,7 @@ class GenericTaskResourceBuilder(object):
         'labels': {
             'project_id': self.__project,
             'location': location,
-            'namespace':  determine_local_project() or 'default',
+            'namespace':  str(determine_local_project()) or 'default',
             'job': instance_id,
             'task_id': monitored_resource_id
         }

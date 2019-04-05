@@ -72,6 +72,7 @@ class StackdriverMetricsService(google_service.GoogleMonitoringService):
         'distributions_also_have_count')
     self.__fix_custom_metrics_unsafe = self.service_options.get(
         'fix_custom_metrics_unsafe', False)
+    self.__log_400_data = self.service_options.get('log_400_data', False)
 
     manager_options = dict(options)
     manager_options['spectator'] = self.spectator_helper.options
@@ -234,13 +235,33 @@ class StackdriverMetricsService(google_service.GoogleMonitoringService):
 
   def find_problematic_elements(self, error, batch):
     try:
-      content = json.JSONDecoder().decode(error.content)
+      content = json.JSONDecoder().decode(error.content.decode('utf-8'))
       message = content['error']['message']
     except KeyError:
       return []
 
-    found = []
+    if self.__log_400_data:
+      time_series_index_pattern = r'timeSeries\[(\d+?)\]'
+      log_count = 0
+      for match in re.finditer(time_series_index_pattern, message):
+        ts_index = int(match.group(1))
+        log_count += 1
+        if log_count > 3:
+          break
+        logging.info('timeSeries[%d] -> %r', ts_index,batch[ts_index])
 
+      time_series_range_pattern = r'timeSeries\[(\d+?)\-(\d+?)\]'
+      for match in re.finditer(time_series_range_pattern, message):
+        ts_start_index = int(match.group(1))
+        ts_end_index = int(match.group(2))
+        text = []
+        for index in range(ts_start_index, ts_end_index):
+          text.append('[%d] -> %r' % (index, batch[index]))
+        logging.info('\n%s', '\n'.join(text))
+        break
+      
+
+    found = []
     counter_to_gauge_pattern = (
         r'timeSeries\[(\d+?)\]\.metricKind'
         r' had an invalid value of \"(CUMULATIVE|GAUGE)\"'

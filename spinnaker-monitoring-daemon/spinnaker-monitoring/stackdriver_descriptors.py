@@ -485,8 +485,7 @@ class MetricDescriptorManager(object):
       # Eventually this will be deprecated.
       component = dict(want)
       component['description'] = (
-          'Counter mirroring number of measurements in %s.'
-          ' This metric may soon be deprecated.'
+          'Counter mirroring the number of measurements in %s.'
           % meter_name)
       component['type'] = self.distribution_to_counter(component['type'])
       component['name'] = self.distribution_to_counter(component['name'])

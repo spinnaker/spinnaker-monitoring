@@ -251,6 +251,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
         'metricKind': 'CUMULATIVE',
         'name': timer_name,
         'type': timer_type,
+
         'labels': [
             {'key': 'spin_service'},
             {'key': 'spin_variant'},
@@ -267,6 +268,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     descriptor['type'] = timer_type + '__count'
     descriptor['description'] = (
         'Number of measurements in test_system/test_timer__totalTime.')
+    descriptor['displayName'] = 'Spinnaker test_system/test_timer count'
     result[descriptor['name']] = descriptor
 
     descriptor = dict(timer_descriptor)
@@ -274,6 +276,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
     descriptor['type'] = timer_type + '__totalTime'
     descriptor['unit'] = 'ns'
     result[descriptor['name']] = descriptor
+    descriptor['displayName'] = 'Spinnaker test_system/test_timer total time'
 
     gauge = {
         'valueType': 'DOUBLE',
@@ -287,6 +290,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             {'key': 'spin_variant'}
         ]
     }
+    gauge['displayName'] = 'Spinnaker test_system/test_gauge'
     result[gauge['name']] = gauge
 
     counter = {
@@ -300,6 +304,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             {'key': 'spin_variant'}
         ]
     }
+    counter['displayName'] = 'Spinnaker test_system/test_counter'
     result[counter['name']] = counter
 
     summary = {
@@ -313,6 +318,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             {'key': 'spin_variant'}
         ]
     }
+    summary['displayName'] = 'Spinnaker test_system/test_summary'
     result[summary['name']] = summary
 
     unused = {
@@ -326,6 +332,7 @@ class StackdriverMetricsServiceTest(unittest.TestCase):
             {'key': 'spin_variant'}
         ]
     }
+    unused['displayName'] = 'Spinnaker test_system/extra'
     result[unused['name']] = unused
 
     return result

@@ -417,7 +417,11 @@ class MetricDescriptorManager(object):
     if unit:
       want['unit'] = unit
     if self.__add_display_name and spec.get('display_name'):
-      want['displayName'] = spec.get('display_name')
+      displayName = spec.get('display_name')
+    else:
+      displayName = 'Spinnaker ' + meter_name
+    want['displayName'] = displayName
+
     if spec.get('docs'):
       want['description'] = spec.get('docs')
 
@@ -434,11 +438,11 @@ class MetricDescriptorManager(object):
     elif (meter_is_timer or meter_is_distribution):
       if meter_is_timer:
         totalSuffix = 'totalTime'
-        displayNameSuffix = ' total time'
+        displayNameSuffix = 'total time'
         unit = "ns"
       else:
         totalSuffix = 'totalAmount'
-        displayNameSuffix = ' total'
+        displayNameSuffix = 'total'
         unit = None
 
       if not rule.discard_tag_value('statistic', 'count'):
@@ -485,8 +489,7 @@ class MetricDescriptorManager(object):
       # Eventually this will be deprecated.
       component = dict(want)
       component['description'] = (
-          'Counter mirroring the number of measurements in %s.'
-          % meter_name)
+          'Counter mirroring number of measurements in %s.' % meter_name)
       component['type'] = self.distribution_to_counter(component['type'])
       component['name'] = self.distribution_to_counter(component['name'])
 

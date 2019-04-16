@@ -523,7 +523,8 @@ class TransformationRule(object):
       # looking at the raw spec.
       transformation['type'] = 'STRING'
 
-    tags_are_typed = self.__transformer.options.get('tags_are_typed')
+    tags_are_string = self.__transformer.options.get('tags_are_typed_string')
+    tags_are_typed = self.__transformer.options.get('tags_are_typed') or tags_are_string
     tag_type = transformation['type']
     if tag_type == 'BOOL':
       compare = transformation.get('compare_value')
@@ -532,13 +533,13 @@ class TransformationRule(object):
       else:
         compare_func = lambda value: value == 'true' or value == ''
 
-      if tags_are_typed:
+      if tags_are_string or not tags_are_typed:
         transformation['_xform_func'] = lambda value: {
-            to_tag: compare_func(value)
+            to_tag: str(compare_func(value)).lower()
         }
       else:
         transformation['_xform_func'] = lambda value: {
-            to_tag: str(compare_func(value)).lower()
+            to_tag: compare_func(value)
         }
       return
 
@@ -548,9 +549,15 @@ class TransformationRule(object):
       if not tags_are_typed or tag_type == 'STRING':
         transformation['_xform_func'] = lambda value: {to_tag: value}
       elif tag_type == 'INT':
-        transformation['_xform_func'] = lambda value: {
-            to_tag: int(0 if value in ('', 'UNKNOWN') else value)
-        }
+        value_func = lambda value: int(0 if value in ('', 'UNKNOWN') else value)
+        if tags_are_string:
+          transformation['_xform_func'] = lambda value: {
+              to_tag: str(value_func(value))
+          }
+        else:
+          transformation['_xform_func'] = lambda value: {
+              to_tag: value_func(value)
+          }
       else:
         raise ValueError('Unknown tag_type "%s"' % tag_type)
       return

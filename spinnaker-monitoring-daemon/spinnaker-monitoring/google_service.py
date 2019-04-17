@@ -93,6 +93,7 @@ def normalize_options(options, embedded_options_key='stackdriver'):
     enforce(prefix, spectator, 'use_snake_case', True)
     enforce(prefix, spectator, 'enforce_stackdriver_names', True)
     enforce(prefix, spectator, 'summarize_compound_kinds', True)
+    enforce(prefix, spectator, 'tags_are_typed_string', True)
     enforce(prefix, spectator, 'transform_values', True)
     if not options_copy.get('spectator'):
       options_copy['spectator'] = spectator

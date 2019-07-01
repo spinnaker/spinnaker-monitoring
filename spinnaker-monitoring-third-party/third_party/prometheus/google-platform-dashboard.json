@@ -37,6 +37,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
+  "uid": null,
   "links": [],
   "refresh": "30s",
   "rows": [

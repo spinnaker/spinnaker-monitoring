@@ -4,7 +4,7 @@ This setup script assumes:
 
 * You've already enabled Prometheus metric store in Spinnaker
 * You've already installed Prometheus Operator to your cluster
-* Your kubectl context is the cluster what you have Spinnaker + Prometheus Operator installed
+* Your kubectl context is the cluster where you have Spinnaker + Prometheus Operator installed
 
 ## Usage
 

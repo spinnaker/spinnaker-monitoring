@@ -28,6 +28,7 @@ import command_processor
 import datadog_service
 import datadog_handlers
 import gcp_service_control_service
+import newrelic_service
 import prometheus_service
 import server_handlers
 import spectator_client
@@ -122,6 +123,8 @@ def prepare_commands():
       stackdriver_service.StackdriverServiceFactory())
   server_handlers.MonitorCommandHandler.register_metric_service_factory(
       gcp_service_control_service.GcpServiceControlServiceFactory())
+  server_handlers.MonitorCommandHandler.register_metric_service_factory(
+      newrelic_service.NewRelicServiceFactory())
   server_handlers.add_handlers(all_command_handlers, subparsers)
 
   return all_command_handlers, parser
@@ -157,7 +160,7 @@ def main(config_search_path):
   stores = options['monitor'].get('metric_store', [])
   if not isinstance(stores, list):
     stores = [stores]
-  stores.extend([store for store in ['datadog', 'prometheus', 'stackdriver']
+  stores.extend([store for store in ['datadog', 'prometheus', 'stackdriver', 'newrelic']
                  if options.get('monitor_' + store)])
   options['monitor']['metric_store'] = set(stores)
 

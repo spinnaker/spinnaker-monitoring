@@ -19,3 +19,4 @@ pyyaml
 
 # mock is only needed for tests
 mock
+newrelic-telemetry-sdk

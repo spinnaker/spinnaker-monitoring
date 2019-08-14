@@ -45,6 +45,7 @@ monitor:
   # This will be automatically updated by the third_party/*/instal.sh
   # if this file exists when the install is run with client install enabled.
   metric_store:
+#    - newrelic
 #    - datadog
 #    - prometheus
 #    - stackdriver
@@ -106,3 +107,15 @@ stackdriver:
   # rather than the deployment environment. The task will be labeled
   # with the service being monitored.
   generic_task_resources:
+
+newrelic:
+  # the New Relic Insights Insert Key used to upload data to your application
+  insert_key: 
+
+  # an object containing tags to be appended to all uplodaed metrics. 
+  # each list entry has a key:value pair delimited with ':'
+  # For example:
+  # tags:
+  # - Env:Production
+  # or similar
+  tags:

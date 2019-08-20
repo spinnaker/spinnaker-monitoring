@@ -1,0 +1,3 @@
+FROM alpine:3.7
+MAINTAINER delivery-engineering@netflix.com
+COPY ./spinnaker-monitoring-daemon /compiled_sources

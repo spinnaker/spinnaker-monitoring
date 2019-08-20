@@ -2,17 +2,15 @@
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
 FROM python:2.7.14-alpine3.7
+MAINTAINER delivery-engineering@netflix.com
 
-COPY spinnaker-monitoring /opt/spinnaker-monitoring/bin
-
-COPY requirements.txt /opt/spinnaker-monitoring/requirements.txt
+COPY --from=compile /compiled_sources/spinnaker-monitoring /opt/spinnaker-monitoring/bin
+COPY --from=compile /compiled_sources/requirements.txt /opt/spinnaker-monitoring/requirements.txt
 
 WORKDIR /opt/spinnaker-monitoring
 
 RUN sed -ie 's/#@ //g' requirements.txt
-
 RUN pip install -r requirements.txt
-
 ENV PYTHONWARNINGS "once"
 
 RUN addgroup spinnaker

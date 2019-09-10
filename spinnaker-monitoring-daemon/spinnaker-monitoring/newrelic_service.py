@@ -59,7 +59,8 @@ def make_new_relic_service(options, spectator_helper=None):
     elif 'NEWRELIC_INSERT_KEY' in os.environ:
         insert_key = os.environ['NEWRELIC_INSERT_KEY']
     else:
-        raise "New Relic is enabled but the config file has no New Relic Insights Insert Key option"
+        raise Exception("New Relic is enabled but the config file has no New Relic Insights Insert Key option \n"
+                        "See https://docs.newrelic.com/docs/insights/insights-data-sources/custom-data/send-custom-events-event-api for details on insert keys")
     if 'NEWRELIC_HOST' in os.environ:
         host = os.environ['NEWRELIC_HOST']
     elif 'newrelic' in options and 'host' in options['newrelic']:

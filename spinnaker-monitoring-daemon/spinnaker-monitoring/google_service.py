@@ -209,7 +209,8 @@ class GoogleMonitoringService(object):
 
   @staticmethod
   def millis_to_time(millis):
-    return datetime.fromtimestamp(millis // 1000).isoformat('T') + 'Z'
+    # matches expected format StackdriverSurveyor.__date_format = '%Y-%m-%dT%H:%M:%SZ'
+    return datetime.utcfromtimestamp(millis // 1000).strftime("%Y-%m-%dT%H:%M:%SZ")
 
   @property
   def project(self):

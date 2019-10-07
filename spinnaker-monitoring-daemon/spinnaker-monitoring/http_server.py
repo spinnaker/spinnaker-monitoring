@@ -28,7 +28,13 @@ except ImportError:
       HTTPServer,
       BaseHTTPRequestHandler)
   from urllib.request import unquote as urllibUnquote
-    
+
+# The unicode type only exists in python 2; it has been renamed str in python 3
+# In order to support python 2 and 3, alias unicode to str if it's not present
+try:
+  unicode
+except NameError:
+  unicode = str
 
 def build_html_document(body, title=None):
   """Produces the HTML document wrapper for a text/html response."""
@@ -73,7 +79,7 @@ class DelegatingRequestHandler(BaseHTTPRequestHandler):
       self.send_header(key, value)
     self.end_headers()
     if body:
-      if isinstance(body, str):
+      if isinstance(body, unicode):
         body = body.encode('utf-8')
       self.wfile.write(body)
 

@@ -75,7 +75,8 @@ def extract_tags(options):
         option_tags = options['newrelic'].get('tags', []) or []
         for tag in option_tags:
             if tag.find(":"):
-                tags.update(tag.split(":", 2))
+                key, value = tag.split(":", 1)
+                tags[key] = value
     for env_var_name, tag_name in NEWRELIC_KUBERNETES_METADATA_MAPPING.iteritems():
         if env_var_name in os.environ:
             tags[tag_name] = os.environ[env_var_name]

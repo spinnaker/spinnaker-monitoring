@@ -42,7 +42,7 @@ monitor:
   period: 30
 
   # Enable the one you are interested in using by uncommenting it.
-  # This will be automatically updated by the third_party/*/instal.sh
+  # This will be automatically updated by the third_party/*/install.sh
   # if this file exists when the install is run with client install enabled.
   metric_store:
 #    - newrelic
@@ -112,7 +112,7 @@ newrelic:
   # the New Relic Insights Insert Key used to upload data to your application
   insert_key: 
 
-  # an object containing tags to be appended to all uplodaed metrics. 
+  # an object containing tags to be appended to all uploaded metrics. 
   # each list entry has a key:value pair delimited with ':'
   # For example:
   # tags:

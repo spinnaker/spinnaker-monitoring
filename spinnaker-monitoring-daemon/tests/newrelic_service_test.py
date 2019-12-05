@@ -169,14 +169,14 @@ class NewRelicServiceFactoryTest(unittest.TestCase):
         self.serviceFactory = NewRelicServiceFactory()
 
     def test_make_new_relic_service(self):
-        """ test if options are being passed through correctly by checking url of metric client """
-        options = generate_options()
+        """ test if options are being passed through correctly by checking url & tags of metric client """
+        options = generate_options(tags=["abc:def"])
         service = self.serviceFactory(options, None)
         metric_client = service.metric_client
         self.assertIsInstance(metric_client, MetricClient)
         self.assertEqual(metric_client.url, metric_client.URL_TEMPLATE.format(
             "not-metric-api.newrelic.com"))
-        self.assertEqual(service.tags, {})
+        self.assertEqual(service.tags, {"abc": "def"})
 
     def test_inject_kubernetes_metadata(self):
         options = generate_options()

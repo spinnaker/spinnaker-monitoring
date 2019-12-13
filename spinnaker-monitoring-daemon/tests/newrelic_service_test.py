@@ -174,8 +174,7 @@ class NewRelicServiceFactoryTest(unittest.TestCase):
         service = self.serviceFactory(options, None)
         metric_client = service.metric_client
         self.assertIsInstance(metric_client, MetricClient)
-        self.assertEqual(metric_client.url, metric_client.URL_TEMPLATE.format(
-            "not-metric-api.newrelic.com"))
+        self.assertEqual(metric_client._pool.host, "not-metric-api.newrelic.com")
         self.assertEqual(service.tags, {"abc": "def"})
 
     def test_inject_kubernetes_metadata(self):

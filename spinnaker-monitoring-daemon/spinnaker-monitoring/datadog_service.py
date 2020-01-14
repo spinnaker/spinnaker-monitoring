@@ -255,7 +255,7 @@ class DatadogMetricsService(object):
 
     name = name.replace('/', '.')
     result.append({
-        'metric': '{service}.{name}'.format(service=service, name=name),
+        'metric': name,
         'host': service_metadata['__host'],
         'type': metric_type,
         'points': [(elem['t'] / 1000, elem['v'])

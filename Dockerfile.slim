@@ -1,7 +1,7 @@
 # This Dockerfile places the python server in /opt/spinnaker-monitoring/bin, and expects
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
-FROM python:2.7.14-alpine3.7
+FROM python:2.7.17-alpine3.11
 MAINTAINER delivery-engineering@netflix.com
 
 COPY --from=compile /compiled_sources/spinnaker-monitoring /opt/spinnaker-monitoring/bin

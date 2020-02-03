@@ -1,0 +1,33 @@
+name: Spinnaker-monitoring CI
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+    - release-*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 2.7
+    - name: Pip Install
+      run: |
+        pip install -r spinnaker-monitoring-daemon/requirements.txt \
+        && pip install -r spinnaker-monitoring-third-party/third_party/datadog/requirements.txt \
+        && pip install -r spinnaker-monitoring-third-party/third_party/prometheus/requirements.txt \
+        && pip install -r spinnaker-monitoring-third-party/third_party/stackdriver/requirements.txt
+    - uses: actions/cache@v1
+      with:
+        path: ~/.gradle
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - name: Build
+      run: ./gradlew -Prelease.useLastTag=true build

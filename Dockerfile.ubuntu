@@ -2,10 +2,10 @@
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
 FROM ubuntu:bionic
-MAINTAINER delivery-engineering@netflix.com
+MAINTAINER sig-platform@spinnaker.io
 
-COPY --from=compile /compiled_sources/spinnaker-monitoring /opt/spinnaker-monitoring/bin
-COPY --from=compile /compiled_sources/requirements.txt /opt/spinnaker-monitoring/requirements.txt
+COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
+COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
 RUN apt-get update && apt-get install -y python python2.7 python-pip wget
 WORKDIR /opt/spinnaker-monitoring
 

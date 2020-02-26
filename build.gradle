@@ -25,6 +25,10 @@ buildscript {
   }
 }
 
+// This empty task just exists so that '-x javadoc' in the debian GCB file won't
+// cause an error
+task javadoc
+
 allprojects {
   group = "com.netflix.spinnaker.monitoring"
   apply plugin: 'spinnaker.project'

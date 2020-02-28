@@ -1,3 +1,5 @@
-FROM alpine:3.7
-MAINTAINER delivery-engineering@netflix.com
-COPY ./spinnaker-monitoring-daemon /compiled_sources
+FROM openjdk:8
+MAINTAINER sig-platform@spinnaker.io
+# The save_cache step will fail if these directories don't exist. We don't have
+# any compilation to do, so just do this instead of running gradle to save time.
+CMD mkdir -p .gradle/caches && mkdir -p .gradle/wrapper

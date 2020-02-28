@@ -2,10 +2,10 @@
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
 FROM python:2.7.14-alpine3.7
-MAINTAINER delivery-engineering@netflix.com
+MAINTAINER sig-platform@spinnaker.io
 
-COPY --from=compile /compiled_sources/spinnaker-monitoring /opt/spinnaker-monitoring/bin
-COPY --from=compile /compiled_sources/requirements.txt /opt/spinnaker-monitoring/requirements.txt
+COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
+COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
 
 WORKDIR /opt/spinnaker-monitoring
 

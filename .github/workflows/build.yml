@@ -1,0 +1,34 @@
+name: Branch Build
+
+on:
+  push:
+    branches:
+    - master
+    - version-*
+
+jobs:
+  branch-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: 2.7
+      - name: Pip Install
+        run: |
+          pip install -r spinnaker-monitoring-daemon/requirements.txt \
+          && pip install -r spinnaker-monitoring-third-party/third_party/datadog/requirements.txt \
+          && pip install -r spinnaker-monitoring-third-party/third_party/prometheus/requirements.txt \
+          && pip install -r spinnaker-monitoring-third-party/third_party/stackdriver/requirements.txt
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - name: Build
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+          BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
+          GRADLE_OPTS: -Xmx6g -Xms6g -Dorg.gradle.daemon=false
+        run: ./gradlew -PenablePublishing=true -PbintrayUser="${BINTRAY_USER}" -PbintrayKey="${BINTRAY_API_KEY}" build snapshot --stacktrace

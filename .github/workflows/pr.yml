@@ -1,11 +1,6 @@
-name: Spinnaker-monitoring CI
+name: PR Build
 
-on:
-  pull_request:
-  push:
-    branches:
-    - master
-    - release-*
+on: [ pull_request ]
 
 jobs:
   build:

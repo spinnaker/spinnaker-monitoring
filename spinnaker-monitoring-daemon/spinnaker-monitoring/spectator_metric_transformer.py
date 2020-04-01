@@ -25,19 +25,24 @@ import re
 import sys
 import yaml
 
+# This is a cache for the _snakeify function to increase performance on the
+#    conversion of CamelCase to snake_case
+SNAKEIFY_CACHE = {}
 
 def _snakeify(text):
-  result = []
-  result.append(text[0].lower())
-  for position in range(1, len(text) - 1):
-    if text[position].isupper():
-      if text[position - 1].islower():
-        result.append('_')
-      elif text[position + 1].islower() and text[position - 1] is not '_':
-        result.append('_')
-    result.append(text[position].lower())
-  result.append(text[len(text) - 1].lower())
-  return ''.join(result)
+  if text not in SNAKEIFY_CACHE.keys():
+    result = []
+    result.append(text[0].lower())
+    for position in range(1, len(text) - 1):
+      if text[position].isupper():
+        if text[position - 1].islower():
+          result.append('_')
+        elif text[position + 1].islower() and text[position - 1] is not '_':
+          result.append('_')
+      result.append(text[position].lower())
+    result.append(text[len(text) - 1].lower())
+    SNAKEIFY_CACHE[text] =  ''.join(result)
+  return SNAKEIFY_CACHE[text]
 
 
 class PercentileDecoder(object):

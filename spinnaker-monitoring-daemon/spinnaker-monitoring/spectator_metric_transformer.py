@@ -26,14 +26,18 @@ import sys
 import yaml
 
 
-# see https://stackoverflow.com/questions/1175208/\
-#     elegant-python-function-to-convert-camelcase-to-snake-case
-_SNAKE_CASE_RE = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)(?<!_)[A-Z](?=[a-z]))')
-
-
 def _snakeify(text):
-  """Turn text into snake-case."""
-  return _SNAKE_CASE_RE.sub(r'_\1', text).lower()
+  result = []
+  result.append(text[0].lower())
+  for position in range(1, len(text) - 1):
+    if text[position].isupper():
+      if text[position - 1].islower():
+        result.append('_')
+      elif text[position + 1].islower() and text[position - 1] is not '_':
+        result.append('_')
+    result.append(text[position].lower())
+  result.append(text[len(text) - 1].lower())
+  return ''.join(result)
 
 
 class PercentileDecoder(object):

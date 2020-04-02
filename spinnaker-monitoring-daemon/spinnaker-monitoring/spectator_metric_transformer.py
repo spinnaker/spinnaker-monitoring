@@ -33,14 +33,14 @@ def _snakeify(text):
   if text not in SNAKEIFY_CACHE.keys():
     result = []
     result.append(text[0].lower())
-    for position in range(1, len(text) - 1):
+    for position in range(1, len(text)):
       if text[position].isupper():
         if text[position - 1].islower():
           result.append('_')
-        elif text[position + 1].islower() and text[position - 1] is not '_':
+        elif position < (len(text) - 1) and text[position + 1].islower() and text[position - 1] is not '_':
           result.append('_')
       result.append(text[position].lower())
-    result.append(text[len(text) - 1].lower())
+    #result.append(text[len(text) - 1].lower())
     SNAKEIFY_CACHE[text] =  ''.join(result)
   return SNAKEIFY_CACHE[text]
 

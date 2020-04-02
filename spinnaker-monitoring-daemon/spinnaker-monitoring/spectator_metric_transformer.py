@@ -30,7 +30,7 @@ import yaml
 SNAKEIFY_CACHE = {}
 
 def _snakeify(text):
-  if text not in SNAKEIFY_CACHE.keys():
+  if text not in SNAKEIFY_CACHE:
     result = []
     result.append(text[0].lower())
     for position in range(1, len(text)):
@@ -40,7 +40,6 @@ def _snakeify(text):
         elif position < (len(text) - 1) and text[position + 1].islower() and text[position - 1] is not '_':
           result.append('_')
       result.append(text[position].lower())
-    #result.append(text[len(text) - 1].lower())
     SNAKEIFY_CACHE[text] =  ''.join(result)
   return SNAKEIFY_CACHE[text]
 

@@ -15,3 +15,4 @@ var/
 .idea
 spinnaker-monitoring.iml
 generated_dashboards
+venv/

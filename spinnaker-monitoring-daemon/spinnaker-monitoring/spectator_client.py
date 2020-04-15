@@ -15,6 +15,7 @@
 # pylint: disable=missing-docstring
 # pylint: disable=global-statement
 
+import ssl
 import base64
 import copy
 import glob
@@ -479,6 +480,9 @@ class SpectatorClient(object):
 
   def collect_metrics(self, service, base_url, params=None):
     """Return JSON metrics from the given server."""
+    if params is None:
+      params = {}
+
     info = urlsplit(base_url)
     host = info.hostname
     port = info.port or 80
@@ -489,6 +493,27 @@ class SpectatorClient(object):
     base_url = '{scheme}://{netloc}{path}'.format(
         scheme=info.scheme, netloc=netloc, path=info.path)
 
+    ssl_context = None
+    try:
+      if params['spectator']['client']['ssl']['enabled']:
+        capath = params['spectator']['client']['ssl'].get('cacert', None)
+        certpath = params['spectator']['client']['ssl'].get('cert', None)
+        keypath = params['spectator']['client']['ssl'].get('key', None)
+        certpasswordpath = params['spectator']['client']['ssl'].get('password', None)
+        if certpasswordpath is not None:
+          with open(certpasswordpath,'r') as passfile:
+            certpassword = passfile.read()
+
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        if capath is not None:
+          ssl_context.load_verify_locations(capath=capath)
+        if certpath is not None:
+          ssl_context.load_cert_chain(certfile=certpath,
+                                      keyfile=keypath,
+                                      password=certpassword)
+    except KeyError:
+      pass
+
     authorization = None
     if info.username or info.password:
       text = '%s:%s' % (info.username, info.password)
@@ -497,8 +522,6 @@ class SpectatorClient(object):
     query = '?' + info.query if info.query else ''
     sep = '&' if info.query else '?'
     query_params = dict(self.__default_scan_params)
-    if params is None:
-      params = {}
     keys_to_copy = [key
                     for key in ['tagNameRegex', 'tagValueRegex',
                                 'meterNameRegex']
@@ -512,7 +535,8 @@ class SpectatorClient(object):
 
     url = '{base_url}{query}'.format(base_url=base_url, query=query)
     collect_start_time = time.time()
-    response = urllibUrlopen(self.create_request(url, authorization))
+    response = urllibUrlopen(self.create_request(url, authorization),
+                             context=ssl_context)
     collect_end_time = time.time()
 
     json_text = response.read().decode('utf-8')

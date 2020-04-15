@@ -36,6 +36,23 @@ spectator:
   # give context to the metric without the tags.
   decorate_metric_name: 
 
+  # Determines wheter to use a particular SSLContext when collecting
+  # metrics. Normally the spectator collects metrics using the default
+  # sslcontext with verification disabled for when using https with
+  # self-signed certificates. If this is enabled, then the spectator
+  # will use a specific SSLContext, validating the endpoint with a
+  # specific cacert and providing client cert authentication
+  #
+  # The options password cert cacert and key all refer to file paths
+  # from which spectator will load each of their contents
+  client:
+    ssl:
+      enabled: False
+      cacert:
+      cert:
+      key:
+      password:
+
 
 monitor:
   # The frequency to poll each of the metric sources in the <registry>

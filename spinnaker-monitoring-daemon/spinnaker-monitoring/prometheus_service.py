@@ -188,6 +188,7 @@ class PrometheusMetricsService(object):
 
     self.__catalog = spectator_client.get_source_catalog(options)
     self.__spectator = spectator_client.SpectatorClient(options)
+    self.__params = dict(options)
     options_copy = dict(options)
 
     # prometheus tags must be strings.
@@ -291,7 +292,7 @@ class PrometheusMetricsService(object):
     now = time.time()
     if now - self.__last_collect_time > 1:
       self.__last_collect_metric_map = (
-          self.__spectator.scan_by_service(self.__catalog))
+          self.__spectator.scan_by_service(self.__catalog, params=self.__params))
       self.__last_collect_time = now
 
     all_members = self.collect_with_metrics(self.__last_collect_metric_map)

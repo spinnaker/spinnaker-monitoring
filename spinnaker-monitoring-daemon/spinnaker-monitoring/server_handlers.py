@@ -196,7 +196,7 @@ class MonitorCommandHandler(WebserverCommandHandler):
 
       start = time.time()
       done = start
-      service_metric_map = spectator.scan_by_service(catalog)
+      service_metric_map = spectator.scan_by_service(catalog, params=options)
       collected = time.time()
 
       for service in publishing_services:

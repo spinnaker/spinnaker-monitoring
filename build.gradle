@@ -15,17 +15,15 @@
  */
 
 plugins {
-  id 'base'
-  id "io.spinnaker.project" version "$spinnakerGradleVersion" apply false
-  id "nebula.node" version "1.3.1"
+  id "io.spinnaker.bintray-publish" version "$spinnakerGradleVersion" apply false
 }
 
-// This empty task just exists so that '-x javadoc' in the debian GCB file won't
-// cause an error
-task javadoc
-
-allprojects {
+subprojects {
+  apply plugin: 'nebula.ospackage'
+  apply plugin: 'io.spinnaker.bintray-publish'
   group = "com.netflix.spinnaker.monitoring"
+
+  tasks.register("publish")
 }
 
 String toVers(String v) {

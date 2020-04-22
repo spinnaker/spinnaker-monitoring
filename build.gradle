@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    jcenter()
-    maven { url "https://dl.bintray.com/spinnaker/gradle" }
-    maven { url "https://plugins.gradle.org/m2/" }
-  }
-  dependencies {
-    classpath 'com.netflix.spinnaker.gradle:spinnaker-gradle-project:3.15.0'
-  }
+plugins {
+  id "io.spinnaker.bintray-publish" version "$spinnakerGradleVersion" apply false
 }
 
-// This empty task just exists so that '-x javadoc' in the debian GCB file won't
-// cause an error
-task javadoc
-
-allprojects {
+subprojects {
+  apply plugin: 'nebula.ospackage'
+  apply plugin: 'io.spinnaker.bintray-publish'
   group = "com.netflix.spinnaker.monitoring"
-  apply plugin: 'spinnaker.project'
+
+  tasks.register("publish")
 }
 
 String toVers(String v) {

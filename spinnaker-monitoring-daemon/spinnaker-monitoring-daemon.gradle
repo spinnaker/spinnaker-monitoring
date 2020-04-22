@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-apply plugin: 'nebula.ospackage'
-
-
 ospackage() {
   packageName = project.name
 

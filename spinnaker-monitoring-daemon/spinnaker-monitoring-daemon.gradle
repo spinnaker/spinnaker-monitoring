@@ -1,3 +1,5 @@
+import com.netflix.spinnaker.gradle.publishing.bintray.BintrayPublishPlugin
+
 /*
  * Copyright 2017 Google, Inc.
  *
@@ -15,7 +17,8 @@
  */
 
 apply plugin: 'nebula.ospackage'
-
+project.tasks.register("publish")
+apply plugin: BintrayPublishPlugin
 
 ospackage() {
   packageName = project.name

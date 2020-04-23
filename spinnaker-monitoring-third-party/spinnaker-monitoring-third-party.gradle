@@ -17,7 +17,7 @@
 ospackage() {
   packageName = project.name
   version = toVers(project.version.toString())
-  release = 3
+  release = toRelease(project.version.toString()) 
 
   postInstall = file('pkg_scripts/postInstall.sh')
 
@@ -25,5 +25,7 @@ ospackage() {
     into('/opt/spinnaker-monitoring/third_party')
   }
 }
+
+tasks.build.dependsOn('buildDeb')
 
 defaultTasks ':buildDeb'

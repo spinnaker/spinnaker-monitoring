@@ -22,7 +22,7 @@ ospackage() {
   
   // global package requirements
   version = toVers(project.version.toString())
-  release = '3'
+  release = toRelease(project.version.toString())
   
   requires('python-pip')
 
@@ -70,6 +70,6 @@ task test(type: Exec) {
   commandLine './tests/run_tests.sh'
 }
 
-tasks.build.dependsOn('test')
+tasks.build.dependsOn('buildDeb', 'test')
 
 defaultTasks ':test'

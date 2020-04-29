@@ -1,6 +1,6 @@
 This is a work in progress and subject to change.
 
-[![Build Status](https://api.travis-ci.org/spinnaker/spinnaker-monitoring.svg?branch=master)](https://travis-ci.org/spinnaker/spinnaker-monitoring)
+![Branch Build](https://github.com/spinnaker/spinnaker-monitoring/workflows/Branch%20Build/badge.svg)
 
 See [the spinnaker.io documentation](https://www.spinnaker.io/setup/monitoring/) for more information about configuring Spinnaker and running this server.
 

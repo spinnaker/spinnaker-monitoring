@@ -21,12 +21,12 @@ jobs:
           && pip install -r spinnaker-monitoring-third-party/third_party/datadog/requirements.txt \
           && pip install -r spinnaker-monitoring-third-party/third_party/prometheus/requirements.txt \
           && pip install -r spinnaker-monitoring-third-party/third_party/stackdriver/requirements.txt
-    - uses: actions/cache@v1
-      with:
-        path: ~/.gradle
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Assemble release info
         id: release_info
         env:

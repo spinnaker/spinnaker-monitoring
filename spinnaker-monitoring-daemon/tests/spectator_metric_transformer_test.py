@@ -361,6 +361,7 @@ class SpectatorMetricTransformerTest(unittest.TestCase):
     self.assertEquals('snake_case', snakeify('Snake_Case'))
     self.assertEquals('http_response', snakeify('HTTPResponse'))
     self.assertEquals('upper_case', snakeify('UPPER_CASE'))
+    self.assertEquals('hi_hi_b', snakeify('hiHiB'))
 
   def test_change_meter_name_explicit(self):
     self.do_test(

@@ -25,15 +25,24 @@ import re
 import sys
 import yaml
 
-
-# see https://stackoverflow.com/questions/1175208/\
-#     elegant-python-function-to-convert-camelcase-to-snake-case
-_SNAKE_CASE_RE = re.compile('((?<=[a-z0-9])[A-Z]|(?!^)(?<!_)[A-Z](?=[a-z]))')
-
+# This is a cache for the _snakeify function to increase performance on the
+#    conversion of CamelCase to snake_case
+SNAKEIFY_CACHE = {}
 
 def _snakeify(text):
-  """Turn text into snake-case."""
-  return _SNAKE_CASE_RE.sub(r'_\1', text).lower()
+  if text not in SNAKEIFY_CACHE:
+    result = []
+    result.append(text[0].lower())
+    text_len = len(text)
+    for position in range(1, text_len):
+      if text[position].isupper():
+        if text[position - 1].islower():
+          result.append('_')
+        elif position < (text_len - 1) and text[position + 1].islower() and text[position - 1] is not '_':
+          result.append('_')
+      result.append(text[position].lower())
+    SNAKEIFY_CACHE[text] =  ''.join(result)
+  return SNAKEIFY_CACHE[text]
 
 
 class PercentileDecoder(object):

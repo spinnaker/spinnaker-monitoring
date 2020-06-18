@@ -1,7 +1,7 @@
 # This Dockerfile places the python server in /opt/spinnaker-monitoring/bin, and expects
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
-FROM python:2.7.14-alpine3.7
+FROM python:2.7.18-alpine3.11
 MAINTAINER sig-platform@spinnaker.io
 
 COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
@@ -9,12 +9,14 @@ COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requ
 
 WORKDIR /opt/spinnaker-monitoring
 
+RUN apk update && apk upgrade -U -a
 RUN sed -ie 's/#@ //g' requirements.txt
 RUN pip install -r requirements.txt
 ENV PYTHONWARNINGS "once"
 
 RUN addgroup spinnaker
 RUN adduser spinnaker -D -G spinnaker
+RUN pip uninstall -y pip
 USER spinnaker
 
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]

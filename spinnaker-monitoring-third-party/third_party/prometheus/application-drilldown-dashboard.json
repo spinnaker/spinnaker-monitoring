@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.1.1"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "53697D57-6A73-42FB-947F-E2EE3A26948B",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -48,7 +18,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 55,
           "legend": {
@@ -125,7 +95,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 65,
           "legend": {
@@ -212,7 +182,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 38,
           "legend": {
@@ -287,7 +257,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 41,
           "legend": {
@@ -315,7 +285,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rosco:bakesActive)",
+              "expr": "sum(rosco:bakesActive__value)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Active",
@@ -324,7 +294,7 @@
               "step": 20
             },
             {
-              "expr": "sum($Function(rosco:bakesRequested[$SamplePeriod])) by (flavor)",
+              "expr": "sum($Function(rosco:bakesRequested__value[$SamplePeriod])) by (flavor)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Request({{flavor}})",
@@ -380,7 +350,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 14,
           "legend": {
@@ -467,7 +437,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 11,
           "legend": {
@@ -495,25 +465,25 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:hystrix:countShortCircuited) by (metricGroup, metricType)",
+              "expr": "sum(front50:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
               "intervalFactor": 2,
-              "legendFormat": "front50/{{metricGroup}}({{metricType}})",
+              "legendFormat": "front50/{{kind}}({{name}})",
               "metric": "",
               "refId": "A",
               "step": 20
             },
             {
-              "expr": "sum(gate:hystrix:countShortCircuited) by (metricGroup, metricType)",
+              "expr": "sum(gate:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
               "intervalFactor": 2,
-              "legendFormat": "gate/{{metricGroup}}({{metricType}})",
+              "legendFormat": "gate/{{kind}}({{name}})",
               "metric": "",
               "refId": "B",
               "step": 20
             },
             {
-              "expr": "sum(igor:hystrix:countShortCircuited) by (metricGroup, metricType)",
+              "expr": "sum(igor:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
               "intervalFactor": 2,
-              "legendFormat": "igor/{{metricGroup}}({{metricType}})",
+              "legendFormat": "igor/{{kind}}({{name}})",
               "metric": "",
               "refId": "C",
               "step": 20
@@ -557,7 +527,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 37,
           "legend": {
@@ -585,25 +555,25 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "$Function(front50:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(front50:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
-              "legendFormat": "front50/{{metricType}}({{metricGroup}})",
+              "legendFormat": "front50/{{kind}}({{name}})",
               "metric": "",
               "refId": "A",
               "step": 10
             },
             {
-              "expr": "$Function(gate:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(gate:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
-              "legendFormat": "gate/{{metricType}}({{metricGroup}})",
+              "legendFormat": "gate/{{kind}}({{name}})",
               "metric": "",
               "refId": "B",
               "step": 10
             },
             {
-              "expr": "$Function(igor:hystrix:countExceptionsThrown[$SamplePeriod])",
+              "expr": "$Function(igor:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
-              "legendFormat": "igor/{{metricType}}({{metricGroup}})",
+              "legendFormat": "igor/{{kind}}({{name}})",
               "metric": "",
               "refId": "C",
               "step": 10
@@ -647,7 +617,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 12,
           "legend": {
@@ -673,28 +643,28 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:hystrix:rollingCountFailure) by (metricGroup, metricType)",
+              "expr": "sum(front50:resilience4j:circuitbreaker:failure:rate__value) by (name, kind)",
               "hide": true,
               "intervalFactor": 2,
-              "legendFormat": "front50({{metricGroup}}/{{metricType}})",
+              "legendFormat": "front50({{name}}/{{kind}})",
               "metric": "",
               "refId": "A",
               "step": 2
             },
             {
-              "expr": "sum(gate:hystrix:rollingCountFailure) by (metricGroup, metricType)",
+              "expr": "sum(gate:resilience4j:circuitbreaker:failure:rate__value) by (name, kind)",
               "hide": true,
               "intervalFactor": 2,
-              "legendFormat": "gate({{metricGroup}}/{{metricType}})",
+              "legendFormat": "gate({{name}}/{{kind}})",
               "metric": "",
               "refId": "B",
               "step": 2
             },
             {
-              "expr": "sum(igor:hystrix:rollingCountFailure) by (metricGroup, metricType)",
+              "expr": "sum(igor:resilience4j:circuitbreaker:failure:rate__value) by (name, kind)",
               "hide": true,
               "intervalFactor": 2,
-              "legendFormat": "igor({{metricGroup}}/{{metricType}})",
+              "legendFormat": "igor({{name}}/{{kind}})",
               "metric": "",
               "refId": "C",
               "step": 2
@@ -703,7 +673,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Rolling Count Failure (global)",
+          "title": "Circuit Breaker Failure Rate (global)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -842,7 +812,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

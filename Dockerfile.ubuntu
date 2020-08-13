@@ -2,7 +2,7 @@
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
 FROM ubuntu:bionic
-MAINTAINER sig-platform@spinnaker.io
+LABEL maintainer="sig-platform@spinnaker.io"
 
 COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
 COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt

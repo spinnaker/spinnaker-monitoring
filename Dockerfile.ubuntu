@@ -13,8 +13,7 @@ RUN sed -ie 's/#@ //g' requirements.txt
 RUN pip install -r requirements.txt
 ENV PYTHONWARNINGS "once"
 
-RUN addgroup spinnaker
-RUN adduser --disabled-login --system --ingroup spinnaker spinnaker
+RUN adduser --system --uid 10111 --group spinnaker
 USER spinnaker
 
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]

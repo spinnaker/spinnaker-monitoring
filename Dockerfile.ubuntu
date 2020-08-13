@@ -4,16 +4,17 @@
 FROM ubuntu:bionic
 LABEL maintainer="sig-platform@spinnaker.io"
 
-COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
-COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
+RUN adduser --system --uid 10111 --group spinnaker
 RUN apt-get update && apt-get install -y python python2.7 python-pip wget
+
+COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
 WORKDIR /opt/spinnaker-monitoring
 
 RUN sed -ie 's/#@ //g' requirements.txt
 RUN pip install -r requirements.txt
 ENV PYTHONWARNINGS "once"
 
-RUN adduser --system --uid 10111 --group spinnaker
+COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
 USER spinnaker
 
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]

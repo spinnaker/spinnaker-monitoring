@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.3.2"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "2E5792D0-70B9-4E35-B35A-C56B1B59D88E",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -50,7 +20,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 67,
           "legend": {
@@ -130,7 +100,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 69,
           "legend": {
@@ -157,7 +127,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:cache:drift{account=~\"$Account\", instance=~\"$Instance\"}[$SamplePeriod])) by (agent, region), \"agent\", \"$1\", \"agent\",  \"(.*)CachingAgent\")",
+              "expr": "label_replace(sum($Function(clouddriver:cache:drift__value{account=~\"$Account\", instance=~\"$Instance\"}[$SamplePeriod])) by (agent, region), \"agent\", \"$1\", \"agent\",  \"(.*)CachingAgent\")",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -220,7 +190,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 1,
           "legend": {
@@ -300,7 +270,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 39,
           "legend": {
@@ -329,7 +299,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:executionCount_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(clouddriver:executionCount__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
@@ -391,7 +361,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 22,
           "legend": {
@@ -420,7 +390,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__totalTime_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method) / sum(rate(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(clouddriver:controller:invocations__total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method)  * 1000000000 / sum(rate(clouddriver:controller:invocations__count_total{instance=~\"$Instance\",account=~\"$Account\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -469,7 +439,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 40,
           "legend": {
@@ -498,7 +468,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:executionTime__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance) / sum(rate(clouddriver:executionTime__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
+              "expr": "sum(rate(clouddriver:executionTime__total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)  * 1000000000 / sum(rate(clouddriver:executionTime__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (instance)",
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",
               "refId": "A",
@@ -558,7 +528,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 54,
           "legend": {
@@ -640,7 +610,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 46,
           "legend": {
@@ -731,7 +701,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 45,
           "legend": {
@@ -760,7 +730,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaitRequests{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests__value{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -810,7 +780,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 44,
           "legend": {
@@ -839,7 +809,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) / sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) ",
+              "expr": "sum(rate(clouddriver:google:operationWaits__total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope)  * 1000000000 / sum(rate(clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (basePhase, scope) ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -848,7 +818,7 @@
               "step": 30
             },
             {
-              "expr": "sum((clouddriver:google:operationWaits__totalTime_total{instance=~\"$Instance\"})) by (basePhase, scope) / sum((clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"})) by (basePhase, scope) ",
+              "expr": "sum((clouddriver:google:operationWaits__total{instance=~\"$Instance\"})) by (basePhase, scope)  * 1000000000 / sum((clouddriver:google:operationWaits__count_total{instance=~\"$Instance\"})) by (basePhase, scope) ",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "{{scope}}/{{basePhase}}",
@@ -919,7 +889,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 21,
           "legend": {
@@ -946,7 +916,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(clouddriver:jvm:memory:used{instance=~\"$Instance\", memtype=\"HEAP\"}) by (id)",
+              "expr": "sum(clouddriver:jvm:memory:used__value{instance=~\"$Instance\", area=\"heap\"}) by (id)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{id}}",
@@ -1010,7 +980,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -1030,7 +1000,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.3.2"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "26259B51-960F-4071-9402-2CBA3CDB42EE",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -50,7 +20,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 11,
           "legend": {
@@ -79,10 +49,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:hystrix:countShortCircuited{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "expr": "sum(front50:resilience4j:circuitbreaker:state__value{state=\"open\",instance=~\"$Instance\"}) by (name, kind)",
               "format": "time_series",
               "intervalFactor": 2,
-              "legendFormat": "{{metricGroup}}({{metricType}})",
+              "legendFormat": "{{name}}({{kind}})",
               "metric": "",
               "refId": "A",
               "step": 40
@@ -129,7 +99,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 37,
           "legend": {
@@ -158,11 +128,11 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:hystrix:countExceptionsThrown{instance=~\"$Instance\"}[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(front50:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\", instance=~\"$Instance\"}[$SamplePeriod])) by (name, kind)",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
-              "legendFormat": "{{metricType}}({{metricGroup}})",
+              "legendFormat": "{{name}}({{kind}})",
               "metric": "",
               "refId": "A",
               "step": 40
@@ -209,7 +179,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 12,
           "legend": {
@@ -236,11 +206,11 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:hystrix:rollingCountFallbackSuccess{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "expr": "sum(front50:resilience4j:circuitbreaker:calls_total{instance=~\"$Instance\"}) by (name, kind)",
               "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
-              "legendFormat": "{{metricGroup}}/{{metricType}}",
+              "legendFormat": "{{name}}/{{kind}}",
               "metric": "",
               "refId": "A",
               "step": 40
@@ -299,7 +269,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 16,
           "legend": {
@@ -387,7 +357,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 17,
           "legend": {
@@ -486,7 +456,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 3,
           "legend": {
@@ -564,7 +534,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "decimals": null,
           "fill": 1,
           "id": 20,
@@ -594,7 +564,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:storageServiceSupport:cacheSize{instance=~\"$Instance\"}) by (objectType)",
+              "expr": "sum(front50:storageServiceSupport:cacheSize__value{instance=~\"$Instance\"}) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "metric": "",
@@ -655,7 +625,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 28,
           "legend": {
@@ -684,7 +654,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(front50:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(front50:controller:invocations__total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  * 1000000000  / sum(rate(front50:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
               "refId": "A",
@@ -741,7 +711,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 15,
           "legend": {
@@ -770,7 +740,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:storageServiceSupport:numAdded_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:numAdded__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "add {{objectType}}",
               "metric": "",
@@ -778,7 +748,7 @@
               "step": 40
             },
             {
-              "expr": "-1 * sum($Function(front50:storageServiceSupport:numRemoved_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "-1 * sum($Function(front50:storageServiceSupport:numRemoved__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "del {{objectType}}",
               "refId": "B",
@@ -840,7 +810,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 9,
           "legend": {
@@ -919,7 +889,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 19,
           "legend": {
@@ -948,7 +918,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:storageServiceSupport:numUpdated_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
+              "expr": "sum($Function(front50:storageServiceSupport:numUpdated__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (objectType)",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "metric": "",
@@ -1009,7 +979,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 10,
           "legend": {
@@ -1037,7 +1007,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(front50:google:storage:invocation__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method) / sum(rate(front50:google:storage:invocation__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
+              "expr": "sum(rate(front50:google:storage:invocation__total{instance=~\"$Instance\"}[$SamplePeriod])) by (method)  * 1000000000 / sum(rate(front50:google:storage:invocation__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (method)",
               "intervalFactor": 2,
               "legendFormat": "{{method}}",
               "refId": "A",
@@ -1085,7 +1055,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 38,
           "legend": {
@@ -1114,7 +1084,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(front50:storageServiceSupport:cacheAge{instance=~\"$Instance\"})",
+              "expr": "avg(front50:storageServiceSupport:cacheAge__value{instance=~\"$Instance\"})",
               "intervalFactor": 2,
               "legendFormat": "{{objectType}}",
               "refId": "A",
@@ -1174,7 +1144,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 21,
           "legend": {
@@ -1201,7 +1171,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "avg(front50:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id)",
+              "expr": "avg(front50:jvm:memory:used__value{instance=~\"$Instance\",area=\"heap\"}) by (id)",
               "intervalFactor": 2,
               "legendFormat": "{{id}}",
               "metric": "",
@@ -1264,7 +1234,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

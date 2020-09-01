@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.3.2"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "AC7DB762-FE9F-40D4-877E-6770ED454C47",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -50,7 +20,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 73,
           "legend": {
@@ -140,7 +110,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 4,
           "legend": {
@@ -230,7 +200,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 23,
           "legend": {
@@ -259,7 +229,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(echo:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) / sum(rate(echo:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
+              "expr": "sum(rate(echo:controller:invocations__total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  * 1000000000 / sum(rate(echo:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -320,7 +290,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 38,
           "legend": {
@@ -411,7 +381,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 21,
           "legend": {
@@ -438,7 +408,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(echo:jvm:memory:used{instance=~\"$Instance\",memtype=\"HEAP\"}) by (id)",
+              "expr": "sum(echo:jvm:memory:used__value{instance=~\"$Instance\",area=\"heap\"}) by (id)",
               "intervalFactor": 2,
               "legendFormat": "{{id}}",
               "metric": "",
@@ -501,7 +471,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

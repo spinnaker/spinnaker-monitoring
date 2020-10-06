@@ -2,19 +2,19 @@
 # config to be mounted in /opt/spinnaker-monitoring/config, which includes the
 # spinnaker-monitoring.yml file.
 FROM ubuntu:bionic
-LABEL maintainer="sig-platform@spinnaker.io"
+MAINTAINER sig-platform@spinnaker.io
 
-RUN adduser --system --uid 10111 --group spinnaker
-RUN apt-get update && apt-get install -y python python2.7 python-pip wget
-
+COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
 COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
+RUN apt-get update && apt-get install -y python python2.7 python-pip wget
 WORKDIR /opt/spinnaker-monitoring
 
 RUN sed -ie 's/#@ //g' requirements.txt
 RUN pip install -r requirements.txt
 ENV PYTHONWARNINGS "once"
 
-COPY spinnaker-monitoring-daemon/spinnaker-monitoring /opt/spinnaker-monitoring/bin
+RUN addgroup spinnaker
+RUN adduser --disabled-login --system --ingroup spinnaker spinnaker
 USER spinnaker
 
 ENTRYPOINT ["python", "/opt/spinnaker-monitoring/bin"]

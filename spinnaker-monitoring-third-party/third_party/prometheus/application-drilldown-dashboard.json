@@ -46,7 +46,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations_total{application=~\"$Application\"}[$SamplePeriod])) by (application, type)",
+              "expr": "sum($Function(orca:stage:invocations__count_total{application=~\"$Application\"}[$SamplePeriod])) by (application, type)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{application}}/{{type}}",
@@ -122,7 +122,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:queue:pushed:messages_total{application=~\"$Application\"}[$SamplePeriod])) by (application)",
+              "expr": "sum($Function(orca:queue:pushed:messages__count_total{application=~\"$Application\"}[$SamplePeriod])) by (application)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{application}}",
@@ -210,7 +210,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:pipelines:triggered_total{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
+              "expr": "sum($Function(echo:pipelines:triggered__count_total{application=~\"$Application\"}[$SamplePeriod])) by (name, application)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}({{application}})",
@@ -492,7 +492,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Short Circuited (global)",
+          "title": "Resilience4j Short Circuited (global)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -582,7 +582,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Exceptions Thrown (global)",
+          "title": "Resilience4j Exceptions Thrown (global)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -673,7 +673,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Circuit Breaker Failure Rate (global)",
+          "title": "Resilience4j Circuitbreaker Failure Rate (global)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -710,7 +710,7 @@
       "repeatIteration": null,
       "repeatRowId": null,
       "showTitle": false,
-      "title": "Hystrix Error Signals",
+      "title": "Circuitbreaker Error Signals",
       "titleSize": "h6"
     }
   ],
@@ -819,7 +819,7 @@
         "multi": false,
         "name": "Application",
         "options": [],
-        "query": "label_values(orca:stage:invocations_total, application)",
+        "query": "label_values(orca:stage:invocations__count_total, application)",
         "refresh": 2,
         "regex": "",
         "sort": 1,

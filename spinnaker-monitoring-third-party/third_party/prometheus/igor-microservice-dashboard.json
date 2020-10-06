@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.1.1"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "1B65240A-AEFF-433A-9DFA-52265EBAB4F9",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -50,7 +20,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 11,
           "legend": {
@@ -79,9 +49,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(igor:hystrix:countShortCircuited{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "expr": "sum(igor:resilience4j:circuitbreaker:state__value{state=\"open\",instance=~\"$Instance\"}) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "igor/{{metricGroup}}({{metricType}})",
+              "legendFormat": "igor/{{name}}({{kind}})",
               "metric": "",
               "refId": "B",
               "step": 40
@@ -128,7 +98,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 37,
           "legend": {
@@ -157,9 +127,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(igor:hystrix:countExceptionsThrown{instance=~\"$Instance\"}[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(igor:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\", instance=~\"$Instance\"}[$SamplePeriod])) by (kind, name)",
               "intervalFactor": 2,
-              "legendFormat": "igor/{{metricType}}({{metricGroup}})",
+              "legendFormat": "igor/{{kind}}({{name}})",
               "metric": "",
               "refId": "B",
               "step": 30
@@ -206,7 +176,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 12,
           "legend": {
@@ -233,10 +203,10 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(igor:hystrix:rollingCountFailure{instance=~\"$Instance\") by (metricGroup, metricType)",
+              "expr": "sum(igor:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\", instance=~\"$Instance\") by (name, kind)",
               "hide": true,
               "intervalFactor": 2,
-              "legendFormat": "{{metricGroup}}/{{metricType}}",
+              "legendFormat": "{{name}}/{{kind}}",
               "metric": "",
               "refId": "B",
               "step": 2
@@ -245,7 +215,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Rolling Count Failure ($Instance)",
+          "title": "REMOVE ME? Hystrix Rolling Count Failure ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -295,7 +265,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 65,
           "legend": {
@@ -385,7 +355,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 5,
           "legend": {
@@ -475,7 +445,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 24,
           "legend": {
@@ -504,7 +474,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(igor:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(igor:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(igor:controller:invocations__total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method) * 1000000000 / sum(rate(igor:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -565,7 +535,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 21,
           "legend": {
@@ -592,7 +562,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(igor:jvm:memory:used{instance=~\"$Instance\", memtype=\"HEAP\"}) by (id)",
+              "expr": "sum(igor:jvm:memory:used__value{instance=~\"$Instance\", area=\"heap\"}) by (id)",
               "intervalFactor": 2,
               "legendFormat": "{{id}}",
               "metric": "",
@@ -658,7 +628,7 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

@@ -73,7 +73,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Short Circuited",
+          "title": "Resilience4j Short Circuited",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -136,25 +136,25 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(front50:hystrix:rollingCountFallbackSuccess[$SamplePeriod])) by (metricType, metricgroup)",
+              "expr": "sum($Function(front50:resilience4j:circuitbreaker:calls__total{kind='successful'}[$SamplePeriod])) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "front50/{{metricType}}({{metricGroup}})",
+              "legendFormat": "front50/{{name}}({{kind}})",
               "metric": "",
               "refId": "A",
               "step": 10
             },
             {
-              "expr": "sum($Function(gate:hystrix:rollingCountFallbackSuccess[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(gate:resilience4j:circuitbreaker:calls__total{kind='successful'}[$SamplePeriod])) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "gate/{{metricType}}({{metricGroup}})",
+              "legendFormat": "gate/{{name}}({{kind}})",
               "metric": "",
               "refId": "B",
               "step": 10
             },
             {
-              "expr": "sum($Function(igor:hystrix:rollingCountFallbackSuccess[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(igor:resilience4j:circuitbreaker:calls__total{kind='successful'}[$SamplePeriod])) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "igor/{{metricType}}({{metricGroup}})",
+              "legendFormat": "igor/{{name}}({{kind}})",
               "metric": "",
               "refId": "C",
               "step": 10
@@ -163,7 +163,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Fallback Success",
+          "title": "Resilience4j Fallback Success",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -378,7 +378,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations_total[$SamplePeriod])) by (instance, type, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations__count_total[$SamplePeriod])) by (instance, type, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -453,7 +453,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations_total[$SamplePeriod])) by (instance, type, cloudProvider)",
+              "expr": "sum($Function(orca:stage:invocations__count_total[$SamplePeriod])) by (instance, type, cloudProvider)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{executionType}}/{{cloudProvider}}/{{instance}}",
@@ -538,7 +538,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(orca:stage:invocations:duration_total{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
+              "expr": "sum($Function(orca:stage:invocations:duration__total{bucket!=\"lt5m\"}[$SamplePeriod])) by (cloudProvider, bucket)",
               "intervalFactor": 2,
               "legendFormat": "{{bucket}}/{{cloudProvider}}",
               "metric": "",
@@ -610,7 +610,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:pipelines:triggered__value[$SamplePeriod])) by (application, name)",
+              "expr": "sum($Function(echo:pipelines:triggered__count_total[$SamplePeriod])) by (application, name)",
               "intervalFactor": 2,
               "legendFormat": "{{name}}/{{application}}",
               "metric": "",
@@ -877,7 +877,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:executionCount_total[$SamplePeriod])) by (instance)",
+              "expr": "sum($Function(clouddriver:executionCount__count_total[$SamplePeriod])) by (instance)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{instance}}",

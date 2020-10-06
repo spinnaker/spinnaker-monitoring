@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.1.1"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "E34A1AA8-7FE7-47AB-9808-E954A9299D55",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -48,7 +18,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 29,
           "legend": {
@@ -74,7 +44,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"totalAmount\", statusCode=\"-1\"}) by (serviceName)  / sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"count\", statusCode=\"-1\"}) by (serviceName) , \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
+              "expr": "label_replace(sum(clouddriver:AWS_delay__total{instance=~\"$Instance\", statusCode=\"-1\"}) by (serviceName)  / sum(clouddriver:AWS_delay__count_total{instance=~\"$Instance\",statusCode=\"-1\"}) by (serviceName) , \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\")",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / UNK",
@@ -83,7 +53,7 @@
               "step": 10
             },
             {
-              "expr": "label_replace(sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"totalAmount\", statusCode!=\"-1\"}) by (serviceName, statusCode)  / sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"count\", statusCode!=\"-1\"}) by (serviceName, statusCode), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\") ",
+              "expr": "label_replace(sum(clouddriver:AWS_delay__total{instance=~\"$Instance\", statusCode!=\"-1\"}) by (serviceName, statusCode)  / sum(clouddriver:AWS_delay__count_total{instance=~\"$Instance\", statusCode!=\"-1\"}) by (serviceName, statusCode), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\") ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / {{statusCode}}",
@@ -130,7 +100,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 43,
           "legend": {
@@ -156,7 +126,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"totalAmount\", statusCode=\"-1\"}) by (requestType)  / sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"count\", statusCode=\"-1\"}) by (requestType) ",
+              "expr": "sum(clouddriver:AWS_delay__total{instance=~\"$Instance\", statusCode=\"-1\"}) by (requestType)  / sum(clouddriver:AWS_delay__count_total{instance=~\"$Instance\", statusCode=\"-1\"}) by (requestType) ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{requestType}} / UNK",
@@ -165,7 +135,7 @@
               "step": 10
             },
             {
-              "expr": "sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"totalAmount\", statusCode!=\"-1\"}) by (requestType, statusCode)  / sum(clouddriver:AWS_delay{instance=~\"$Instance\",statistic=\"count\", statusCode!=\"-1\"}) by (requestType, statusCode) ",
+              "expr": "sum(clouddriver:AWS_delay__total{instance=~\"$Instance\", statusCode!=\"-1\"}) by (requestType, statusCode)  / sum(clouddriver:AWS_delay__count_total{instance=~\"$Instance\", statusCode!=\"-1\"}) by (requestType, statusCode) ",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{requestType}} / {{statusCode}}",
@@ -224,7 +194,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 34,
           "legend": {
@@ -298,7 +268,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 38,
           "legend": {
@@ -384,7 +354,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 30,
           "legend": {
@@ -458,7 +428,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 39,
           "legend": {
@@ -544,7 +514,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 35,
           "legend": {
@@ -572,7 +542,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName)  * 1000000000 / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
               "metric": "",
@@ -618,7 +588,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 41,
           "legend": {
@@ -646,7 +616,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName)",
+              "expr": "sum(rate(clouddriver:aws:request:httpRequestTime__total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName)  * 1000000000 / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{instance=~\"$Instance\",serviceName=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName)",
               "intervalFactor": 2,
               "legendFormat": "{{requestType}}",
               "metric": "",
@@ -704,7 +674,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 33,
           "legend": {
@@ -778,7 +748,7 @@
         {
           "aliasColors": {},
           "bars": true,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 40,
           "legend": {
@@ -864,7 +834,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 36,
           "legend": {
@@ -892,7 +862,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName)  / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
+              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (serviceEndpoint, serviceName)  * 1000000000 / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (serviceEndpoint, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"region\", \"$1\", \"serviceEndpoint\", \"[^\\\\.]+\\\\.([^\\\\.]+).*\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}} / {{region}}",
               "metric": "",
@@ -938,7 +908,7 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 42,
           "legend": {
@@ -966,7 +936,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__totalTime_total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName) / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
+              "expr": "label_replace(label_replace(sum(rate(clouddriver:aws:request:httpRequestTime__total{instance=~\"$Instance\",serviceEndpoint=~\".*$AwsRegion.*\",serviceName!=\"AmazonEC2\"}[$SamplePeriod])) by (requestType, serviceName)  * 1000000000 / sum(rate(clouddriver:aws:request:httpRequestTime__count_total{serviceName!=\"AmazonEC2\", error=\"false\"}[$SamplePeriod])) by (requestType, serviceName), \"serviceName\", \"$1\", \"serviceName\", \"Amazon(.+)\"), \"requestType\", \"$1\", \"requestType\", \"(.*)Request\")",
               "intervalFactor": 2,
               "legendFormat": "{{serviceName}}.{{requestType}}",
               "metric": "",
@@ -1029,7 +999,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -1049,7 +1019,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": "",

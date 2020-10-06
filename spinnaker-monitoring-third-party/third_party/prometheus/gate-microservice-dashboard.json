@@ -1,34 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_SPINNAKER",
-      "label": "Spinnaker",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.3.2"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    }
-  ],
   "annotations": {
     "list": []
   },
@@ -37,7 +7,7 @@
   "graphTooltip": 0,
   "hideControls": false,
   "id": null,
-  "uid": null,
+  "uid": "7E4D3FCF-124B-42F9-8CC1-88875EDB956D",
   "links": [],
   "refresh": "30s",
   "rows": [
@@ -50,7 +20,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 11,
           "legend": {
@@ -79,9 +49,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(gate:hystrix:countShortCircuited{instance=~\"$Instance\"}) by (metricGroup, metricType)",
+              "expr": "sum(gate:resilience4j:circuitbreaker:state__value{state=\"open\", instance=~\"$Instance\"}) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "gate/{{metricGroup}}({{metricType}})",
+              "legendFormat": "gate/{{name}}({{kind}})",
               "metric": "",
               "refId": "B",
               "step": 40
@@ -128,7 +98,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 37,
           "legend": {
@@ -157,9 +127,9 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(gate:hystrix:countExceptionsThrown{instance=~\"$Instance\"}[$SamplePeriod])) by (metricType, metricGroup)",
+              "expr": "sum($Function(gate:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\", instance=~\"$Instance\"}[$SamplePeriod])) by (name, kind)",
               "intervalFactor": 2,
-              "legendFormat": "gate/{{metricType}}({{metricGroup}})",
+              "legendFormat": "gate/{{name}}({{kind}})",
               "metric": "",
               "refId": "B",
               "step": 30
@@ -206,7 +176,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 12,
           "legend": {
@@ -233,7 +203,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(gate:hystrix:rollingCountFailure{instance=~\"$Instance\") by (metricGroup, metricType)",
+              "expr": "sum(gate:resilience4j:circuitbreaker:calls__total{kind=\"failed\", instance=~\"$Instance\") by (metricGroup, metricType)",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "{{metricGroup}}/{{metricType}}",
@@ -295,7 +265,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 66,
           "legend": {
@@ -322,7 +292,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "$Function(gate:rateLimitThrottling{instance=~\"$Instance\"}[$SamplePeriod])",
+              "expr": "$Function(gate:rateLimitThrottling__value{instance=~\"$Instance\"}[$SamplePeriod])",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "",
@@ -384,7 +354,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 65,
           "legend": {
@@ -482,7 +452,7 @@
           "bars": true,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 5,
           "legend": {
@@ -572,7 +542,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 24,
           "legend": {
@@ -601,7 +571,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum(rate(gate:controller:invocations__totalTime_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  / sum(rate(gate:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
+              "expr": "label_replace(sum(rate(gate:controller:invocations__total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method)  * 1000000000 / sum(rate(gate:controller:invocations__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (controller, method), \"controller\", \"$1\", \"controller\", \"(.*)Controller\")",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{controller}}/{{method}}",
@@ -662,7 +632,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_SPINNAKER}",
+          "datasource": "Prometheus",
           "fill": 1,
           "id": 21,
           "legend": {
@@ -689,7 +659,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(gate:jvm:memory:used{instance=~\"$Instance\", memtype=\"HEAP\"}) by (id)",
+              "expr": "sum(gate:jvm:memory:used__value{instance=~\"$Instance\", area=\"heap\"}) by (id)",
               "intervalFactor": 2,
               "legendFormat": "{{id}}",
               "metric": "",
@@ -752,7 +722,7 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_SPINNAKER}",
+        "datasource": "Prometheus",
         "hide": 0,
         "includeAll": true,
         "label": null,

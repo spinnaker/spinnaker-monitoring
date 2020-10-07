@@ -294,7 +294,7 @@
               "step": 20
             },
             {
-              "expr": "sum($Function(rosco:bakesRequested__value[$SamplePeriod])) by (flavor)",
+              "expr": "sum($Function(rosco:bakesRequested__count_total[$SamplePeriod])) by (flavor)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Request({{flavor}})",
@@ -378,7 +378,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(rate(rosco:bakesCompleted__totalTime_total[$SamplePeriod]) / 1000000000) by (region) / sum(rate(rosco:bakesCompleted__count_total[$SamplePeriod])) by (region)",
+              "expr": "sum(rate(rosco:bakesCompleted__total[$SamplePeriod])) by (region) / sum(rate(rosco:bakesCompleted__count_total[$SamplePeriod])) by (region)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{region}}",
@@ -465,7 +465,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum(front50:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
+              "expr": "sum(front50:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (kind, name)",
               "intervalFactor": 2,
               "legendFormat": "front50/{{kind}}({{name}})",
               "metric": "",
@@ -473,7 +473,7 @@
               "step": 20
             },
             {
-              "expr": "sum(gate:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
+              "expr": "sum(gate:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (kind, name)",
               "intervalFactor": 2,
               "legendFormat": "gate/{{kind}}({{name}})",
               "metric": "",
@@ -481,7 +481,7 @@
               "step": 20
             },
             {
-              "expr": "sum(igor:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (metricGroup, metricType)",
+              "expr": "sum(igor:resilience4j:circuitbreaker:state__value{state=\"open\"}) by (kind, name)",
               "intervalFactor": 2,
               "legendFormat": "igor/{{kind}}({{name}})",
               "metric": "",
@@ -555,7 +555,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "$Function(front50:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
+              "expr": "$Function(front50:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "front50/{{kind}}({{name}})",
               "metric": "",
@@ -563,7 +563,7 @@
               "step": 10
             },
             {
-              "expr": "$Function(gate:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
+              "expr": "$Function(gate:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "gate/{{kind}}({{name}})",
               "metric": "",
@@ -571,7 +571,7 @@
               "step": 10
             },
             {
-              "expr": "$Function(igor:resilience4j:circuitbreaker:failure:calls__total{kind=\"failed\"}[$SamplePeriod])",
+              "expr": "$Function(igor:resilience4j:circuitbreaker:calls__count_total{kind=\"failed\"}[$SamplePeriod])",
               "intervalFactor": 2,
               "legendFormat": "igor/{{kind}}({{name}})",
               "metric": "",

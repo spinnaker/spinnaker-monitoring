@@ -61,7 +61,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Short Circuited (front50, $Instance)",
+          "title": "Resilience4j Short Circuited (front50, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -141,7 +141,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Exceptions Thrown (front50, $Instance)",
+          "title": "Resilience4j Exceptions Thrown (front50, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -219,7 +219,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Rolling Count Fallback Success (front50, $Instance)",
+          "title": "Resilience4j Rolling Count Fallback Success (front50, $Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,

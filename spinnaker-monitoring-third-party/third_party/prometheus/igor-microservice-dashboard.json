@@ -60,7 +60,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Short Circuited ($Instance)",
+          "title": "Resilience4j Short Circuited ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -138,7 +138,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "Hystrix Exceptions Thrown ($Instance)",
+          "title": "Resilience4j Exceptions Thrown ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,
@@ -215,7 +215,7 @@
           "thresholds": [],
           "timeFrom": null,
           "timeShift": null,
-          "title": "REMOVE ME? Hystrix Rolling Count Failure ($Instance)",
+          "title": "REMOVE ME? Resilience4j Rolling Count Failure ($Instance)",
           "tooltip": {
             "shared": true,
             "sort": 2,

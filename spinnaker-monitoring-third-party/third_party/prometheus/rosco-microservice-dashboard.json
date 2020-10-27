@@ -400,7 +400,7 @@
               "step": 4
             },
             {
-              "expr": "sum($Function(rosco:bakesRequested__value{instance=~\"$Instance\"}[$SamplePeriod])) by (flavor)",
+              "expr": "sum($Function(rosco:bakesRequested__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (flavor)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "Request/{{flavor}}",

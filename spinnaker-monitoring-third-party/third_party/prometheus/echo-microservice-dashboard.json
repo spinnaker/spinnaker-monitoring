@@ -319,7 +319,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(echo:pipelines:triggered_total{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
+              "expr": "sum($Function(echo:pipelines:triggered__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (name)",
               "hide": false,
               "intervalFactor": 2,
               "legendFormat": "{{name}}",

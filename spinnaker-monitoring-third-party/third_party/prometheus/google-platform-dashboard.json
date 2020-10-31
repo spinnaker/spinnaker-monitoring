@@ -969,7 +969,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "label_replace(sum($Function(clouddriver:google:batchSize__value{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
+              "expr": "label_replace(sum($Function(clouddriver:google:batchSize__count_total{instance=~\"$Instance\"}[$SamplePeriod])) by (context), \"context\", \"$1$2\", \"context\", \"(.*)Caching(.*)\")",
               "intervalFactor": 2,
               "legendFormat": "{{context}}",
               "metric": "",
@@ -1650,7 +1650,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaitRequests__value{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests__count_total{instance=~\"$Instance\",scope=\"global\"}[$SamplePeriod])) by (basePhase)",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
@@ -1729,7 +1729,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaitRequests__value{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests__count_total{instance=~\"$Instance\",scope=\"regional\",region=~\"$GcpRegion\"}[$SamplePeriod])) by (basePhase)",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",
@@ -1807,7 +1807,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "sum($Function(clouddriver:google:operationWaitRequests__value{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (basePhase)",
+              "expr": "sum($Function(clouddriver:google:operationWaitRequests__count_total{instance=~\"$Instance\",scope=\"zonal\",zone=~\".*$GcpRegion.*\"}[$SamplePeriod])) by (basePhase)",
               "intervalFactor": 2,
               "legendFormat": "{{basePhase}}",
               "metric": "",

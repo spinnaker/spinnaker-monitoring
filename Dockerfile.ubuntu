@@ -8,7 +8,6 @@ RUN adduser --system --uid 10111 --group spinnaker
 RUN apt-get update && apt-get install -y python python2.7 python-pip wget
 
 COPY spinnaker-monitoring-daemon/requirements.txt /opt/spinnaker-monitoring/requirements.txt
-COPY spinnaker-monitoring-daemon/constraints.txt /opt/spinnaker-monitoring/constraints.txt
 WORKDIR /opt/spinnaker-monitoring
 
 RUN sed -ie 's/#@ //g' requirements.txt

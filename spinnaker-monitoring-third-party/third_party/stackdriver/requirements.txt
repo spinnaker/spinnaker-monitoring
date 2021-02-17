@@ -1,4 +1,8 @@
 # sudo apt-get install python-dev
+<<<<<<< HEAD
+=======
+rsa==4.5
+>>>>>>> 3af1744... fix(dependencies): inlining dependencies to try and fix build (#260)
 --index-url https://pypi.python.org/simple/
 
 google-api-python-client >= 1.7.8

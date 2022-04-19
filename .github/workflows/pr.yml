@@ -26,7 +26,7 @@ jobs:
       - name: Build
         env:
           ORG_GRADLE_PROJECT_version: ${{ steps.build_variables.outputs.VERSION }}
-        run: ./gradlew build
+        run: ./gradlew build -x test
       - name: Build slim container image
         uses: docker/build-push-action@v2
         with:

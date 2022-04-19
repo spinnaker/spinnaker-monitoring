@@ -15,12 +15,11 @@
  */
 
 plugins {
-  id "io.spinnaker.bintray-publish" version "$spinnakerGradleVersion" apply false
+  id "io.spinnaker.artifactregistry-publish" version "$spinnakerGradleVersion"
 }
 
 subprojects {
   apply plugin: 'nebula.ospackage'
-  apply plugin: 'io.spinnaker.bintray-publish'
   group = "com.netflix.spinnaker.monitoring"
 
   tasks.register("publish")

@@ -18,11 +18,9 @@ plugins {
   id "io.spinnaker.artifactregistry-publish" version "$spinnakerGradleVersion"
 }
 
-subprojects {
+allprojects {
   apply plugin: 'nebula.ospackage'
   group = "com.netflix.spinnaker.monitoring"
-
-  tasks.register("publish")
 }
 
 String toVers(String v) {

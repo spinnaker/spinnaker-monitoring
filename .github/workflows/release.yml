@@ -54,7 +54,66 @@ jobs:
           BINTRAY_API_KEY: ${{ secrets.BINTRAY_API_KEY }}
           RELEASE_VERSION: ${{ steps.release_info.outputs.RELEASE_VERSION }}
         run: |
+<<<<<<< HEAD
           ./gradlew -PenableCrossCompilerPlugin=true --info -Pversion="${RELEASE_VERSION}" -PbintrayUser="${BINTRAY_USER}" -PbintrayKey="${BINTRAY_API_KEY}" -PbintrayPublishDebEnabled=false publish
+=======
+          ./gradlew --info build -x test
+      - name: Publish apt packages to Google Artifact Registry
+        env:
+          ORG_GRADLE_PROJECT_version: ${{ steps.release_info.outputs.RELEASE_VERSION }}
+          ORG_GRADLE_PROJECT_artifactRegistryPublishEnabled: true
+          GAR_JSON_KEY: ${{ secrets.GAR_JSON_KEY }}
+        run: |
+          ./gradlew --info publishDebToArtifactRegistry
+      - name: Login to Google Cloud
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'spinnaker/')
+        uses: 'google-github-actions/auth@v0'
+        # use service account flow defined at: https://github.com/google-github-actions/upload-cloud-storage#authenticating-via-service-account-key-json
+        with:
+          credentials_json: '${{ secrets.GAR_JSON_KEY }}'
+      - name: Upload halconfig profiles to GCS
+        # https://console.cloud.google.com/storage/browser/halconfig
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'spinnaker/')
+        uses: 'google-github-actions/upload-cloud-storage@v0'
+        with:
+          path: 'spinnaker-monitoring-daemon/halconfig/'
+          destination: 'halconfig/${{ steps.build_variables.outputs.REPO }}/${{ steps.release_info.outputs.RELEASE_VERSION }}'
+          parent: false
+      - name: Login to GAR
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'spinnaker/')
+        uses: docker/login-action@v1
+        # use service account flow defined at: https://github.com/docker/login-action#service-account-based-authentication-1
+        with:
+          registry: us-docker.pkg.dev
+          username: _json_key
+          password: ${{ secrets.GAR_JSON_KEY }}
+      - name: Build and publish slim container image
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'spinnaker/')
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.slim
+          push: true
+          tags: |
+            "${{ env.CONTAINER_REGISTRY }}/${{ steps.build_variables.outputs.REPO }}:${{ steps.release_info.outputs.RELEASE_VERSION }}-unvalidated"
+            "${{ env.CONTAINER_REGISTRY }}/${{ steps.build_variables.outputs.REPO }}:${{ steps.release_info.outputs.RELEASE_VERSION }}-unvalidated-slim"
+            "${{ env.CONTAINER_REGISTRY }}/${{ steps.build_variables.outputs.REPO }}:${{ steps.release_info.outputs.RELEASE_VERSION }}-${{ steps.build_variables.outputs.VERSION }}-unvalidated-slim"
+      - name: Build and publish ubuntu container image
+        # Only run this on repositories in the 'spinnaker' org, not on forks.
+        if: startsWith(github.repository, 'spinnaker/')
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: Dockerfile.ubuntu
+          push: true
+          tags: |
+            "${{ env.CONTAINER_REGISTRY }}/${{ steps.build_variables.outputs.REPO }}:${{ steps.release_info.outputs.RELEASE_VERSION }}-unvalidated-ubuntu"
+            "${{ env.CONTAINER_REGISTRY }}/${{ steps.build_variables.outputs.REPO }}:${{ steps.release_info.outputs.RELEASE_VERSION }}-${{ steps.build_variables.outputs.VERSION }}-unvalidated-ubuntu"
+>>>>>>> 96d510c (chore(ci): Upload halconfigs to GCS on Tag push (#274))
       - name: Create release
         if: steps.release_info.outputs.SKIP_RELEASE == 'false'
         uses: actions/create-release@v1

@@ -1,0 +1,298 @@
+{
+  "revision": 0,
+  "displayName": "Kubernetes Platform",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completion_latencies__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.method"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completion_latencies__count\" AND metric.label.success!=True",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.method"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/kubernetes/api/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "CATS Keys Requested",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"kubernetes\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"internal\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Keys Written",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"kubernetes\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"internal\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Keys Deleted",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"kubernetes\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"internal\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "CATS Items Requested",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/items\" AND metric.label.spin_service=\"clouddriver\" AND  metric.label.platform=\"kubernetes\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/items\" AND metric.label.spin_service=\"clouddriver\" AND  metric.label.platform=\"invalid\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Items Written",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"kubernetes\")",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"invalid\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Items Deleted",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"kubernetes\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"docker\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  },
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"invalid\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,1727 @@
+monitoring:
+  transforms:
+    appengine.deploy:
+      rename: platform/appengine/deploy/completions
+      kind: Timer
+      docs: Measures time spent completing appengine deployments.
+      unit: requests
+      per_account: true
+      tags:
+        - region
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+
+    appengine.deployStart:
+      rename: platform/appengine/deploy/calls
+      kind: Counter
+      docs: Appengine deployments that have been attempted including those that have not yet completed.
+      unit: requests
+      per_account: true
+      tags:
+        - region
+
+    appengine.repositoryDownload:
+      rename: platform/appengine/repository/downloads
+      kind: Timer
+      docs: Measures time spent downloading appengine applications from repository in order to deploy them.
+      unit: requests
+      per_account: true
+      tags:
+        - region
+        - repositoryType
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+
+    aws.request.httpRequestTime:
+      rename: platform/aws/api/http/completions
+      kind: Timer
+      docs: Records the time and outcome of each AWS request.
+      unit: requests
+      tags:
+        - requestType
+        - serviceName
+        - serviceEndpoint
+        - AWSErrorCode
+      change_tags:
+        - from: error
+          to: success
+          type: BOOL
+          compare_value: 'false'
+        - from: statusCode
+          to: statusCode
+          type: INT
+        - from: serviceEndpoint
+          to: region
+          type: STRING
+          extract_regex: '(?:[^\.]+\.)?([^\.]+-[^\.]+)\.amazonaws.com'
+          default_value: global
+
+    aws.request.throttling:
+      rename: platform/aws/api/throttled
+      kind: Counter
+      docs: Counts AWS throttled requests
+      unit: requests
+      tags:
+        - requestType
+        - serviceName
+        - serviceEndpoint
+        - AWSErrorCode
+      change_tags:
+        - from: error
+          to: success
+          type: BOOL
+          compare_value: 'false'
+        - from: statusCode
+          to: statusCode
+          type: INT
+        - from: serviceEndpoint
+          to: region
+          type: STRING
+          extract_regex: '(?:[^\.]+\.)?([^\.]+-[^\.]+)\.amazonaws.com'
+          default_value: global
+
+    bakesActive:
+      rename: bakery/bake/active
+      kind: Gauge
+      docs: Bakes currently execution.
+      unit: bakes
+      change_tags:
+        - from: active
+          to: active
+          type: BOOL
+          compare_value: 'true'
+
+    bakesCompleted:
+      rename: bakery/bake/completions
+      kind: Timer
+      docs: Records time spent baking images.
+      unit: bakes
+      tags:
+        - region
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+          compare_value: 'true'
+
+    bakesRequested:
+      rename: bakery/bake/calls
+      kind: Counter
+      docs: Number of bakes initiated.
+      unit: bakes
+      tags:
+        - flavor
+      per_account: true
+
+    cache.drift:
+      rename: platform/aws/cacheDrift
+      # Should this be clouddriver/cache/drift with a platform=aws tag?
+      kind: Gauge
+      docs: Reports time difference in AWS cache from current reality.
+      unit: milliseconds
+      per_account: true
+      tags:
+        - region
+        - agent
+
+    canary.pipelines.initiated:
+      rename: canary/pipeline/initiated
+      kind: Counter
+      docs: Number of canary pipelines attempted.
+      unit: pipelines
+      tags:
+        - canaryConfigId
+        - canaryConfigName
+
+    canary.pipelines.startupFailed:
+      kind: Counter
+      docs: Number of canary pipelines that could not be started
+      unit: errors
+      tranform_name: canary/pipeline/startupFailures
+      tags: # None
+
+    canary.telemetry.query:
+      kind: Counter
+      docs: Number of canary pipelines attempted.
+      unit: pipelines
+      tranform_name: canary/telemetry/query
+      tags:
+        - metricsStore
+      change_tags:
+        - from: retries
+          to: initial
+          type: BOOL
+          compare_value: '0'
+
+    cats.redisCache.evict.itemCount:
+      rename: clouddriver/cache/redis/evict/items
+      kind: Counter
+      docs:
+      unit: items
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*)?\.provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    cats.redisCache.evict.keysDeleted:
+      rename: clouddriver/cache/redis/evict/keys
+      kind: Counter
+      docs:
+      unit: keys
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*\.)?provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    cats.redisCache.get.itemCount:
+      rename: clouddriver/cache/redis/get/items
+      kind: Counter
+      docs:
+      unit: items
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*\.)?provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    cats.redisCache.get.keysRequested:
+      rename: clouddriver/cache/redis/get/keys
+      kind: Counter
+      docs:
+      unit: keys
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*\.)?provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    cats.redisCache.merge.itemCount:
+      rename: clouddriver/cache/redis/merge/items
+      kind: Counter
+      docs:
+      unit: items
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*\.)?provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    cats.redisCache.merge.keysWritten:
+      rename: clouddriver/cache/redis/merge/keys
+      kind: Counter
+      docs:
+      unit: keys
+      change_tags:
+        - from: type
+          to: resourceType
+          type: STRING
+        - from: prefix
+          to: [platform, provider]
+          type: [STRING, STRING]
+          extract_regex: '.*\.clouddriver\.([^\.]+)\.(?:.*\.)?provider\.(.*)'
+          default_value: ['invalid', 'invalid']
+
+    controller.invocations:
+      rename: service/controller/completions
+      kind: Timer
+      docs: Times each call into the service's HTTP interface along with
+            the final response code and status. The region tag is only
+            applicable to a subset of the methods so may be empty.
+      unit: requests
+      tags:
+        - controller
+        - method
+        - status
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+
+    echo.events.per.poll:
+      rename: echo/event/perPoll
+      kind: Gauge
+      unit: events
+      tags: # None
+
+    echo.events.processed:
+      rename: echo/event/processed
+      kind: Counter
+      unit: events
+      tags: # None
+
+    EurekaOkClient_Request:
+      rename: eureka/okclient/completions
+      kind: Timer
+      unit: requests
+      tags:
+        - service
+        - status
+        - cause
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+
+    executions.active:
+      rename: workflow/execution/active
+      kind: Gauge
+      docs: Counts the number of pipelines or orchestrations
+            currently being executed.
+      unit: executions
+      tags:
+        - executionType
+
+    executions.started:
+      rename: workflow/execution/calls
+      kind: Counter
+      docs: Counts the number of pipelines or orchestrations
+            that have been started.
+      unit: executions
+      per_application: true
+      tags:
+        - executionType
+  
+    executions.totalTime:
+      rename: workflow/execution/completions
+      kind: Timer
+      docs: Times each pipeline or orchestration execution and outcome.
+      unit: executions
+      per_application: true
+      tags:
+        - executionType
+      change_tags:
+        - from: successful
+          to: success
+          type: BOOL
+          compare_value: 'true'
+
+    executionCount:
+      rename: clouddriver/cache/execution/finished
+      kind: Counter
+      docs: Counts the number of caching agent executions completed.
+      unit: executions
+      per_account: true
+      change_tags:
+        - from: status
+          to: success
+          type: BOOL
+          compare_value: success
+        - from: agent
+          to: [provider, account, region, agent]
+          type: [STRING, STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/]+)/(?:([^/\[]+)/)?)?(.+)'
+
+    executionTime:
+      rename: clouddriver/cache/execution/successful
+      kind: Timer
+      docs: Records the time spent in successful caching agent executions.
+            Note that this does not include time spent in unsuccessful
+            executions.
+      unit: executions
+      per_account: true
+      change_tags:
+        - from: agent
+          to: [provider, account, region, agent]
+          type: [STRING, STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/]+)/(?:([^/\[]+)/)?)?(.+)'
+
+    fiat.getPermission:
+      rename: fiat/authz/lookups
+      kind: Counter
+      docs: Number of fiat permission lookups.
+      unit: lookups
+      change_tags:
+        - from: cached
+          to: cached
+          type: BOOL
+        - from: success
+          to: success
+          type: BOOL
+
+    fiat.getUserPermission:
+      rename: fiat/authz/userLookups
+      kind: Counter
+      docs: Number of fiat user-permission lookups.
+      unit: lookups
+      change_tags:
+        - from: fallback
+          to: fallback
+          type: BOOL
+        - from: success
+          to: success
+          type: BOOL
+
+    front50.errors:
+      rename: front50/client/errors
+      kind: Counter
+      unit: errors
+      tags: # None
+
+    front50.requests:
+      rename: front50/client/finished
+      kind: Counter
+      unit: requests
+      tags: # None
+    
+    google.api:
+      rename: platform/google/api/compute/completions
+      kind: Timer
+      docs: Records the time and outcome of each GCE api call.
+      unit: requests
+      per_account: True
+      tags:
+        - status
+        - scope
+        - region
+        - zone
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+        - from: api
+          to: method
+          type: STRING
+          extract_regex: 'compute\.(.*)'
+
+    google.batchExecute:
+      rename: platform/google/api/batch/completions
+      kind: Timer
+      docs: Records the time and outcome of each GCE batch api call.
+      unit: requests
+      tags:
+        - context
+        - status
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+
+    google.batchSize:
+      rename: platform/google/api/batch/size
+      kind: Counter
+      docs: The number of requests within the individual batch requests.
+      unit: requests
+      tags:
+        - context
+        - status
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+
+    google.operationWaits:
+      rename: platform/google/operation/waits
+      kind: Timer
+      docs: Records the time spent waiting for clouddriver operations on
+            the google provider to complete.
+      unit: requests
+      tags:
+        - basePhase
+        - scope
+        - region
+        - zone
+      change_tags:
+        - from: status
+          to: finalStatus
+          type: STRING
+
+    google.safeRetry:
+      rename: platform/google/operation/retryable
+      kind: Timer
+      docs: Records the time spent in operations to the google platform
+            that retry until succeeded.
+      unit: requests
+      tags:
+        - phase
+        - scope
+        - region
+        - zone
+        - operation
+        - action
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+          compare_value: 'true'
+
+    google.storage.invocation:
+      rename: platform/google/api/storage/completions
+      kind: Timer
+      docs: Records the time and outcome of each GCS api call.
+      unit: requests
+      tags:
+        - status
+        - method
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+
+    health.amazon.errors:
+      rename: health/component/errors
+      kind: Gauge
+      unit: components
+      tags: # None
+      add_tags:
+        component: amazon
+
+    health.docker.errors:
+      rename: health/component/errors
+      kind: Gauge
+      unit: components
+      tags: # None
+      add_tags:
+        component: docker
+
+    health.echo.errors:
+      rename: health/component/errors
+      kind: Gauge
+      unit: components
+      tags: # None
+      add_tags:
+        component: echo
+
+    health.pollers.down:
+      rename: health/component/errors
+      kind: Gauge
+      unit: components
+      tags: # None
+      add_tags:
+        component: pollers
+
+    hystrix.isCircuitBreakerOpen:
+      rename: hystrix/circuitBreaker/open
+      kind: Gauge
+      docs: Indicates whether hystrix circuit breaker is currently on or not.
+      unit: bool   # 0 is off, 1 is on
+      tags: # None
+
+    hystrix.rollingCountFailure:
+      rename: hystrix/rollingCount/attempt
+      kind: Gauge
+      docs: Hystrix outcomes over the current rolling window.
+            if "success" is true then the request succeeded,
+            otherwise it failed.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+      add_tags:
+        success: false
+
+    hystrix.rollingCountFallbackFailure:
+      rename: hystrix/rollingCount/fallback
+      kind: Gauge
+      docs: Hystrix fallback outcomes over the current rolling window.
+            if "success" is true then the fallback succeeded,
+            otherwise it failed.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+      add_tags:
+        success: false
+
+    hystrix.rollingCountFallbackSuccess:
+      rename: hystrix/rollingCount/fallback
+      kind: Gauge
+      docs: Hystrix fallback outcomes over the current rolling window.
+            if "success" is true then the fallback succeeded,
+            otherwise it failed.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+      add_tags:
+        success: true
+
+    hystrix.rollingCountSuccess:
+      rename: hystrix/rollingCount/attempt
+      kind: Gauge
+      docs: Hystrix outcomes over the current rolling window.
+            if "success" is true then the request succeeded,
+            otherwise it failed.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+      add_tags:
+        success: true
+
+    hystrix.rollingCountTimeout:
+      rename: hystrix/rollingCount/timeout
+      kind: Gauge
+      docs: Hystrix timeouts over the current rolling window.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+
+    hystrix.rollingCountShortCircuited:
+      rename: hystrix/rollingCount/shortCircuited
+      kind: Gauge
+      docs: Hystrix short circuits over the current rolling window.
+      unit: requests
+      tags:
+        - metricGroup
+        - metricType
+
+    jvm.memory.used:
+      rename: platform/java/memory
+      kind: Gauge
+      docs: Reports memory usage by the runtime Java VM.
+      unit: bytes
+      change_tags:
+        - from: memtype
+          to: scope
+          type: STRING
+        - from: id
+          to: segment
+          type: STRING
+
+    kubernetes.api:
+      rename: platform/kubernetes/api/completions
+      kind: Timer
+      docs: Records the time and outcome of each Kubernetes api call.
+      unit: requests
+      per_account: True
+      tags:
+        - namespace
+        - reason
+        - action
+        - method
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: method
+          to: resource
+          type: STRING
+          extract_regex: '([^.]+)\..+|^$'
+
+    okhttp.requests:
+      rename: okhttp/completions
+      kind: Timer
+      docs: Records the time spent in okhttp requests and their outcome.
+      unit: requests
+      tags:
+        - status
+        - requestHost
+      change_tags:
+        - from: statusCode
+          to: statusCode
+          type: INT
+        - from: success
+          to: success
+          type: BOOL
+
+    onDemand_count:
+      rename: clouddriver/cache/onDemand/calls
+      kind: Counter
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_error:
+      rename: clouddriver/cache/onDemand/errors
+      kind: Counter
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_cache:
+      rename: clouddriver/cache/onDemand/writes
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_evict:
+      rename: clouddriver/cache/onDemand/evicts
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_read:
+      rename: clouddriver/cache/onDemand/reads
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_store:
+      rename: clouddriver/cache/onDemand/stores
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_total:
+      rename: clouddriver/cache/onDemand/completions
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    onDemand_transform:
+      rename: clouddriver/cache/onDemand/transforms
+      kind: Timer
+      unit: requests
+      per_account: true
+      tags:
+        - providerName
+      change_tags:
+        - from: agentType
+          to: [account, region, agent]
+          type: [STRING, STRING, STRING]
+          extract_regex: '([^/]+)/(?:([^/\[]+)/)?(.+)'
+        - from: onDemandType
+          to: [platform, resource]
+          type: [STRING, STRING]
+          extract_regex: '([^:]+):(?:.*:)?(.*)'
+
+    operations:
+      rename: clouddriver/operations
+      kind: Timer
+      docs: Records time performing operations performed and their outcome.
+      unit: operations
+      tags:
+        - cause
+      change_tags:
+        - from: OperationType
+          to: operationType
+          type: STRING
+        - from: success
+          to: success
+          type: BOOL
+
+    orca.task.result:
+      rename: orca/task/finished
+      kind: Counter
+      docs: number of tasks completed
+      unit: tasks
+      tags:
+        - task
+      change_tags:
+        - from: status
+          to: finalStatus
+          type: STRING
+
+    pipelines.triggered:
+      rename: workflow/trigger/calls
+      kind: Counter
+      docs: Number of pipelines triggered for execution.
+      unit: pipelines
+      per_application: true
+      tags:
+        - monitor
+
+    pollingMonitor.failed:
+      rename: monitor/polling/failures
+      kind: Counter
+      docs: The number of polling attempts that failed.
+      unit: errors
+      tags:
+        - partition
+        - monitor
+
+    pollingMonitor.itemsOverThreshold:
+      rename: monitor/polling/excessItems
+      kind: Gauge
+      docs: Indicates the excess number of items over the threshold for
+            "too many" that were discovered while polling.
+            When over the threshold, events are not sent.
+      unit: items
+      tags:
+        - partition
+        - monitor
+
+    pollingMonitor.newItems:
+      rename: monitor/polling/newItems
+      kind: Gauge
+      docs: Indicates the number of new items last discovered while polling.
+      unit: items
+      tags:
+        - partition
+        - monitor
+
+    prometheus.fetchTime:
+      rename: canary/repository/prometheus/fetch
+      kind: Timer
+      docs: Records how long it took to query prometheus for data.
+      unit: requests
+      tags: # None
+
+    queue.acknowledged.messages:
+      rename: queue/message/acked
+      kind: Counter
+      docs: Number of pushed messages that were ACK'd.
+      unit: messages
+      tags: # None
+
+    queue.dead.messages:
+      rename: queue/message/dead
+      kind: Counter
+      docs: Number of messages that were lost in the queue.
+            This is usually due to a race condition if the process is
+            terminated while processing it.
+      unit: messages
+      tags: # None
+
+    queue.depth:
+      rename: queue/message/depth
+      kind: Gauge
+      docs: Number of messages currentinly in the queue.
+      unit: messages
+      tags: # None
+
+    queue.message.lag:
+      rename: queue/message/lag
+      kind: Timer
+      docs: Records amount of time ACK'd messages are idle before
+            processing starts.
+      unit: messages
+      tags: # None
+
+    queue.orphaned.messages:
+      rename: queue/message/orphaned
+      kind: Gauge
+      docs: Number of queued messages that ????
+      unit: messages
+      tags: # None
+
+    queue.pushed.messages:
+      rename: queue/message/pushed
+      kind: Counter
+      docs: Number of messages added into the queue.
+      unit: messages
+      per_application: true
+      tags: # None
+
+    queue.ready.depth:
+      rename: queue/message/ready
+      kind: Gauge
+      docs: Number of ACK'd messages in the queue waiting to be processed.
+      tags: # None
+
+    queue.retried.messages:
+      rename: queue/message/retried
+      kind: Counter
+      docs: Counts number of messages that had to attempt processing
+            multiple times. Each multiple attempt is counting.
+      unit: messages
+      tags: # None
+
+    queue.unacked.depth:
+      rename: queue/message/unacked
+      kind: Gauge
+      docs: Number of messages in the queue that have not yet been ACK'd
+      unit: messages
+      tags: # None
+
+    rateLimit.throttling:
+      rename: service/throttling/count
+      kind: Counter
+      docs: Records how many times rate limiter throttled service requests.
+      unit: requests
+      tags: # None
+
+    stackdriver.fetchTime:
+      rename: canary/repository/stackdriver/fetch
+      kind: Timer
+      docs: Records how long it took to query stackdriver for data.
+      unit: requests
+      tags:
+        - location
+        - project
+
+    stage.invocations:
+      rename: workflow/stage/calls
+      kind: Counter
+      docs: Number times a stage was executed.
+      unit: requests
+      per_application: true
+      tags:
+        - type
+        - cloudProvider
+
+    stage.invocations.duration:
+      rename: workflow/stage/durationBucket
+      kind: Counter
+      docs: Bucketed duration of each stage invocation.
+      unit: requests
+      per_application: true
+      tags:
+        - bucket
+        - cloudProvider
+      change_tags:
+        - from: stageType
+          to: type
+          type: STRING
+        - from: status
+          to: finalStatus
+          type: STRING
+
+    storageServiceSupport.autoRefreshTime:
+      rename: front50/cache/refresh
+      kind: Timer
+      docs: Records time spent during refreshes when querying the cache.
+            If "scheduled" is true then it was a scheduled refresh,
+            else on demand trying to query a stale cache.
+      unit: requests
+      tags:
+        - objectType
+      add_tags:
+        scheduled: false
+
+    storageServiceSupport.cacheAge:
+      rename: front50/cache/age
+      kind: Gauge
+      docs: Number of millseconds since the last cache refresh
+            of the given objectType.
+      tags:
+        - objectType
+
+    storageServiceSupport.cacheSize:
+      rename: front50/cache/size
+      kind: Gauge
+      docs: Time since cache was updated.
+      unit: items
+      tags:
+        - objectType
+
+    storageServiceSupport.numAdded:
+      rename: front50/cache/add
+      kind: Counter
+      docs: Number of items added into the cache.
+      unit: items
+      tags:
+        - objectType
+
+    storageServiceSupport.numRemoved:
+      rename: front50/cache/remove
+      kind: Counter
+      docs: Number of items removed from the cache.
+      unit: items
+      tags:
+        - objectType
+
+    storageServiceSupport.numUpdated:
+      rename: front50/cache/update
+      kind: Counter
+      docs: Number of updates to items already in the cache.
+      unit: items
+      tags:
+        - objectType
+
+    storageServiceSupport.scheduledRefreshTime:
+      rename: front50/cache/refresh
+      kind: Timer
+      docs: Records time spent during refreshes when querying the cache.
+            If "scheduled" is true then it was a scheduled refresh,
+            else on demand trying to query a stale cache.
+      unit: requests
+      tags:
+        - objectType
+      add_tags:
+        scheduled: true
+
+    task.completions.duration.withType:
+      rename: workflow/task/execution/completions/withType
+      kind: Timer
+      unit: tasks
+      docs: Records time needed to complete the whole execution, as opposed
+            to an individual invocation.
+      per_account: true
+      tags:
+        - cloudProvider
+        - region
+        - taskType
+        - executionType
+      change_tags:
+        - from: isComplete
+          to: finished
+          type: BOOL
+        - from: status
+          to: finalStatus
+          type: STRING
+
+    task.invocations.duration.withType:
+      rename: workflow/task/invocation/completions/withType
+      kind: Timer
+      docs: Records time needed to complete an individual invocation
+            as opposed to the entire execution.
+      unit: tasks
+      per_account: true
+      tags:
+        - cloudProvider
+        - region
+        - taskType
+        - executionType
+      change_tags:
+        - from: isComplete
+          to: finished
+          type: BOOL
+        - from: status
+          to: finalStatus
+          type: STRING
+
+    tasks:
+      rename: clouddriver/task/finished
+      kind: Counter
+      docs: Number of tasks processed.
+      unit: tasks
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+
+    threadpool.activeCount:
+      rename: threadpool/activeThreads
+      kind: Gauge
+      docs: Number of active threads
+      unit: threads
+      change_tags:
+        - from: id
+          to: pool
+          type: STRING
+
+    threadpool.blockingQueueSize:
+      rename: threadpool/blockedSize
+      kind: Gauge
+      docs: Number of requests waiting to be scheduled into the pool.
+      unit: requests
+      change_tags:
+        - from: id
+          to: pool
+          type: STRING
+
+    threadpool.poolSize:
+      rename: threadpool/size
+      kind: Gauge
+      docs: Number of threads in the pool.
+      unit: threads
+      change_tags:
+        - from: id
+          to: pool
+          type: STRING
+
+    trigger.errors:
+      rename: workflow/trigger/errors
+      kind: Counter
+      docs: Number of errors encountered processing triggered pipelines.
+      unit: errors
+      tags: # None
+
+
+    # These are speculative
+    redis.command.latency.del:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: del
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.eval:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: eval
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.exists:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: exists
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.expire:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: expire
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.get:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: get
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hdel:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hdel
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hget:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hget
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hgetAll:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hgetAll
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hmget:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hmget
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hmset:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hmset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.hset:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: hset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.lindex:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: lindex
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.lrange:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: lrange
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.mget:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: mget
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.mset:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: mset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.multi:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: multi
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.ping:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: ping
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.pipelined:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: pipelined
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.rpush:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: rpush
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.sadd:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: sadd
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.set:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: set
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.setnx:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: setnx
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.smembers:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: smembers
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.srem:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: srem
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.sscan:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: sscan
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.zadd:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: zadd
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.latency.zrevange:
+      rename: external/redis/completions
+      kind: PercentileTimer
+      docs: Measures latency for redis command
+      unit: requests
+      add_tags:
+        method: zrevrange
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.eval:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: eval
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.hset:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: hset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.hmset:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: hmset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.mset:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: mset
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.rpush:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: rpush
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.sadd:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: sadd
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.set:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: set
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.setnx:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: setnx
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL
+
+    redis.command.payloadSize.srem:
+      rename: external/redis/payloadSize
+      kind: PercentileDistributionSummary
+      docs: Measures payload size for redis command
+      unit: requests
+      add_tags:
+        method: srem
+      tags:
+        - poolName
+      change_tags:
+        - from: success
+          to: success
+          type: BOOL
+        - from: pipelined
+          to: pipelined
+          type: BOOL

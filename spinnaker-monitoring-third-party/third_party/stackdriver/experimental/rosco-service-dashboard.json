@@ -1,0 +1,123 @@
+{
+  "revision": 0,
+  "displayName": "Rosco",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Bake Request Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/bakery/bake/calls\" AND metric.label.spin_service=\"rosco\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Active Bakes",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/bakery/bake/active\" AND metric.label.active=True AND metric.label.spin_service=\"rosco\"",
+                      "perSeriesAligner": "ALIGN_SUM"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Bake Completion Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/bakery/bake/completion_latencies__count\" AND metric.label.spin_service=\"rosco\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Bake Time",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/bakery/bake/completion_latencies\" AND metric.label.spin_service=\"rosco\"",
+                        "perSeriesAligner": "ALIGN_DELTA"
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Invocation Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilterRatio": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"rosco\"",
+                        "perSeriesAligner": "ALIGN_DELTA"
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"rosco\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,329 @@
+{
+  "revision": 0,
+  "displayName": "Java Memory",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Memory By Service",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Clouddriver Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Echo Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"echo\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Fiat Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"fiat\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Front50 Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"front50\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Gate Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"gate\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Igor Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"igor\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Kayenta Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"kayenta\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Orca Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"orca\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Rosco Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"rosco\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_variant",
+                          "metric.label.segment"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+

@@ -1,0 +1,290 @@
+{
+  "revision": 0,
+  "displayName": "Redis Interactions",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies__count\" AND metric.label.success!=True",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Call Rate By Service",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Call Rate By Service/Variant",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.spin_service",
+                          "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Call Rate By Method",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.method"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Method Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Method Latency by Pool",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method",
+                            "metric.label.pool_name"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Method Latency by Service",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method",
+                            "metric.label.spin_service"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Method Latency by Pipelined",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method",
+                            "metric.label.pipelined"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Payload Size by Method",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/external/redis/payload_size\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.method",
+                            "metric.label.spin_service",
+                            "metric.label.spin_variant"
+                        ],
+                        "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+

@@ -1,0 +1,251 @@
+{
+  "revision": 0,
+  "displayName": "Igor",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Hystrix Fallback Failure",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service=\"igor\" AND metric.label.success!=True",
+                      "perSeriesAligner": "ALIGN_SUM",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant",
+                         "metric.label.metricGroup"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Hystrix Fallback Success vs Failure",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/hystrix/rolling_count/fallback\" AND metric.label.spin_service\"igor\"",
+                      "perSeriesAligner": "ALIGN_SUM",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant",
+                         "metric.label.metricGroup",
+                         "metric.label.success"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Polling Monitor Failure Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/monitor/polling/failures\" AND metric.label.spin_service=\"igor\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Polling Monitor Items Over Threshold",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/monitor/polling/excessItems\" AND metric.label.spin_service=\"igor\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Health Errors",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/health/component/errors\" AND metric.label.spin_service=\"igor\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant",
+                         "metric.label.component"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Successful Invocations",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status_code_class=\"2xx\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "Failed Invocations",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies__count\" AND metric.label.spin_service=\"igor\" AND metric.label.status_code_class!=\"2xx\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Invocation Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"igor\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"igor\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

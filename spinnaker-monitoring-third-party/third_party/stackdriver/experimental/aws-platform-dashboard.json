@@ -1,0 +1,668 @@
+{
+  "revision": 0,
+  "displayName": "Amazon Platform",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Cache Drift",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/cacheDrift\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.region",
+                          "metric.label.agent"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AWS Request Throttling Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/throttled\"",
+                        "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AWS API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_name"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AWS API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AWS API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "EC2 API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonEC2\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "EC2 API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonEC2\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "EC2 API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonEC2\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AutoScaling API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonAutoScaling\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AutoScaling API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonAutoScaling\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "AutoScaling API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonAutoScaling\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "ElasticLoadBalancing API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "ElasticLoadBalancing API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "ElasticLoadBalancing API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name=\"AmazonElasticLoadBalancing\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Other API Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Other API Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies__count\" AND metric.label.status_code_class!=\"2xx\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                          "metric.label.service_endpoint",
+                          "metric.label.request_type",
+                          "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Other API Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/aws/api/http/completion_latencies\" AND metric.label.service_name!=\"AmazonEC2\" AND metric.label.service_name!=\"AmazonAutoScaling\" AND metric.label.service_name!=\"AmazonElasticLoadBalancing\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                            "metric.label.service_endpoint",
+                            "metric.label.request_type"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "CATS Keys Requested",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Keys Written",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Keys Deleted",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/keys\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "CATS Items Requested",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/get/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Items Written",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/merge/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            },
+            {
+              "title": "CATS Items Deleted",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/clouddriver/cache/redis/evict/items\" AND metric.label.spin_service=\"clouddriver\" AND metric.label.platform=\"aws\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "revision": 0,
+  "displayName": "Echo",
+  "root": {
+    "rowLayout": {
+      "rows": [
+        {
+          "widgets": [
+            {
+              "title": "Trigger Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/trigger/calls\" AND metric.label.spin_service=\"echo\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "title": "Trigger Error Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/workflow/trigger/errors\" AND metric.label.spin_service=\"echo\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Events Processed Rate",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/echo/event/processed\" AND metric.label.spin_service=\"echo\"",
+                      "perSeriesAligner": "ALIGN_RATE"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "OkHttp Request Rate per Status Code",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completion_latencies__count\" AND metric.label.spin_service=\"gate\"",
+                      "perSeriesAligner": "ALIGN_RATE",
+                      "crossSeriesReducer": "REDUCE_SUM",
+                      "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                      "minAlignmentPeriod": "60s",
+                      "groupByFields": [
+                         "metric.label.spin_variant",
+                         "metric.label.status_code"
+                      ],
+                      "unitOverride": "1"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "OkHttp Request Latency per Status Code",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/okhttp/completion_latencies\" AND metric.label.spin_service=\"echo\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "secondaryCrossSeriesReducer": "REDUCE_NONE",
+                        "minAlignmentPeriod": "60s",
+                        "groupByFields": [
+                           "metric.label.spin_variant",
+                           "metric.label.status_code"
+                        ],
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "Invocation Latency",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                        "filter": "metric.type=\"custom.googleapis.com/spinnaker/service/controller/completion_latencies\" AND metric.label.spin_service=\"echo\"",
+                        "perSeriesAligner": "ALIGN_DELTA",
+                        "crossSeriesReducer": "REDUCE_MEAN",
+                        "unitOverride": "ns"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        },
+
+        {
+          "widgets": [
+            {
+              "title": "JVM Memory",
+              "xyChart": {
+                "dataSets": [
+                  {
+                    "timeSeriesFilter": {
+                      "filter": "metric.type=\"custom.googleapis.com/spinnaker/platform/java/memory\" AND metric.label.spin_service=\"echo\" AND metric.label.scope=\"HEAP\"",
+                      "perSeriesAligner": "ALIGN_MEAN"
+                    }
+                  }
+                ],
+                "constantLines": [
+                  {}
+                ],
+                "options": {},
+                "y1Axis": {},
+                "xAxis": {}
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

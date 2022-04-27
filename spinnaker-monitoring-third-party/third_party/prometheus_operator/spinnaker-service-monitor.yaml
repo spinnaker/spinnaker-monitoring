@@ -12,8 +12,8 @@ spec:
   selector:
     matchLabels:
       app: spin
-    namespaceSelector:
-      any: true
+  namespaceSelector:
+    any: true
   endpoints:
   # "port" is string only. "targetPort" is integer or string.
   - targetPort: 8008
